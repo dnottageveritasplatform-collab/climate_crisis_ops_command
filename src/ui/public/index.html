@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Climate &amp; Crisis Ops Command</title>
+  <style>
+    :root {
+      --aqua: #00abc9;
+      --gold: #ffc72c;
+      --bg: #070b0f;
+      --panel: #0e1419;
+      --panel-2: #121a22;
+      --border: #1e2a36;
+      --text: #eef3f7;
+      --muted: #7f8f9f;
+      --ok: #5fd4a4;
+      --warn: #ffb347;
+      --danger: #ff6b6b;
+      --purple: #a78bfa;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #0c1218 0%, var(--bg) 100%);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--aqua), #007a8f);
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 0.65rem; color: #000;
+    }
+    .brand h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em; }
+    .brand p { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+    .topbar-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .pill {
+      font-size: 0.68rem; font-weight: 600;
+      padding: 0.28rem 0.65rem; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .pill.aqua { color: var(--aqua); border-color: rgba(0,171,201,.35); background: rgba(0,171,201,.08); }
+    .pill.gold { color: var(--gold); border-color: rgba(255,199,44,.35); background: rgba(255,199,44,.08); }
+    .pill.ok { color: var(--ok); border-color: rgba(95,212,164,.35); background: rgba(95,212,164,.08); }
+
+    .toolbar {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+    }
+    button {
+      background: var(--aqua); color: #000; border: 0;
+      padding: 0.45rem 0.85rem; border-radius: 6px;
+      font-weight: 600; font-size: 0.72rem; cursor: pointer;
+    }
+    button:disabled { opacity: 0.45; cursor: wait; }
+    button.secondary {
+      background: var(--panel-2); color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .alert-strip {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.65rem 1.5rem;
+      background: linear-gradient(90deg, rgba(255,179,71,.12), rgba(255,107,107,.08));
+      border-bottom: 1px solid rgba(255,179,71,.25);
+      flex-wrap: wrap;
+    }
+    .alert-strip.idle {
+      background: var(--panel);
+      border-bottom-color: var(--border);
+    }
+    .alert-level {
+      font-size: 0.72rem; font-weight: 800;
+      padding: 0.35rem 0.7rem; border-radius: 6px;
+      background: rgba(255,179,71,.2); color: var(--gold);
+      border: 1px solid rgba(255,199,44,.4);
+      white-space: nowrap;
+    }
+    .alert-text { font-size: 0.82rem; flex: 1; min-width: 200px; }
+    .alert-text strong { color: var(--text); }
+    .alert-meta { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      grid-template-rows: 1fr auto auto;
+      gap: 0;
+      height: calc(100vh - 108px);
+      min-height: 620px;
+    }
+    .panel {
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .panel:last-of-type { border-right: none; }
+    .panel-head {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-head h2 {
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--gold);
+    }
+    .panel-head span { font-size: 0.65rem; color: var(--muted); }
+    .panel-body { padding: 0.85rem 1rem; overflow-y: auto; flex: 1; }
+
+    .timeline { list-style: none; }
+    .timeline li {
+      position: relative;
+      padding-left: 1.1rem;
+      padding-bottom: 0.85rem;
+      border-left: 2px solid var(--border);
+      margin-left: 0.35rem;
+    }
+    .timeline li:last-child { border-left-color: transparent; padding-bottom: 0; }
+    .timeline li::before {
+      content: "";
+      position: absolute; left: -5px; top: 4px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border);
+    }
+    .timeline li.start::before { background: var(--aqua); box-shadow: 0 0 8px rgba(0,171,201,.5); }
+    .timeline li.tool::before { background: var(--purple); }
+    .timeline li.done::before { background: var(--ok); }
+    .timeline li.empty::before { background: var(--muted); }
+    .tl-time { font-size: 0.62rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .tl-event { font-size: 0.78rem; font-weight: 600; margin: 0.15rem 0; }
+    .tl-detail {
+      font-size: 0.68rem; color: var(--muted);
+      font-family: "Cascadia Code", "Consolas", monospace;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.35rem 0.5rem;
+      margin-top: 0.3rem;
+    }
+    .tl-detail em { color: var(--aqua); font-style: normal; }
+
+    .map-wrap {
+      position: relative;
+      background:
+        radial-gradient(ellipse at 60% 40%, rgba(0,171,201,.06) 0%, transparent 60%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,42,54,.5) 39px, rgba(30,42,54,.5) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,42,54,.5) 39px, rgba(30,42,54,.5) 40px),
+        var(--panel-2);
+      flex: 1;
+      margin: 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .map-svg { width: 100%; height: 100%; min-height: 380px; display: block; }
+    .map-legend {
+      position: absolute; bottom: 0.75rem; left: 0.75rem;
+      background: rgba(7,11,15,.92);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.65rem;
+    }
+    .map-legend div { display: flex; align-items: center; gap: 0.4rem; margin: 0.2rem 0; color: var(--muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .map-badge {
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      font-size: 0.62rem; color: var(--muted);
+      background: rgba(7,11,15,.85);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.55rem;
+    }
+
+    .severity-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .severity-badge {
+      font-size: 1.1rem; font-weight: 800;
+      color: var(--gold);
+      background: rgba(255,199,44,.12);
+      border: 1px solid rgba(255,199,44,.3);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+    }
+    .severity-sub { font-size: 0.72rem; color: var(--muted); }
+    .brief-summary {
+      font-size: 0.8rem; color: #c8d4de;
+      margin-bottom: 0.85rem;
+      padding: 0.65rem;
+      background: var(--panel-2);
+      border-radius: 8px;
+      border-left: 3px solid var(--aqua);
+    }
+    .brief-empty { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+    .section-label {
+      font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--muted);
+      margin: 0.75rem 0 0.4rem;
+    }
+    .actions { list-style: none; }
+    .actions li {
+      font-size: 0.75rem;
+      padding: 0.45rem 0.55rem;
+      margin-bottom: 0.35rem;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex; gap: 0.45rem;
+    }
+    .actions li::before { content: "→"; color: var(--aqua); font-weight: 700; }
+    .citations { list-style: none; }
+    .citations li {
+      font-size: 0.68rem;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      color: var(--muted);
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .citations li:last-child { border-bottom: none; }
+    .cite-ref {
+      display: block;
+      color: var(--aqua);
+      font-size: 0.6rem;
+      margin-bottom: 0.15rem;
+    }
+    .confidence {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+    .audit-strip {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--border);
+      background: rgba(95,212,164,.04);
+      padding: 0.55rem 1.5rem;
+      font-size: 0.68rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .audit-strip strong { color: var(--ok); }
+    .audit-strip .audit-id { font-family: monospace; color: var(--aqua); }
+    button.demo {
+      background: var(--gold);
+      color: #000;
+    }
+    .stat-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.5rem; margin-top: 0.75rem;
+    }
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem;
+      text-align: center;
+    }
+    .stat b { display: block; font-size: 1.25rem; color: var(--aqua); }
+    .stat span { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; }
+
+    .status-bar {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--border);
+      background: var(--panel);
+      padding: 0.65rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .modules { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .mod {
+      font-size: 0.62rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+    .mod .name { color: var(--muted); margin-right: 0.35rem; }
+    .mod .val { font-weight: 700; }
+    .mod.ready .val { color: var(--ok); }
+    .mod.pending .val { color: var(--muted); }
+    .mod.stub .val { color: var(--warn); }
+
+    .hitl-panel {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      background: rgba(255,255,255,.02);
+    }
+    .hitl-panel h3 {
+      font-size: 0.62rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .hitl-roles { display: flex; gap: 0.5rem; }
+    .role {
+      flex: 1; font-size: 0.65rem;
+      padding: 0.55rem;
+      border-radius: 6px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .role-head { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem; }
+    .role-head .icon { font-size: 0.9rem; opacity: 0.7; }
+    .role-head strong { color: var(--text); font-size: 0.68rem; }
+    .role-status {
+      font-size: 0.62rem; padding: 0.2rem 0.4rem;
+      border-radius: 4px; display: inline-block;
+      background: rgba(255,179,71,.12); color: var(--warn);
+      border: 1px solid rgba(255,179,71,.25);
+      margin-bottom: 0.4rem;
+    }
+    .role-actions { display: flex; gap: 0.35rem; }
+    .role-actions button {
+      flex: 1; padding: 0.3rem 0.4rem; font-size: 0.6rem;
+      background: var(--panel); color: var(--muted);
+      border: 1px solid var(--border); cursor: not-allowed;
+    }
+
+    @media (max-width: 1100px) {
+      .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; height: auto; }
+      .panel { border-right: none; border-bottom: 1px solid var(--border); }
+      .status-bar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">CCOC</div>
+      <div>
+        <h1>Climate &amp; Crisis Ops Command</h1>
+        <p>Future Caribbean 2026 · NEMT + Hospital Liaison Coordination</p>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <span class="pill aqua">Climate Risk &amp; Disaster</span>
+      <span class="pill gold" id="phasePill">Week 1 · Day 7</span>
+      <span class="pill ok" id="demoPill">Demo Mode</span>
+      <div class="toolbar">
+        <button class="demo" id="runWeek1Demo">Week 1 Demo</button>
+        <button id="runMonitor">Run Monitor</button>
+        <button class="secondary" id="refreshSignals">Refresh Signals</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="alert-strip idle" id="alertStrip">
+    <span class="alert-level" id="alertLevel">—</span>
+    <p class="alert-text" id="alertText">Loading signal feed…</p>
+    <span class="alert-meta" id="alertMeta"></span>
+  </div>
+
+  <div class="workspace">
+
+    <aside class="panel">
+      <div class="panel-head">
+        <h2>Agent Timeline</h2>
+        <span id="timelineMeta">Monitor · OpenClaw loop</span>
+      </div>
+      <div class="panel-body">
+        <ul class="timeline" id="timeline">
+          <li class="empty">
+            <div class="tl-event">No agent runs yet</div>
+            <div class="tl-detail">Click <em>Run Monitor</em> to start</div>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Command Map</h2>
+        <span id="mapMeta">Thin GIS · live layers</span>
+      </div>
+      <div class="map-wrap">
+        <span class="map-badge" id="mapBadge">Loading map layers…</span>
+        <svg class="map-svg" id="mapSvg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" aria-label="Nassau metro command map"></svg>
+        <div class="map-legend">
+          <div><span class="dot" style="background:#ff6b6b"></span> Hospital partner</div>
+          <div><span class="dot" style="background:#00abc9"></span> NEMT operator</div>
+          <div><span class="dot" style="background:#ffc72c"></span> At-risk trip</div>
+          <div><span class="dot" style="background:#ffb347"></span> Restricted corridor</div>
+          <div><span class="dot" style="background:#ff6b6b"></span> Closed corridor</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-head">
+        <h2>Monitor Brief</h2>
+        <span id="briefMode">awaiting run</span>
+      </div>
+      <div class="panel-body" id="briefPanel">
+        <p class="brief-empty">Run Monitor to generate a situation brief from live signals and dispatch data.</p>
+      </div>
+    </aside>
+
+    <footer class="status-bar">
+      <div>
+        <p class="section-label" style="margin-top:0;margin-bottom:0.45rem">Module status</p>
+        <div class="modules" id="modules"></div>
+      </div>
+      <div class="hitl-panel">
+        <h3>Dual HITL Approval Gate</h3>
+        <div class="hitl-roles">
+          <div class="role">
+            <div class="role-head"><span class="icon">🚌</span><strong>NEMT Supervisor</strong></div>
+            <span class="role-status" id="hitlNemt">Awaiting brief</span>
+            <div class="role-actions">
+              <button disabled title="Week 2 Day 10">Review</button>
+              <button disabled title="Week 2 Day 10">Approve</button>
+            </div>
+          </div>
+          <div class="role">
+            <div class="role-head"><span class="icon">🏥</span><strong>Hospital Liaison</strong></div>
+            <span class="role-status" id="hitlHospital">Awaiting brief</span>
+            <div class="role-actions">
+              <button disabled title="Week 2 Day 10">Review</button>
+              <button disabled title="Week 2 Day 10">Approve</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <div class="audit-strip" id="auditStrip">
+      <strong>Audit</strong>
+      <span id="auditText">No audit entries yet — run Week 1 Demo</span>
+    </div>
+  </div>
+
+  <script>
+    const fmtTime = (iso) => {
+      if (!iso) return "—";
+      const d = new Date(iso);
+      return d.toLocaleTimeString("en-GB", { hour12: false });
+    };
+
+    const fmtIssued = (iso) => {
+      if (!iso) return "";
+      const d = new Date(iso);
+      return `Issued ${d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} · ${d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} UTC`;
+    };
+
+    function renderMap(layers) {
+      const svg = document.getElementById("mapSvg");
+      const badge = document.getElementById("mapBadge");
+      if (!layers?.ok) {
+        badge.textContent = "Map unavailable";
+        return;
+      }
+
+      svg.setAttribute("viewBox", layers.viewBox);
+      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk`;
+
+      const z = layers.zone;
+      const coast = `M 80 320 Q 180 280 280 300 T 480 260 T 720 290 L 720 420 L 80 420 Z`;
+
+      let html = `
+        <path d="${coast}" fill="rgba(0,171,201,.06)" stroke="rgba(0,171,201,.2)" stroke-width="1.5"/>
+        <text x="400" y="400" text-anchor="middle" fill="#4a5a6a" font-size="11" font-family="system-ui">${layers.serviceArea}</text>
+        <ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="rgba(255,179,71,.08)" stroke="rgba(255,179,71,.3)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <text x="${z.cx}" y="${z.cy + 5}" text-anchor="middle" fill="#ffb347" font-size="10" font-family="system-ui" opacity="0.8">Affected zone · Level ${layers.level}</text>
+      `;
+
+      for (const c of layers.corridors) {
+        const s = c.svg;
+        const dash = s.dash ? `stroke-dasharray="${s.dash}"` : "";
+        const midX = Math.round((s.x1 + s.x2) / 2);
+        const midY = Math.round((s.y1 + s.y2) / 2);
+        html += `
+          <line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}" stroke="${c.color}" stroke-width="4" ${dash} opacity="0.85"/>
+          <rect x="${midX - 36}" y="${midY - 14}" width="72" height="18" rx="4" fill="#121a22" stroke="${c.color}" stroke-width="1"/>
+          <text x="${midX}" y="${midY - 2}" text-anchor="middle" fill="${c.color}" font-size="9" font-family="system-ui" font-weight="600">${c.id}</text>
+        `;
+      }
+
+      for (const t of layers.trips) {
+        if (!t.atRisk) continue;
+        const s = t.svg;
+        html += `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${t.color}" stroke="#000" stroke-width="1"/>`;
+      }
+
+      for (const f of layers.facilities) {
+        const s = f.svg;
+        html += `
+          <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${f.color}" stroke="#fff" stroke-width="1.5"/>
+          <text x="${s.x}" y="${s.y + s.r + 18}" text-anchor="middle" fill="${f.color}" font-size="9" font-family="system-ui"${f.role === "hospital_partner" ? ' font-weight="600"' : ""}>${f.name.split(" ").slice(0, 2).join(" ")}</text>
+        `;
+      }
+
+      if (layers.atRiskCount > 0) {
+        html += `<text x="${z.cx}" y="${z.cy - z.ry - 8}" text-anchor="middle" fill="#ffc72c" font-size="8" font-family="system-ui">${layers.atRiskCount} at-risk trip(s)</text>`;
+      }
+
+      svg.innerHTML = html;
+    }
+
+    async function loadMap(level = 2) {
+      const res = await fetch(`/api/geo/layers?level=${level}`);
+      const data = await res.json();
+      renderMap(data);
+      return data;
+    }
+
+    function renderAlert(signals) {
+      const strip = document.getElementById("alertStrip");
+      const level = document.getElementById("alertLevel");
+      const text = document.getElementById("alertText");
+      const meta = document.getElementById("alertMeta");
+
+      if (!signals?.ok) {
+        strip.classList.add("idle");
+        level.textContent = "OFFLINE";
+        text.textContent = "Signal feed unavailable.";
+        return;
+      }
+
+      strip.classList.remove("idle");
+      level.textContent = `LEVEL ${signals.level} · ${signals.label.toUpperCase()}`;
+      const summary = signals.weather?.summary || "";
+      const instCount = signals.institutional?.length || 0;
+      text.innerHTML = `<strong>${signals.event}</strong> · ${summary.split(".")[0] || signals.serviceArea} · ${instCount} institutional signal${instCount === 1 ? "" : "s"} active`;
+      meta.textContent = fmtIssued(signals.weather?.issuedAt || signals.fetchedAt);
+      loadMap(signals.level ?? 2);
+    }
+
+    function renderModules(modules) {
+      const el = document.getElementById("modules");
+      el.innerHTML = "";
+      for (const [name, status] of Object.entries(modules)) {
+        const mod = document.createElement("span");
+        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging")
+          ? "ready"
+          : status.includes("shell") || status.includes("ingest") || status.includes("spike")
+            ? "stub"
+            : status.includes("layers") || status.includes("manifest") || status.includes("rag") || status.includes("map")
+              ? "ready"
+              : "pending";
+        mod.className = `mod ${cls}`;
+        mod.innerHTML = `<span class="name">${name}</span><span class="val">${status}</span>`;
+        el.appendChild(mod);
+      }
+    }
+
+    function toolDetail(entry) {
+      if (entry.tool === "get_signal_status" && entry.result) {
+        const r = entry.result;
+        return `level: <em>${r.level}</em> · label: ${r.label} · signals: ${r.institutionalCount || 0}`;
+      }
+      if (entry.tool === "query_sop" && entry.result) {
+        const r = entry.result;
+        const n = r.citations?.length ?? r.matches?.length ?? 0;
+        return `query: <em>"${r.query}"</em> · ${n} citation${n === 1 ? "" : "s"}`;
+      }
+      if (entry.tool === "summarize_dispatch" && entry.result) {
+        const r = entry.result;
+        const atRisk = r.atRiskTrips ?? r.p1Trips;
+        return `L${r.level} · ${r.totalTrips} trips · <em>${atRisk} at risk</em> · ${(r.corridors || []).join(", ")}`;
+      }
+      if (entry.message) return entry.message;
+      if (entry.tool) return entry.tool;
+      return "";
+    }
+
+    function toolKey(entry) {
+      const q = entry.args?.query;
+      return q ? `${entry.tool}:${q}` : entry.tool;
+    }
+
+    function renderTimeline(logs) {
+      const ul = document.getElementById("timeline");
+      const resultsByKey = {};
+      for (const entry of logs) {
+        if (entry.event === "tool_result" && entry.tool) {
+          const key = toolKey(entry);
+          if (!resultsByKey[key]) resultsByKey[key] = [];
+          resultsByKey[key].push(entry.result);
+        }
+      }
+      const consumed = {};
+
+      const visible = logs.filter((e) => e.event !== "tool_result");
+      if (!visible.length) {
+        ul.innerHTML = `<li class="empty"><div class="tl-event">No agent runs yet</div><div class="tl-detail">Click <em>Run Monitor</em> to start</div></li>`;
+        return;
+      }
+
+      ul.innerHTML = visible.slice().reverse().map((entry) => {
+        const cls = entry.event === "agent_start" ? "start"
+          : entry.event === "agent_complete" ? "done"
+          : entry.event === "tool_call" ? "tool" : "";
+        const label = entry.event === "tool_call"
+          ? `tool_call → ${entry.tool}${entry.args?.query ? ` (${entry.args.query})` : ""}`
+          : entry.event;
+        let enriched = entry;
+        if (entry.event === "tool_call") {
+          const key = toolKey(entry);
+          consumed[key] = consumed[key] || 0;
+          const result = resultsByKey[key]?.[consumed[key]++];
+          enriched = { ...entry, result };
+        }
+        const detail = toolDetail(enriched);
+        return `<li class="${cls}">
+          <div class="tl-time">${fmtTime(entry.ts)}</div>
+          <div class="tl-event">${label}</div>
+          ${detail ? `<div class="tl-detail">${detail}</div>` : ""}
+        </li>`;
+      }).join("");
+    }
+
+    function formatCitation(c) {
+      if (typeof c === "string") return `<li>${c}</li>`;
+      return `<li><span class="cite-ref">${c.ref || c.sopId || "SOP"}</span>${c.text}</li>`;
+    }
+
+    function renderBrief(result) {
+      const panel = document.getElementById("briefPanel");
+      const modeEl = document.getElementById("briefMode");
+      if (!result?.brief) {
+        panel.innerHTML = `<p class="brief-empty">Monitor run failed or returned no brief.</p>`;
+        return;
+      }
+
+      const b = result.brief;
+      const dispatch = result.toolResults?.find((t) => t.tool === "summarize_dispatch")?.result || {};
+      modeEl.textContent = `${result.mode} mode`;
+
+      const atRisk = dispatch.atRiskTrips ?? dispatch.p1Trips;
+      const conf = b.confidence?.score != null
+        ? `${Math.round(b.confidence.score * 100)}% (${(b.confidence.basis || []).join(", ")})`
+        : "demo";
+
+      panel.innerHTML = `
+        <div class="severity-row">
+          <div class="severity-badge">L${b.level ?? "?"}</div>
+          <div>
+            <div style="font-weight:700;font-size:0.88rem">${b.severity || "—"}</div>
+            <div class="severity-sub">${b.geography || ""} · ${b.event || ""}</div>
+          </div>
+        </div>
+        <div class="brief-summary">${b.summary || ""}</div>
+        <div class="stat-row">
+          <div class="stat"><b>${atRisk ?? "—"}</b><span>At Risk</span></div>
+          <div class="stat"><b>${dispatch.totalTrips ?? "—"}</b><span>Total Trips</span></div>
+        </div>
+        <p class="confidence">Confidence: ${conf}</p>
+        <p class="section-label">Recommended actions</p>
+        <ul class="actions">${(b.recommendedActions || []).map((a) => `<li>${a}</li>`).join("")}</ul>
+        <p class="section-label">SOP citations</p>
+        <ul class="citations">${(b.sopCitations || []).map(formatCitation).join("")}</ul>
+      `;
+
+      loadMap(result.threshold ?? b.level ?? 2);
+
+      if (result.audit) renderAudit(result.audit);
+
+      document.getElementById("hitlNemt").textContent = "Pending review";
+      document.getElementById("hitlHospital").textContent = "Pending review";
+    }
+
+    function renderAudit(entry) {
+      const el = document.getElementById("auditText");
+      if (!entry) {
+        el.textContent = "No audit entries yet — run Week 1 Demo";
+        return;
+      }
+      el.innerHTML = `<span class="audit-id">${entry.id}</span> · ${entry.summary || entry.type} · ${fmtTime(entry.ts)}`;
+    }
+
+    async function loadAudit() {
+      const res = await fetch("/api/audit/latest");
+      const data = await res.json();
+      renderAudit(data.entry);
+    }
+
+    async function runWeek1Demo() {
+      const btn = document.getElementById("runWeek1Demo");
+      btn.disabled = true;
+      btn.textContent = "Running…";
+      try {
+        const res = await fetch("/api/demo/week1", { method: "POST" });
+        const data = await res.json();
+        if (data.ok) {
+          renderAlert(data.signals);
+          renderBrief(data.monitor);
+          renderMap(data.map);
+          renderAudit(data.audit);
+          await loadLogs();
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Week 1 Demo";
+      }
+    }
+
+    async function loadStatus() {
+      const res = await fetch("/api/status");
+      const data = await res.json();
+      document.getElementById("phasePill").textContent = data.phase.replace(/_/g, " ").replace(/week 1/i, "Week 1 ·");
+      renderModules(data.modules);
+    }
+
+    async function loadSignals(refresh = false) {
+      const url = refresh ? "/api/signals/refresh" : "/api/signals";
+      const res = await fetch(url, refresh ? { method: "POST" } : undefined);
+      const data = await res.json();
+      renderAlert(data);
+      return data;
+    }
+
+    async function loadLogs() {
+      const res = await fetch("/api/agents/logs?limit=30");
+      const data = await res.json();
+      renderTimeline(data.logs || []);
+    }
+
+    async function runMonitor() {
+      const btn = document.getElementById("runMonitor");
+      btn.disabled = true;
+      btn.textContent = "Running…";
+      try {
+        const res = await fetch("/api/agents/monitor/brief", { method: "POST" });
+        const data = await res.json();
+        if (data.ok) {
+          renderBrief(data);
+          if (data.audit) renderAudit(data.audit);
+        }
+        await loadLogs();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Run Monitor";
+      }
+    }
+
+    document.getElementById("runMonitor").addEventListener("click", runMonitor);
+    document.getElementById("runWeek1Demo").addEventListener("click", runWeek1Demo);
+    document.getElementById("refreshSignals").addEventListener("click", () => loadSignals(true));
+
+    (async () => {
+      await loadStatus();
+      await loadSignals();
+      await loadLogs();
+      await loadAudit();
+    })();
+  </script>
+</body>
+</html>

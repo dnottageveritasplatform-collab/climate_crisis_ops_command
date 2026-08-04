@@ -1,0 +1,23 @@
+COMMS-03-DEMO - Hospital Partner Transport Bulletin Template
+
+COMMS-03 Overview:
+- Standard bulletin for hospital transport liaisons during storm escalation.
+- Dual HITL required: NEMT supervisor AND hospital liaison before send.
+- Never auto-send; draft only until both approvers sign off.
+
+COMMS-03 Level 2 Prepare:
+- Subject: Transport Advisory - Level 2 Prepare - New Providence
+- Include: affected corridors, P1 trip count, estimated delay window.
+- Attach 24h manifest excerpt tagged PRIORITY.
+- Flag dialysis and oncology patients explicitly.
+
+COMMS-03 Level 3 Restrict:
+- Subject: URGENT Transport Restriction Notice - Level 3
+- State CORR-01 and CORR-02 closure/restriction status.
+- List held trips by priority; require liaison callback for P1 exceptions.
+- Reference NEMT-CRISIS-001 dual approval workflow.
+
+COMMS-03 Distribution:
+- Primary: hospital transport liaison (Princess Margaret Hospital)
+- CC: NEMT dispatch supervisor, on-call clinical coordinator
+- Channel: secure email or operator portal; no public SMS at Level 3

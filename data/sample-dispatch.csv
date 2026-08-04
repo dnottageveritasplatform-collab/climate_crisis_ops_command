@@ -1,0 +1,9 @@
+trip_id,priority,patient_code,pickup,pickup_lat,pickup_lon,facility,facility_id,scheduled_at,status,route_corridor
+T-1001,P1,dialysis-042,East Nassau,25.048,-77.310,Princess Margaret Hospital,FAC-01,2026-08-04T08:00:00,scheduled,CORR-02
+T-1002,P3,routine-118,Paradise Island,25.078,-77.318,Clinic Bay St,FAC-03,2026-08-04T09:30:00,scheduled,CORR-01
+T-1003,P1,oncology-007,Carmichael Rd,25.042,-77.295,Princess Margaret Hospital,FAC-01,2026-08-04T10:00:00,scheduled,CORR-02
+T-1004,P2,oncology-019,Palmdale,25.045,-77.285,Princess Margaret Hospital,FAC-01,2026-08-04T11:15:00,scheduled,CORR-02
+T-1005,P4,discharge-331,Princess Margaret Hospital,25.050,-77.270,East Nassau,FAC-01,2026-08-04T14:00:00,scheduled,CORR-02
+T-1006,P1,dialysis-055,Paradise Island,25.080,-77.315,Princess Margaret Hospital,FAC-01,2026-08-04T07:30:00,scheduled,CORR-01
+T-1007,P3,routine-204,Yamaha Dr,25.038,-77.325,Nassau Metro Depot,FAC-02,2026-08-04T15:00:00,scheduled,CORR-02
+T-1008,P2,oncology-031,Golden Gates,25.055,-77.305,Princess Margaret Hospital,FAC-01,2026-08-04T12:00:00,scheduled,CORR-02

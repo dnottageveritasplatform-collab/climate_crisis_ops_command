@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FAC-01",
+        "name": "Princess Margaret Hospital",
+        "role": "hospital_partner"
+      },
+      "geometry": { "type": "Point", "coordinates": [-77.27, 25.05] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FAC-02",
+        "name": "Nassau Metro Depot",
+        "role": "nemt_operator"
+      },
+      "geometry": { "type": "Point", "coordinates": [-77.34, 25.04] }
+    }
+  ]
+}

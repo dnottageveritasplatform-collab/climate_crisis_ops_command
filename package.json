@@ -1,0 +1,22 @@
+{
+  "name": "climate-crisis-ops-command",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Future Caribbean 2026 - Veritas-powered post-storm coordination command",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "spike:monitor": "node -e \"import('./src/agents/monitor/brief.js').then(m=>m.runMonitorBrief()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
+    "brief:monitor": "node -e \"import('./src/agents/monitor/brief.js').then(m=>m.runMonitorBrief()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
+    "demo:week1": "node -e \"import('./src/demo/week1.js').then(m=>m.runWeek1Demo()).then(r=>console.log(JSON.stringify({ok:r.ok,exitCriteria:r.exitCriteria,auditId:r.audit?.id,briefLevel:r.monitor?.brief?.level,mapAtRisk:r.map?.atRiskCount},null,2)))\""
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "csv-parse": "^5.6.0"
+  }
+}

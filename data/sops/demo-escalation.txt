@@ -1,0 +1,15 @@
+NEMT-CRISIS-001-DEMO - Nassau Metro Storm Escalation (excerpt)
+
+Level 2 Prepare:
+- Export 24h manifest; tag dialysis/oncology as PRIORITY.
+- Flag flood-risk stops (Paradise Island bridge, Eastern Road low segment).
+- SMS pre-notify patients in first 12h window.
+
+Level 3 Restrict:
+- Hold non-PRIORITY trips until clinical liaison approval.
+- Dual approval: NEMT supervisor AND hospital transport liaison for P1 trips.
+- Use COMMS-03 for hospital partners; HITL required before send.
+
+Corridors:
+- CORR-01 Paradise Island Bridge approach - CLOSED at Level 3
+- CORR-02 Eastern Road low segment - RESTRICTED at Level 2+

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Climate & Crisis Ops Command — UI Mockup (Days 1–2)</title>
+  <style>
+    :root {
+      --aqua: #00abc9;
+      --gold: #ffc72c;
+      --bg: #070b0f;
+      --panel: #0e1419;
+      --panel-2: #121a22;
+      --border: #1e2a36;
+      --text: #eef3f7;
+      --muted: #7f8f9f;
+      --ok: #5fd4a4;
+      --warn: #ffb347;
+      --danger: #ff6b6b;
+      --purple: #a78bfa;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+
+    /* ── header ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #0c1218 0%, var(--bg) 100%);
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--aqua), #007a8f);
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 0.65rem; color: #000;
+    }
+    .brand h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em; }
+    .brand p { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+    .topbar-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
+    .pill {
+      font-size: 0.68rem; font-weight: 600;
+      padding: 0.28rem 0.65rem; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .pill.aqua { color: var(--aqua); border-color: rgba(0,171,201,.35); background: rgba(0,171,201,.08); }
+    .pill.gold { color: var(--gold); border-color: rgba(255,199,44,.35); background: rgba(255,199,44,.08); }
+    .pill.ok { color: var(--ok); border-color: rgba(95,212,164,.35); background: rgba(95,212,164,.08); }
+
+    /* ── alert strip ── */
+    .alert-strip {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.65rem 1.5rem;
+      background: linear-gradient(90deg, rgba(255,179,71,.12), rgba(255,107,107,.08));
+      border-bottom: 1px solid rgba(255,179,71,.25);
+    }
+    .alert-level {
+      font-size: 0.72rem; font-weight: 800;
+      padding: 0.35rem 0.7rem; border-radius: 6px;
+      background: rgba(255,179,71,.2); color: var(--gold);
+      border: 1px solid rgba(255,199,44,.4);
+      white-space: nowrap;
+    }
+    .alert-text { font-size: 0.82rem; flex: 1; }
+    .alert-text strong { color: var(--text); }
+    .alert-meta { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+
+    /* ── layout ── */
+    .workspace {
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      grid-template-rows: 1fr auto;
+      gap: 0;
+      height: calc(100vh - 108px);
+      min-height: 620px;
+    }
+    .panel {
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .panel:last-of-type { border-right: none; }
+    .panel-head {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-head h2 {
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--gold);
+    }
+    .panel-head span { font-size: 0.65rem; color: var(--muted); }
+    .panel-body { padding: 0.85rem 1rem; overflow-y: auto; flex: 1; }
+
+    /* ── agent timeline (Day 2) ── */
+    .timeline { list-style: none; }
+    .timeline li {
+      position: relative;
+      padding-left: 1.1rem;
+      padding-bottom: 0.85rem;
+      border-left: 2px solid var(--border);
+      margin-left: 0.35rem;
+    }
+    .timeline li:last-child { border-left-color: transparent; padding-bottom: 0; }
+    .timeline li::before {
+      content: "";
+      position: absolute; left: -5px; top: 4px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border);
+    }
+    .timeline li.start::before { background: var(--aqua); box-shadow: 0 0 8px rgba(0,171,201,.5); }
+    .timeline li.tool::before { background: var(--purple); }
+    .timeline li.done::before { background: var(--ok); }
+    .tl-time { font-size: 0.62rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .tl-event { font-size: 0.78rem; font-weight: 600; margin: 0.15rem 0; }
+    .tl-detail {
+      font-size: 0.68rem; color: var(--muted);
+      font-family: "Cascadia Code", "Consolas", monospace;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.35rem 0.5rem;
+      margin-top: 0.3rem;
+    }
+    .tl-detail em { color: var(--aqua); font-style: normal; }
+
+    /* ── map (Day 1 geo layers) ── */
+    .map-wrap {
+      position: relative;
+      background:
+        radial-gradient(ellipse at 60% 40%, rgba(0,171,201,.06) 0%, transparent 60%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,42,54,.5) 39px, rgba(30,42,54,.5) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,42,54,.5) 39px, rgba(30,42,54,.5) 40px),
+        var(--panel-2);
+      flex: 1;
+      margin: 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .map-svg { width: 100%; height: 100%; min-height: 380px; display: block; }
+    .map-legend {
+      position: absolute; bottom: 0.75rem; left: 0.75rem;
+      background: rgba(7,11,15,.92);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.65rem;
+    }
+    .map-legend div { display: flex; align-items: center; gap: 0.4rem; margin: 0.2rem 0; color: var(--muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .map-badge {
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      font-size: 0.62rem; color: var(--muted);
+      background: rgba(7,11,15,.85);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.55rem;
+    }
+
+    /* ── monitor brief (Day 2 output) ── */
+    .severity-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .severity-badge {
+      font-size: 1.1rem; font-weight: 800;
+      color: var(--gold);
+      background: rgba(255,199,44,.12);
+      border: 1px solid rgba(255,199,44,.3);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+    }
+    .severity-sub { font-size: 0.72rem; color: var(--muted); }
+    .brief-summary {
+      font-size: 0.8rem; color: #c8d4de;
+      margin-bottom: 0.85rem;
+      padding: 0.65rem;
+      background: var(--panel-2);
+      border-radius: 8px;
+      border-left: 3px solid var(--aqua);
+    }
+    .section-label {
+      font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--muted);
+      margin: 0.75rem 0 0.4rem;
+    }
+    .actions { list-style: none; }
+    .actions li {
+      font-size: 0.75rem;
+      padding: 0.45rem 0.55rem;
+      margin-bottom: 0.35rem;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex; gap: 0.45rem;
+    }
+    .actions li::before { content: "→"; color: var(--aqua); font-weight: 700; }
+    .citations { list-style: none; }
+    .citations li {
+      font-size: 0.68rem;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      color: var(--muted);
+      padding: 0.3rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .citations li:last-child { border-bottom: none; }
+    .stat-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.5rem; margin-top: 0.75rem;
+    }
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem;
+      text-align: center;
+    }
+    .stat b { display: block; font-size: 1.25rem; color: var(--aqua); }
+    .stat span { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; }
+
+    /* ── bottom bar (Day 1 modules) ── */
+    .status-bar {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--border);
+      background: var(--panel);
+      padding: 0.65rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .modules { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .mod {
+      font-size: 0.62rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+    .mod .name { color: var(--muted); margin-right: 0.35rem; }
+    .mod .val { font-weight: 700; }
+    .mod.ready .val { color: var(--ok); }
+    .mod.pending .val { color: var(--muted); }
+    .mod.stub .val { color: var(--warn); }
+
+    .hitl-placeholder {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      background: rgba(255,255,255,.02);
+    }
+    .hitl-placeholder h3 {
+      font-size: 0.62rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .hitl-roles { display: flex; gap: 0.5rem; }
+    .role {
+      flex: 1; font-size: 0.65rem;
+      padding: 0.4rem;
+      border-radius: 6px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-align: center;
+    }
+    .role .icon { font-size: 0.9rem; display: block; margin-bottom: 0.15rem; opacity: 0.4; }
+
+    /* ── watermark for logbook ── */
+    .watermark {
+      position: fixed; bottom: 0.5rem; right: 0.75rem;
+      font-size: 0.6rem; color: rgba(127,143,159,.5);
+      pointer-events: none;
+    }
+
+    @media (max-width: 1100px) {
+      .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; height: auto; }
+      .panel { border-right: none; border-bottom: 1px solid var(--border); }
+      .status-bar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">CCOC</div>
+      <div>
+        <h1>Climate &amp; Crisis Ops Command</h1>
+        <p>Future Caribbean 2026 · NEMT + Hospital Liaison Coordination</p>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <span class="pill aqua">Climate Risk &amp; Disaster</span>
+      <span class="pill gold">Week 1 · Day 2</span>
+      <span class="pill ok">Demo Mode</span>
+    </div>
+  </header>
+
+  <div class="alert-strip">
+    <span class="alert-level">LEVEL 2 · PREPARE</span>
+    <p class="alert-text">
+      <strong>Tropical Storm Warning — New Providence (DEMO)</strong>
+      · Sustained winds 45–55 kt · Storm surge 2–4 ft north shore · 2 institutional signals active
+    </p>
+    <span class="alert-meta">Issued 03 Aug 2026 · 18:00 UTC</span>
+  </div>
+
+  <div class="workspace">
+
+    <!-- LEFT: Agent timeline (Day 2 logging) -->
+    <aside class="panel">
+      <div class="panel-head">
+        <h2>Agent Timeline</h2>
+        <span>Monitor · OpenClaw loop</span>
+      </div>
+      <div class="panel-body">
+        <ul class="timeline">
+          <li class="start">
+            <div class="tl-time">18:04:12</div>
+            <div class="tl-event">agent_start</div>
+            <div class="tl-detail">Monitor spike started</div>
+          </li>
+          <li class="tool">
+            <div class="tl-time">18:04:12</div>
+            <div class="tl-event">tool_call → get_signal_status</div>
+            <div class="tl-detail">level: <em>2</em> · label: Prepare · signals: 2</div>
+          </li>
+          <li class="tool">
+            <div class="tl-time">18:04:13</div>
+            <div class="tl-event">tool_call → query_sop</div>
+            <div class="tl-detail">query: <em>"Level 2"</em> · 4 SOP lines matched</div>
+          </li>
+          <li class="tool">
+            <div class="tl-time">18:04:13</div>
+            <div class="tl-event">tool_call → summarize_dispatch</div>
+            <div class="tl-detail">4 trips · <em>2 P1</em> · CORR-01, CORR-02</div>
+          </li>
+          <li class="done">
+            <div class="tl-time">18:04:13</div>
+            <div class="tl-event">agent_complete</div>
+            <div class="tl-detail">Monitor brief ready · mode: demo</div>
+          </li>
+        </ul>
+        <p class="section-label" style="margin-top:1rem">API endpoints (Day 2)</p>
+        <div class="tl-detail" style="margin-top:0.25rem">POST /api/agents/monitor/spike</div>
+        <div class="tl-detail" style="margin-top:0.25rem">GET /api/agents/logs</div>
+      </div>
+    </aside>
+
+    <!-- CENTER: Thin map layer (Day 1 geo data) -->
+    <section class="panel" style="border-right:1px solid var(--border)">
+      <div class="panel-head">
+        <h2>Command Map</h2>
+        <span>Thin GIS · static layers</span>
+      </div>
+      <div class="map-wrap">
+        <span class="map-badge">Placeholder map · Week 2 sync to triage</span>
+        <svg class="map-svg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
+          <!-- Nassau metro stylized coastline -->
+          <path d="M 80 320 Q 180 280 280 300 T 480 260 T 720 290 L 720 420 L 80 420 Z"
+                fill="rgba(0,171,201,.06)" stroke="rgba(0,171,201,.2)" stroke-width="1.5"/>
+          <text x="400" y="400" text-anchor="middle" fill="#4a5a6a" font-size="11" font-family="system-ui">New Providence · DEMO</text>
+
+          <!-- CORR-02 Eastern Road -->
+          <line x1="320" y1="280" x2="480" y2="240" stroke="#ffb347" stroke-width="4" stroke-dasharray="8 4" opacity="0.85"/>
+          <rect x="370" y="248" width="72" height="18" rx="4" fill="#121a22" stroke="#ffb347" stroke-width="1"/>
+          <text x="406" y="260" text-anchor="middle" fill="#ffb347" font-size="9" font-family="system-ui" font-weight="600">CORR-02</text>
+
+          <!-- CORR-01 Paradise Island Bridge -->
+          <line x1="520" y1="200" x2="620" y2="170" stroke="#5fd4a4" stroke-width="4" opacity="0.85"/>
+          <rect x="545" y="172" width="72" height="18" rx="4" fill="#121a22" stroke="#5fd4a4" stroke-width="1"/>
+          <text x="581" y="184" text-anchor="middle" fill="#5fd4a4" font-size="9" font-family="system-ui" font-weight="600">CORR-01</text>
+
+          <!-- Affected zone -->
+          <ellipse cx="400" cy="270" rx="140" ry="70" fill="rgba(255,179,71,.08)" stroke="rgba(255,179,71,.3)" stroke-width="1.5" stroke-dasharray="6 3"/>
+          <text x="400" y="275" text-anchor="middle" fill="#ffb347" font-size="10" font-family="system-ui" opacity="0.8">Affected zone · Level 2</text>
+
+          <!-- FAC-02 NEMT Depot -->
+          <circle cx="180" cy="340" r="10" fill="#00abc9" stroke="#fff" stroke-width="1.5"/>
+          <text x="180" y="365" text-anchor="middle" fill="#00abc9" font-size="9" font-family="system-ui">Nassau Metro Depot</text>
+
+          <!-- FAC-01 Hospital -->
+          <circle cx="420" cy="310" r="12" fill="#ff6b6b" stroke="#fff" stroke-width="1.5"/>
+          <text x="420" y="338" text-anchor="middle" fill="#ff6b6b" font-size="9" font-family="system-ui" font-weight="600">Princess Margaret Hospital</text>
+
+          <!-- P1 trip pins -->
+          <circle cx="300" cy="295" r="6" fill="#ffc72c" stroke="#000" stroke-width="1"/>
+          <circle cx="350" cy="270" r="6" fill="#ffc72c" stroke="#000" stroke-width="1"/>
+          <text x="325" y="250" text-anchor="middle" fill="#ffc72c" font-size="8" font-family="system-ui">P1 trips (2)</text>
+        </svg>
+        <div class="map-legend">
+          <div><span class="dot" style="background:#ff6b6b"></span> Hospital partner</div>
+          <div><span class="dot" style="background:#00abc9"></span> NEMT operator</div>
+          <div><span class="dot" style="background:#ffc72c"></span> P1 trip at risk</div>
+          <div><span class="dot" style="background:#ffb347"></span> Restricted corridor (L2)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Monitor brief (Day 2 spike output) -->
+    <aside class="panel">
+      <div class="panel-head">
+        <h2>Monitor Brief</h2>
+        <span>demo mode · no LLM credits</span>
+      </div>
+      <div class="panel-body">
+        <div class="severity-row">
+          <div class="severity-badge">L2</div>
+          <div>
+            <div style="font-weight:700;font-size:0.88rem">Prepare</div>
+            <div class="severity-sub">Tropical Storm Alma · New Providence</div>
+          </div>
+        </div>
+        <div class="brief-summary">
+          Demo escalation at Prepare. 2 institutional signal(s). 2 P1 trips of 4 require review.
+          Corridors: CORR-01, CORR-02.
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b>2</b><span>P1 Trips</span></div>
+          <div class="stat"><b>4</b><span>Total Trips</span></div>
+        </div>
+        <p class="section-label">Recommended actions</p>
+        <ul class="actions">
+          <li>Review P1 dialysis/oncology trips against CORR-01 and CORR-02 status</li>
+          <li>Stage hospital COMMS-03 bulletin for liaison HITL approval</li>
+          <li>Hold P3/P4 trips per Level 2 Prepare SOP</li>
+        </ul>
+        <p class="section-label">SOP citations</p>
+        <ul class="citations">
+          <li>Level 2 Prepare: Export 24h manifest; tag dialysis/oncology as PRIORITY.</li>
+          <li>Level 2 Prepare: Restrict CORR-02 Eastern Road low segment.</li>
+          <li>Level 2 Prepare: Notify hospital liaison; stage COMMS-03 bulletin.</li>
+          <li>Level 2 Prepare: Hold P3/P4 non-critical trips unless approved.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- BOTTOM: Day 1 module scaffold + Week 2 HITL placeholder -->
+    <footer class="status-bar">
+      <div>
+        <p class="section-label" style="margin-top:0;margin-bottom:0.45rem">Module status (Day 1 scaffold)</p>
+        <div class="modules">
+          <span class="mod ready"><span class="name">server</span><span class="val">health OK</span></span>
+          <span class="mod ready"><span class="name">agents</span><span class="val">monitor_spike</span></span>
+          <span class="mod ready"><span class="name">audit</span><span class="val">event logging</span></span>
+          <span class="mod stub"><span class="name">signals</span><span class="val">Day 3+</span></span>
+          <span class="mod pending"><span class="name">orchestrator</span><span class="val">Week 2</span></span>
+          <span class="mod pending"><span class="name">hitl</span><span class="val">Week 2</span></span>
+          <span class="mod pending"><span class="name">geo</span><span class="val">Week 2 sync</span></span>
+          <span class="mod stub"><span class="name">ui</span><span class="val">shell → mockup</span></span>
+        </div>
+      </div>
+      <div class="hitl-placeholder">
+        <h3>Dual HITL approval gate · Week 2 (Day 10)</h3>
+        <div class="hitl-roles">
+          <div class="role"><span class="icon">🚌</span>NEMT Supervisor<br><span style="opacity:.6">pending review</span></div>
+          <div class="role"><span class="icon">🏥</span>Hospital Liaison<br><span style="opacity:.6">pending review</span></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <div class="watermark">Sprint UI mockup · Days 1–2 · Climate &amp; Crisis Ops Command · knightroadveritas.app</div>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+CORR-FLOOD-DEMO - Nassau Metro Corridor Flood Protocol
+
+Corridor Registry:
+- CORR-01 Paradise Island Bridge approach - high flood exposure
+- CORR-02 Eastern Road low segment - medium flood exposure, prior washouts
+
+Level 2 Restrictions:
+- CORR-02 Eastern Road low segment - RESTRICTED; avoid during surge window
+- CORR-01 remains OPEN but monitor hourly; pre-stage alternate routing
+- P1 trips crossing CORR-02 require supervisor acknowledgment
+
+Level 3 Closures:
+- CORR-01 Paradise Island Bridge approach - CLOSED to NEMT dispatch
+- CORR-02 Eastern Road low segment - CLOSED
+- Reroute via Bay Street corridor only with hospital liaison approval
+
+Verification:
+- Check corridor status before each P1 dispatch release
+- Log corridor decision in audit trail with SOP citation
