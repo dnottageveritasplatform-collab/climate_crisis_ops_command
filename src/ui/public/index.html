@@ -159,11 +159,7 @@
 
     .map-wrap {
       position: relative;
-      background:
-        radial-gradient(ellipse at 60% 40%, rgba(0,171,201,.06) 0%, transparent 60%),
-        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,42,54,.5) 39px, rgba(30,42,54,.5) 40px),
-        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,42,54,.5) 39px, rgba(30,42,54,.5) 40px),
-        var(--panel-2);
+      background: #061018;
       flex: 1;
       margin: 0.85rem;
       border-radius: 10px;
@@ -393,7 +389,7 @@
       background: var(--panel);
       padding: 0.65rem 1.5rem;
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr minmax(520px, 580px);
       gap: 1.5rem;
       align-items: start;
     }
@@ -422,7 +418,8 @@
       letter-spacing: 0.07em; color: var(--gold);
       margin-bottom: 0.5rem;
     }
-    .hitl-roles { display: flex; gap: 0.5rem; }
+    .hitl-roles { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .hitl-roles .role { min-width: 0; flex: 1 1 150px; }
     .role {
       flex: 1; font-size: 0.65rem;
       padding: 0.55rem;
@@ -579,11 +576,13 @@
         <span class="map-badge" id="mapBadge">Loading map layers…</span>
         <svg class="map-svg" id="mapSvg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" aria-label="Nassau metro command map"></svg>
         <div class="map-legend">
-          <div><span class="dot" style="background:#ff6b6b"></span> Hospital partner</div>
+          <div><span class="dot" style="background:#ff6b6b"></span> Hospital (public)</div>
+          <div><span class="dot" style="background:#c084fc"></span> Hospital (private)</div>
           <div><span class="dot" style="background:#00abc9"></span> NEMT operator</div>
           <div><span class="dot" style="background:#ffc72c"></span> At-risk trip</div>
           <div><span class="dot" style="background:#ffb347"></span> Restricted corridor</div>
           <div><span class="dot" style="background:#ff6b6b"></span> Closed corridor</div>
+          <div style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px solid var(--border);font-size:0.58rem;opacity:0.65">Streets © OpenStreetMap</div>
         </div>
       </div>
     </section>
@@ -623,7 +622,7 @@
         <div class="modules" id="modules"></div>
       </div>
       <div class="hitl-panel">
-        <h3>Dual HITL Approval Gate</h3>
+        <h3>Triple HITL Approval Gate</h3>
         <div class="hitl-roles">
           <div class="role" id="roleNemt">
             <div class="role-head"><span class="icon">🚌</span><strong>NEMT Supervisor</strong></div>
@@ -633,16 +632,24 @@
               <button type="button" class="approve-btn" id="btnNemtApprove" disabled>Approve</button>
             </div>
           </div>
-          <div class="role" id="roleHospital">
-            <div class="role-head"><span class="icon">🏥</span><strong>Hospital Liaison</strong></div>
-            <span class="role-status idle" id="hitlHospital">Awaiting action pack</span>
+          <div class="role" id="rolePmh">
+            <div class="role-head"><span class="icon">🏥</span><strong>PMH Liaison</strong></div>
+            <span class="role-status idle" id="hitlPmh">Awaiting action pack</span>
             <div class="role-actions">
-              <button type="button" id="btnHospitalReview" disabled>Review</button>
-              <button type="button" class="approve-btn" id="btnHospitalApprove" disabled>Approve</button>
+              <button type="button" id="btnPmhReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnPmhApprove" disabled>Approve</button>
+            </div>
+          </div>
+          <div class="role" id="roleDoctors">
+            <div class="role-head"><span class="icon">🏨</span><strong>Doctor's Liaison</strong></div>
+            <span class="role-status idle" id="hitlDoctors">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnDoctorsReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnDoctorsApprove" disabled>Approve</button>
             </div>
           </div>
         </div>
-        <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Dual approval complete — demo send blocked</div>
+        <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Triple approval complete — demo send blocked</div>
       </div>
     </footer>
     <div class="audit-strip" id="auditStrip">
@@ -689,7 +696,20 @@
 
     const HITL_ROLES = {
       nemt: "nemt_supervisor",
-      hospital: "hospital_liaison",
+      pmh: "hospital_liaison_pmh",
+      doctors: "hospital_liaison_doctors",
+    };
+
+    const HITL_ROLE_UI = [
+      { key: "nemt", role: HITL_ROLES.nemt, statusId: "hitlNemt", reviewBtn: "btnNemtReview", approveBtn: "btnNemtApprove" },
+      { key: "pmh", role: HITL_ROLES.pmh, statusId: "hitlPmh", reviewBtn: "btnPmhReview", approveBtn: "btnPmhApprove" },
+      { key: "doctors", role: HITL_ROLES.doctors, statusId: "hitlDoctors", reviewBtn: "btnDoctorsReview", approveBtn: "btnDoctorsApprove" },
+    ];
+
+    const HITL_APPROVER_NAMES = {
+      [HITL_ROLES.nemt]: "NEMT Supervisor (demo)",
+      [HITL_ROLES.pmh]: "PMH Liaison (demo)",
+      [HITL_ROLES.doctors]: "Doctor's Liaison (demo)",
     };
 
     function roleStatusText(roleState, released) {
@@ -709,46 +729,42 @@
 
     function renderHitl(status) {
       hitlState = status;
-      const nemtEl = document.getElementById("hitlNemt");
-      const hospitalEl = document.getElementById("hitlHospital");
       const banner = document.getElementById("hitlReleasedBanner");
 
       if (!status?.active) {
-        nemtEl.textContent = "Awaiting action pack";
-        hospitalEl.textContent = "Awaiting action pack";
-        nemtEl.className = "role-status idle";
-        hospitalEl.className = "role-status idle";
+        for (const cfg of HITL_ROLE_UI) {
+          const el = document.getElementById(cfg.statusId);
+          el.textContent = "Awaiting action pack";
+          el.className = "role-status idle";
+          setRoleButtons(
+            document.getElementById(cfg.reviewBtn),
+            document.getElementById(cfg.approveBtn),
+            { status: "idle" },
+            true
+          );
+        }
         banner.hidden = true;
-        setRoleButtons(
-          document.getElementById("btnNemtReview"),
-          document.getElementById("btnNemtApprove"),
-          { status: "idle" },
-          true
-        );
-        setRoleButtons(
-          document.getElementById("btnHospitalReview"),
-          document.getElementById("btnHospitalApprove"),
-          { status: "idle" },
-          true
-        );
         return;
       }
 
-      const nemt = status.roles[HITL_ROLES.nemt];
-      const hospital = status.roles[HITL_ROLES.hospital];
       const released = status.released;
 
-      nemtEl.textContent = roleStatusText(nemt, released);
-      hospitalEl.textContent = roleStatusText(hospital, released);
-      nemtEl.className = `role-status ${released || nemt.status === "approved" ? "approved" : nemt.status === "in_review" ? "review" : ""}`;
-      hospitalEl.className = `role-status ${released || hospital.status === "approved" ? "approved" : hospital.status === "in_review" ? "review" : ""}`;
-
-      setRoleButtons(document.getElementById("btnNemtReview"), document.getElementById("btnNemtApprove"), nemt, released);
-      setRoleButtons(document.getElementById("btnHospitalReview"), document.getElementById("btnHospitalApprove"), hospital, released);
+      for (const cfg of HITL_ROLE_UI) {
+        const roleState = status.roles[cfg.role] || { status: "awaiting" };
+        const el = document.getElementById(cfg.statusId);
+        el.textContent = roleStatusText(roleState, released);
+        el.className = `role-status ${released || roleState.status === "approved" ? "approved" : roleState.status === "in_review" ? "review" : ""}`;
+        setRoleButtons(
+          document.getElementById(cfg.reviewBtn),
+          document.getElementById(cfg.approveBtn),
+          roleState,
+          released
+        );
+      }
 
       banner.hidden = !released;
       if (released) {
-        banner.textContent = "✓ Dual approval complete — action pack cleared for release (demo: send blocked)";
+        banner.textContent = "✓ Triple approval complete — action pack cleared for release (demo: send blocked)";
       }
     }
 
@@ -782,7 +798,8 @@
 
       hitlModalRole = role;
       document.getElementById("hitlModalRole").textContent = `${content.roleLabel} · COMMS-03 review`;
-      document.getElementById("hitlModalTitle").textContent = content.hospitalBulletin?.subject || "Hospital bulletin draft";
+      document.getElementById("hitlModalTitle").textContent =
+        content.hospitalBulletin?.subject || content.hospitalBulletin?.facilityName || "Hospital bulletin draft";
       document.getElementById("hitlModalSummary").textContent = content.summary || "";
       document.getElementById("hitlBulletinSubject").value = content.hospitalBulletin?.subject || "";
       document.getElementById("hitlBulletinBody").value = content.hospitalBulletin?.body || "";
@@ -800,9 +817,9 @@
         body.bulletinSubject = document.getElementById("hitlBulletinSubject").value;
         body.bulletinBody = document.getElementById("hitlBulletinBody").value;
         body.notes = document.getElementById("hitlNotes").value || undefined;
-        body.approver = role === HITL_ROLES.nemt ? "NEMT Supervisor (demo)" : "Hospital Liaison (demo)";
+        body.approver = HITL_APPROVER_NAMES[role] || "Approver (demo)";
       } else {
-        body.approver = role === HITL_ROLES.nemt ? "NEMT Supervisor (demo)" : "Hospital Liaison (demo)";
+        body.approver = HITL_APPROVER_NAMES[role] || "Approver (demo)";
       }
 
       const res = await fetch("/api/hitl/approve", {
@@ -819,8 +836,8 @@
       renderHitl(data.status);
       if (data.audit) renderAudit(data.audit);
       if (data.releaseAudit) renderAudit(data.releaseAudit);
-      if (data.dualComplete) {
-        document.getElementById("briefMode").textContent = "dual HITL approved · demo";
+      if (data.tripleComplete || data.dualComplete) {
+        document.getElementById("briefMode").textContent = "triple HITL approved · demo";
       }
       closeHitlModal();
     }
@@ -851,13 +868,47 @@
         : "Thin GIS · level-based layers";
 
       const z = layers.zone;
-      const coast = `M 80 320 Q 180 280 280 300 T 480 260 T 720 290 L 720 420 L 80 420 Z`;
+
+      const islandHtml = (layers.island || [])
+        .map(
+          (isle) => `
+        <path d="${isle.path}" fill="url(#landGrad)" stroke="rgba(120,160,130,.35)" stroke-width="1" stroke-linejoin="round"/>
+      `
+        )
+        .join("");
+
+      const streetsHtml = (layers.streets || [])
+        .map(
+          (s) =>
+            `<path d="${s.path}" fill="none" stroke="${s.color}" stroke-width="${s.width}" stroke-opacity="${s.opacity}" stroke-linecap="round" stroke-linejoin="round"/>`
+        )
+        .join("");
+
+      const streetLabelsHtml = (layers.streets || [])
+        .filter((s) => s.label)
+        .map(
+          (s) =>
+            `<text x="${s.label.x}" y="${s.label.y}" text-anchor="middle" fill="rgba(200,220,210,.72)" font-size="8" font-family="system-ui" font-weight="500">${s.label.text}</text>`
+        )
+        .join("");
 
       let html = `
-        <path d="${coast}" fill="rgba(0,171,201,.06)" stroke="rgba(0,171,201,.2)" stroke-width="1.5"/>
-        <text x="400" y="400" text-anchor="middle" fill="#4a5a6a" font-size="11" font-family="system-ui">${layers.serviceArea}</text>
-        <ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="rgba(255,179,71,.08)" stroke="rgba(255,179,71,.3)" stroke-width="1.5" stroke-dasharray="6 3"/>
-        <text x="${z.cx}" y="${z.cy + 5}" text-anchor="middle" fill="#ffb347" font-size="10" font-family="system-ui" opacity="0.8">Affected zone · Level ${layers.level}</text>
+        <defs>
+          <linearGradient id="landGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#243530"/>
+            <stop offset="100%" stop-color="#182420"/>
+          </linearGradient>
+          <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#061018"/>
+            <stop offset="100%" stop-color="#0c1a28"/>
+          </linearGradient>
+        </defs>
+        <rect width="800" height="480" fill="url(#oceanGrad)"/>
+        ${islandHtml}
+        ${streetsHtml}
+        ${streetLabelsHtml}
+        <ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="rgba(255,179,71,.06)" stroke="rgba(255,179,71,.35)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <text x="${z.cx}" y="${z.cy + 5}" text-anchor="middle" fill="#ffb347" font-size="10" font-family="system-ui" opacity="0.85">Affected zone · Level ${layers.level}</text>
       `;
 
       for (const c of layers.corridors) {
@@ -890,7 +941,7 @@
         html += `
           <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${f.color}" stroke="#fff" stroke-width="1.5"/>
           ${f.rank ? `<text x="${s.x}" y="${s.y - 14}" text-anchor="middle" fill="#ffc72c" font-size="9" font-weight="700" font-family="system-ui">#${f.rank}</text>` : ""}
-          <text x="${s.x}" y="${s.y + s.r + 18}" text-anchor="middle" fill="${f.color}" font-size="9" font-family="system-ui"${f.role === "hospital_partner" ? ' font-weight="600"' : ""}>${f.name.split(" ").slice(0, 2).join(" ")}</text>
+          <text x="${s.x}" y="${s.y + s.r + 18}" text-anchor="middle" fill="${f.color}" font-size="9" font-family="system-ui"${f.role === "hospital_partner" || f.role === "hospital_partner_private" ? ' font-weight="600"' : ""}>${f.name.split(" ").slice(0, 2).join(" ")}</text>
         `;
       }
 
@@ -944,7 +995,7 @@
       el.innerHTML = "";
       for (const [name, status] of Object.entries(modules)) {
         const mod = document.createElement("span");
-        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging") || status.includes("dual_role")
+        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging") || status.includes("role_ready")
           ? "ready"
           : status.includes("shell") || status.includes("ingest") || status.includes("spike")
             ? "stub"
@@ -1072,6 +1123,13 @@
       switchOpsTab("monitor");
     }
 
+    function isHitlPartner(f) {
+      if (f.hitlRequired === true) return true;
+      if (f.hitlRequired === false) return false;
+      if (f.role === "hospital_partner" || f.role === "hospital_partner_private") return true;
+      return f.id === "FAC-01" || f.id === "FAC-04";
+    }
+
     function renderTriage(result) {
       const panel = document.getElementById("triagePanel");
       const r = result?.ranking;
@@ -1092,13 +1150,20 @@
         </div>
       `).join("");
 
-      const facilitiesHtml = r.rankedFacilities.slice(0, 3).map((f) => `
+      const facilityItem = (f, tag) => `
         <div class="rank-item">
           <span class="rank-num">#${f.rank}</span>
           <strong>${f.name}</strong>
+          ${tag ? `<span class="score" style="color:var(--warn)">${tag}</span>` : ""}
           <span class="score">${f.p1Count} P1 · ${f.impactedTrips} trips</span>
         </div>
-      `).join("");
+      `;
+
+      const hitlFacilities = r.rankedFacilities.filter(isHitlPartner);
+      const otherFacilities = r.rankedFacilities.filter((f) => !isHitlPartner(f));
+
+      const hitlFacilitiesHtml = hitlFacilities.map((f) => facilityItem(f, "HITL")).join("");
+      const otherFacilitiesHtml = otherFacilities.slice(0, 3).map((f) => facilityItem(f, "")).join("");
 
       const conflictsHtml = r.corridorConflicts.map((c) => `
         <div class="conflict-item ${c.severity === "critical" ? "critical" : ""}">
@@ -1111,8 +1176,9 @@
         <div class="brief-summary" style="margin-bottom:0.65rem">${r.summary}</div>
         <p class="section-label" style="margin-top:0">Ranked trips (${atRiskTrips.length || r.rankedTrips.length} at-risk)</p>
         ${tripsHtml || "<p class='brief-empty'>No trips ranked</p>"}
-        <p class="section-label">Facility impact</p>
-        ${facilitiesHtml}
+        <p class="section-label">Hospital partners (COMMS-03 / HITL)</p>
+        ${hitlFacilitiesHtml || "<p class='brief-empty'>No hospital partners in manifest</p>"}
+        ${otherFacilities.length ? `<p class="section-label">Other destinations (no HITL)</p>${otherFacilitiesHtml}` : ""}
         <p class="section-label">Corridor conflicts</p>
         ${conflictsHtml || "<p class='brief-empty'>No conflicts</p>"}
       `;
@@ -1149,13 +1215,22 @@
         </div>
       `).join("");
 
+      const bulletins = p.hospitalBulletins?.length ? p.hospitalBulletins : [p.hospitalBulletin].filter(Boolean);
+      const bulletinsHtml = bulletins.map((b) => `
+        <div class="draft-block" style="margin-bottom:0.5rem">
+          <strong style="color:var(--gold);font-size:0.68rem">${b.facilityName || "Hospital partner"}</strong>
+          ${b.partnerType ? `<span style="color:var(--muted);font-size:0.6rem;margin-left:0.35rem">(${b.partnerType})</span>` : ""}
+          <div style="margin-top:0.35rem">${b.subject}\n\n${b.body}</div>
+        </div>
+      `).join("");
+
       panel.innerHTML = `
-        <div class="hitl-banner">⚠ DRAFT ONLY — Dual HITL required before send (NEMT supervisor + hospital liaison)</div>
+        <div class="hitl-banner">⚠ DRAFT ONLY — Triple HITL required before send (NEMT + PMH liaison + Doctor's liaison)</div>
         <div class="brief-summary" style="margin-bottom:0.65rem">${p.summary}</div>
         <p class="section-label" style="margin-top:0">Operational checklist (${p.checklist.length})</p>
         ${checklistHtml}
-        <p class="section-label">COMMS-03 hospital bulletin</p>
-        <div class="draft-block">${p.hospitalBulletin.subject}\n\n${p.hospitalBulletin.body}</div>
+        <p class="section-label">COMMS-03 hospital bulletins (${bulletins.length})</p>
+        ${bulletinsHtml}
         <p class="section-label">Driver SMS drafts (${p.driverComms.length})</p>
         ${smsHtml || "<p class='brief-empty'>No driver comms</p>"}
       `;
@@ -1288,10 +1363,10 @@
     document.getElementById("runWeek1Demo").addEventListener("click", runWeek1Demo);
     document.getElementById("refreshSignals").addEventListener("click", () => loadSignals(true));
 
-    document.getElementById("btnNemtReview").addEventListener("click", () => openHitlReview(HITL_ROLES.nemt));
-    document.getElementById("btnHospitalReview").addEventListener("click", () => openHitlReview(HITL_ROLES.hospital));
-    document.getElementById("btnNemtApprove").addEventListener("click", () => submitHitlApproval(HITL_ROLES.nemt));
-    document.getElementById("btnHospitalApprove").addEventListener("click", () => submitHitlApproval(HITL_ROLES.hospital));
+    for (const cfg of HITL_ROLE_UI) {
+      document.getElementById(cfg.reviewBtn).addEventListener("click", () => openHitlReview(cfg.role));
+      document.getElementById(cfg.approveBtn).addEventListener("click", () => submitHitlApproval(cfg.role));
+    }
     document.getElementById("hitlModalClose").addEventListener("click", closeHitlModal);
     document.getElementById("hitlModalApprove").addEventListener("click", () => {
       if (hitlModalRole) submitHitlApproval(hitlModalRole, true);

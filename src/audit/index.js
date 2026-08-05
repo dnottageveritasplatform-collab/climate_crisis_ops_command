@@ -74,7 +74,7 @@ export function recordTriageRank({ signal, ranking, threshold, mode }) {
 export function recordActionPack({ signal, pack, threshold, mode }) {
   return appendAuditEntry({
     type: "action_pack",
-    summary: `Action pack: ${pack.checklist.length} checklist · COMMS-03 draft · ${pack.driverComms.length} driver SMS`,
+    summary: `Action pack: ${pack.checklist.length} checklist · ${pack.hospitalBulletins?.length ?? 1} COMMS-03 · ${pack.driverComms.length} driver SMS`,
     signal: {
       level: signal?.level ?? threshold,
       label: signal?.label,
@@ -84,6 +84,7 @@ export function recordActionPack({ signal, pack, threshold, mode }) {
       checklistItems: pack.checklist.length,
       driverComms: pack.driverComms.length,
       bulletinSubject: pack.hospitalBulletin.subject,
+      hospitalPartners: pack.hospitalPartners?.map((p) => p.name) ?? [],
       hitlRequired: pack.hitlRequired,
     },
     agents: ["action"],

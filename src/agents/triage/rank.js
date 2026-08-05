@@ -1,5 +1,5 @@
 import { corridorStatusForLevel, loadDispatch } from "../../dispatch/index.js";
-import { buildMapLayersFromTriage, loadGeoLayers, setLastTriageRanking } from "../../geo/index.js";
+import { buildMapLayersFromTriage, loadGeoLayers, isHospitalPartner, setLastTriageRanking } from "../../geo/index.js";
 import { recordTriageRank } from "../../audit/index.js";
 import { logAgentEvent } from "../runtime/logger.js";
 import { runTool } from "../runtime/tools.js";
@@ -60,6 +60,9 @@ function buildTriageRanking(level, signal, dispatch) {
   const facilityNames = Object.fromEntries(
     facilities.features.map((f) => [f.properties.id, f.properties.name])
   );
+  const facilityRoles = Object.fromEntries(
+    facilities.features.map((f) => [f.properties.id, f.properties.role])
+  );
 
   const rankedTrips = trips
     .map((trip) => scoreTrip(trip, level, corridorStatus))
@@ -87,11 +90,16 @@ function buildTriageRanking(level, signal, dispatch) {
   }
 
   const rankedFacilities = Object.values(facilityImpact)
-    .map((f) => ({
-      ...f,
-      corridors: [...f.corridors],
-      impactScore: f.p1Count * 30 + f.p2Count * 15 + f.impactedTrips * 5,
-    }))
+    .map((f) => {
+      const role = facilityRoles[f.id] || "destination";
+      return {
+        ...f,
+        role,
+        hitlRequired: isHospitalPartner(role),
+        corridors: [...f.corridors],
+        impactScore: f.p1Count * 30 + f.p2Count * 15 + f.impactedTrips * 5,
+      };
+    })
     .sort((a, b) => b.impactScore - a.impactScore)
     .map((f, i) => ({ rank: i + 1, ...f }));
 

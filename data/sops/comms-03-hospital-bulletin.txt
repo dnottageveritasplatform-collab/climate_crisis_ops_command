@@ -3,6 +3,7 @@ COMMS-03-DEMO - Hospital Partner Transport Bulletin Template
 COMMS-03 Overview:
 - Standard bulletin for hospital transport liaisons during storm escalation.
 - Dual HITL required: NEMT supervisor AND hospital liaison before send.
+- With multiple hospital partners (e.g. Princess Margaret + Doctor's Hospital): triple HITL — NEMT supervisor + PMH liaison + Doctor's liaison.
 - Never auto-send; draft only until both approvers sign off.
 
 COMMS-03 Level 2 Prepare:
@@ -18,6 +19,7 @@ COMMS-03 Level 3 Restrict:
 - Reference NEMT-CRISIS-001 dual approval workflow.
 
 COMMS-03 Distribution:
-- Primary: hospital transport liaison (Princess Margaret Hospital)
+- Primary: hospital transport liaison (Princess Margaret Hospital — public partner)
+- Primary: hospital transport liaison (Doctor's Hospital — private partner)
 - CC: NEMT dispatch supervisor, on-call clinical coordinator
 - Channel: secure email or operator portal; no public SMS at Level 3

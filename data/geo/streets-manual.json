@@ -1,0 +1,45 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Shirley Street", "highway": "secondary", "label": true },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.334, 25.067], [-77.330, 25.068], [-77.326, 25.069], [-77.322, 25.070], [-77.318, 25.071]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Eastern Road", "highway": "primary", "label": true },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.290, 25.048], [-77.280, 25.052], [-77.270, 25.055], [-77.260, 25.058], [-77.252, 25.060]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Bay Street", "highway": "primary", "label": true },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.355, 25.078], [-77.345, 25.079], [-77.335, 25.080], [-77.325, 25.081], [-77.315, 25.082]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "East Bay Street", "highway": "secondary", "label": true },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.315, 25.082], [-77.305, 25.081], [-77.295, 25.079], [-77.285, 25.077]
+        ]
+      }
+    }
+  ]
+}

@@ -21,6 +21,8 @@ npm start
 
 Open http://127.0.0.1:8787 — health check at `/api/health`.
 
+**Windows (PowerShell):** `curl` is an alias for `Invoke-WebRequest` — use `curl.exe` for the examples below, or `Invoke-RestMethod -Method POST -Uri …`.
+
 ## Documentation
 
 - `SPRINT.docx` — 21-day plan, demo script, pitch outline, Logbook templates
@@ -60,10 +62,17 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ```bash
 npm start
-curl -X POST http://127.0.0.1:8787/api/agents/triage/rank
-curl http://127.0.0.1:8787/api/geo/layers/triage
+curl.exe -X POST http://127.0.0.1:8787/api/agents/triage/rank
+curl.exe http://127.0.0.1:8787/api/geo/layers/triage
 npm run triage:rank
 # Open http://127.0.0.1:8787 — Run Monitor → Triage; map shows #rank pins, CORR status, facility #rank, triage-sync badge
+```
+
+PowerShell alternative:
+
+```powershell
+Invoke-RestMethod -Method POST -Uri http://127.0.0.1:8787/api/agents/triage/rank
+Invoke-RestMethod http://127.0.0.1:8787/api/geo/layers/triage
 ```
 
 Map sync: Triage ranks trips/facilities/corridors → `buildMapLayersFromTriage` projects pins + zone + corridor conflicts → UI badge shows "triage sync".

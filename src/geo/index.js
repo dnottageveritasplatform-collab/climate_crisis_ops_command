@@ -29,10 +29,127 @@ function project(lon, lat) {
   return { x: Math.round(x), y: Math.round(y) };
 }
 
+function ringToSvgPath(ring) {
+  if (!ring?.length) return "";
+  return ring
+    .map(([lon, lat], i) => {
+      const p = project(lon, lat);
+      return `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`;
+    })
+    .join(" ")
+    .concat(" Z");
+}
+
+/** Simplified New Providence + Paradise Island landmass for map underlay. */
+export function buildIslandOverlay() {
+  const collection = readGeo("new-providence.json");
+  return collection.features.map((f) => {
+    const labelPt = project(
+      f.properties.id === "NP-PARADISE" ? -77.292 : -77.295,
+      f.properties.id === "NP-PARADISE" ? 25.092 : 25.055
+    );
+    return {
+      id: f.properties.id,
+      name: f.properties.name,
+      kind: f.properties.kind,
+      path: ringToSvgPath(f.geometry.coordinates[0]),
+      label: { x: labelPt.x, y: labelPt.y },
+    };
+  });
+}
+
+function lineToSvgPath(coords) {
+  return coords
+    .map(([lon, lat], i) => {
+      const p = project(lon, lat);
+      return `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`;
+    })
+    .join(" ");
+}
+
+function lineLengthPx(coords) {
+  let len = 0;
+  for (let i = 1; i < coords.length; i++) {
+    const a = project(coords[i - 1][0], coords[i - 1][1]);
+    const b = project(coords[i][0], coords[i][1]);
+    len += Math.hypot(b.x - a.x, b.y - a.y);
+  }
+  return len;
+}
+
+function lineMidpoint(coords) {
+  const mid = coords[Math.floor(coords.length / 2)];
+  return project(mid[0], mid[1]);
+}
+
+const STREET_STYLE = {
+  primary: { width: 3, opacity: 0.85, color: "#8fa89a", label: true },
+  trunk: { width: 3.2, opacity: 0.9, color: "#9fb5a8", label: true },
+  secondary: { width: 2, opacity: 0.72, color: "#6b8578", label: true },
+  tertiary: { width: 1.2, opacity: 0.5, color: "#4a6358", label: false },
+  motorway: { width: 3.5, opacity: 0.9, color: "#a8beb2", label: true },
+};
+
+/** Real street centerlines + names from OpenStreetMap (Nassau / New Providence bbox). */
+export function buildStreetOverlay() {
+  let features = [];
+  try {
+    features = readGeo("streets.json").features;
+  } catch {
+    features = [];
+  }
+  try {
+    features = features.concat(readGeo("streets-manual.json").features);
+  } catch {
+    /* optional manual corrections */
+  }
+
+  const seenLabels = new Set();
+  const IMPORTANT = /shirley|eastern|bay street|paradise|carmichael|collins|mackey|nassau/i;
+
+  return features.map((f) => {
+    const coords = f.geometry.coordinates;
+    const hw = f.properties.highway;
+    const style = STREET_STYLE[hw] || STREET_STYLE.tertiary;
+    const len = lineLengthPx(coords);
+    const mid = lineMidpoint(coords);
+    const name = f.properties.name;
+    const labelKey = `${name}-${Math.round(mid.x / 16)}-${Math.round(mid.y / 16)}`;
+    const forceLabel = f.properties.label === true && IMPORTANT.test(name);
+    const showLabel =
+      (style.label || forceLabel) &&
+      (forceLabel || len >= (hw === "primary" || hw === "trunk" ? 22 : hw === "secondary" ? 35 : 999)) &&
+      !seenLabels.has(labelKey);
+    if (showLabel) seenLabels.add(labelKey);
+
+    return {
+      name,
+      highway: hw,
+      manual: f.properties.manual === true,
+      path: lineToSvgPath(coords),
+      width: f.properties.manual ? style.width + 0.5 : style.width,
+      opacity: style.opacity,
+      color: f.properties.manual ? "#a8c4b4" : style.color,
+      label: showLabel ? { x: mid.x, y: mid.y - 2, text: name } : null,
+    };
+  });
+}
+
 function corridorColor(status) {
   if (status === "closed") return "#ff6b6b";
   if (status === "restricted") return "#ffb347";
   return "#5fd4a4";
+}
+
+/** Public or private hospital partner facility. */
+export function isHospitalPartner(role) {
+  return role === "hospital_partner" || role === "hospital_partner_private";
+}
+
+export function facilityDisplayColor(role) {
+  if (role === "hospital_partner") return "#ff6b6b";
+  if (role === "hospital_partner_private") return "#c084fc";
+  return "#00abc9";
 }
 
 let lastTriageRanking = null;
@@ -100,7 +217,7 @@ export function buildMapLayersFromTriage(ranking) {
     const role = f.properties.role;
     const impact = facilityById[f.properties.id];
     const rank = impact?.rank;
-    const baseR = role === "hospital_partner" ? 12 : 10;
+    const baseR = isHospitalPartner(role) ? 12 : 10;
     return {
       id: f.properties.id,
       name: f.properties.name,
@@ -108,7 +225,7 @@ export function buildMapLayersFromTriage(ranking) {
       rank,
       impactScore: impact?.impactScore ?? 0,
       p1Count: impact?.p1Count ?? 0,
-      color: role === "hospital_partner" ? "#ff6b6b" : "#00abc9",
+      color: facilityDisplayColor(role),
       svg: { x: pt.x, y: pt.y, r: rank === 1 ? baseR + 4 : rank ? baseR + 2 : baseR },
     };
   });
@@ -160,6 +277,8 @@ export function buildMapLayersFromTriage(ranking) {
     corridorStatus,
     triageSummary: ranking.summary,
     conflictCount: (ranking.corridorConflicts || []).filter((c) => c.severity !== "watch").length,
+    island: buildIslandOverlay(),
+    streets: buildStreetOverlay(),
   };
 }
 
@@ -197,8 +316,8 @@ export function buildMapLayers(level = 2) {
       id: f.properties.id,
       name: f.properties.name,
       role,
-      color: role === "hospital_partner" ? "#ff6b6b" : "#00abc9",
-      svg: { x: pt.x, y: pt.y, r: role === "hospital_partner" ? 12 : 10 },
+      color: facilityDisplayColor(role),
+      svg: { x: pt.x, y: pt.y, r: isHospitalPartner(role) ? 12 : 10 },
     };
   });
 
@@ -233,6 +352,8 @@ export function buildMapLayers(level = 2) {
     trips: projectedTrips,
     atRiskCount: atRiskIds.size,
     corridorStatus,
+    island: buildIslandOverlay(),
+    streets: buildStreetOverlay(),
   };
 }
 

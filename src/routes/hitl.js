@@ -27,8 +27,8 @@ router.get("/review", (req, res) => {
 
 router.post("/stage", (req, res) => {
   const { pack, auditId, level } = req.body || {};
-  if (!pack?.hospitalBulletin) {
-    return res.status(400).json({ ok: false, error: "pack with hospitalBulletin required" });
+  if (!pack?.hospitalBulletin && !pack?.hospitalBulletins?.length) {
+    return res.status(400).json({ ok: false, error: "pack with hospitalBulletin or hospitalBulletins required" });
   }
   res.json({ ok: true, status: stageHitlPack(pack, { auditId, level }) });
 });

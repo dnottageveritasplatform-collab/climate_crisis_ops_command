@@ -50,7 +50,7 @@ app.get("/api/status", (_req, res) => {
       signals: "ingest_ready",
       agents: "monitor + triage + action_ready",
       orchestrator: "pending",
-      hitl: "dual_role_ready",
+      hitl: "triple_role_ready",
       audit: "trail_ready",
       geo: "triage_sync_ready",
       dispatch: "sample_manifest",
