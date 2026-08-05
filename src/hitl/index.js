@@ -123,11 +123,14 @@ export function stageHitlPack(pack, { auditId, level } = {}) {
   appendAuditEntry({
     type: "hitl_staged",
     summary: `HITL staged: ${pack.hospitalBulletins?.length ?? 1} COMMS-03 bulletin(s) · triple approval required`,
+    steps: [{ id: "hitl_staged", label: "HITL gate opened", gateId: activeGate.id, ts: activeGate.stagedAt }],
+    citations: (pack.sopCitations || []).map((c) => ({ ref: c.ref || c.sopId, text: c.text?.slice(0, 80) })),
     hitl: {
       gateId: activeGate.id,
       level: activeGate.level,
       hospitalPartners: pack.hospitalPartners?.map((p) => p.name) ?? [],
       rolesRequired: REQUIRED_ROLES,
+      actionAuditId: auditId,
     },
     mode: "demo",
   });
@@ -230,10 +233,12 @@ export function approveHitl(role, { approver, notes, bulletinSubject, bulletinBo
   const audit = appendAuditEntry({
     type: "hitl_approval",
     summary: `${ROLE_LABELS[role]} approved COMMS-03${Object.keys(edits).length ? " (with edits)" : ""}`,
+    steps: [{ id: "hitl_approval", label: `${ROLE_LABELS[role]} approved`, role, ts: roleState.approvedAt }],
     hitl: {
       gateId: activeGate.id,
       role,
       approver: roleState.approver,
+      reviewedAt: roleState.reviewedAt,
       approvedAt: roleState.approvedAt,
       edits: Object.keys(edits).length ? edits : undefined,
       notes: notes || undefined,
@@ -256,12 +261,39 @@ export function approveHitl(role, { approver, notes, bulletinSubject, bulletinBo
     releaseAudit = appendAuditEntry({
       type: "hitl_released",
       summary: "Triple HITL complete — NEMT + PMH liaison + Doctor's liaison approved action pack",
+      steps: [
+        { id: "hitl_staged", label: "HITL staged", ts: activeGate.stagedAt },
+        ...REQUIRED_ROLES.map((r) => ({
+          id: "hitl_approval",
+          label: `${ROLE_LABELS[r]} approved`,
+          role: r,
+          ts: activeGate.roles[r].approvedAt,
+        })),
+        { id: "hitl_released", label: "Action pack released", ts: activeGate.releasedAt },
+      ],
+      citations: (activeGate.pack.sopCitations || []).map((c) => ({
+        ref: c.ref || c.sopId,
+        text: c.text?.slice(0, 80),
+      })),
+      approvers: REQUIRED_ROLES.map((r) => ({
+        role: r,
+        label: ROLE_LABELS[r],
+        name: activeGate.roles[r].approver,
+        reviewedAt: activeGate.roles[r].reviewedAt,
+        approvedAt: activeGate.roles[r].approvedAt,
+        notes: activeGate.roles[r].notes || undefined,
+      })),
       hitl: {
         gateId: activeGate.id,
         releasedAt: activeGate.releasedAt,
-        approvers: Object.fromEntries(
-          REQUIRED_ROLES.map((r) => [r, activeGate.roles[r].approver])
-        ),
+        actionAuditId: activeGate.auditId,
+        approvers: REQUIRED_ROLES.map((r) => ({
+          role: r,
+          label: ROLE_LABELS[r],
+          name: activeGate.roles[r].approver,
+          reviewedAt: activeGate.roles[r].reviewedAt,
+          approvedAt: activeGate.roles[r].approvedAt,
+        })),
       },
       mode: "demo",
     });

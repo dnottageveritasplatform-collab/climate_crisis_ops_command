@@ -56,7 +56,36 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ## Status
 
-**Week 2, Day 11 complete** — Thin map layer synced to Triage output: ranked trip pins, affected zone, corridor status (closed/restricted), and facility impact labels update when Triage runs. Demo mode — no LLM required.
+**Week 2, Day 13 complete** — Full audit trail: pipeline steps, SOP citations, triple approver names + timestamps. Scrollable audit panel in UI; `GET /api/audit/trail`.
+
+### Day 13 quick test
+
+```bash
+npm start
+curl.exe -X POST http://127.0.0.1:8787/api/orchestrator/run
+curl.exe http://127.0.0.1:8787/api/audit/trail
+# Approve all three HITL roles in UI — audit trail shows steps, citations, approver @ timestamps
+npm run audit:trail
+```
+
+Audit trail: each entry logs `steps[]`, `citations[]` (SOP refs), and on release `approvers[]` with `reviewedAt` / `approvedAt`.
+
+### Day 12 quick test
+
+```bash
+npm start
+curl.exe -X POST http://127.0.0.1:8787/api/orchestrator/run
+npm run pipeline:run
+# Open http://127.0.0.1:8787 — click "Run Pipeline" (gold); brief + triage map + action pack + HITL gate populate
+```
+
+PowerShell alternative:
+
+```powershell
+Invoke-RestMethod -Method POST -Uri http://127.0.0.1:8787/api/orchestrator/run
+```
+
+Pipeline flow: signals → Monitor brief → Triage rank (map sync) → Action pack → triple HITL staged → audit entry.
 
 ### Day 11 quick test
 

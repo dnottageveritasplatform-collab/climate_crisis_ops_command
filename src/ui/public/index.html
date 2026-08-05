@@ -74,6 +74,16 @@
       background: var(--panel-2); color: var(--text);
       border: 1px solid var(--border);
     }
+    button.toggle {
+      background: var(--panel-2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    button.toggle.active {
+      background: rgba(95,212,164,.12);
+      border-color: rgba(95,212,164,.4);
+      color: var(--ok);
+    }
 
     .alert-strip {
       display: flex; align-items: center; gap: 1rem;
@@ -104,6 +114,14 @@
       gap: 0;
       height: calc(100vh - 108px);
       min-height: 620px;
+    }
+    .workspace.audit-hidden {
+      grid-template-rows: 1fr auto;
+    }
+    .workspace > section.panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
     .panel {
       border-right: 1px solid var(--border);
@@ -165,10 +183,82 @@
       border-radius: 10px;
       border: 1px solid var(--border);
       overflow: hidden;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
     }
-    .map-svg { width: 100%; height: 100%; min-height: 380px; display: block; }
+    .workspace.audit-hidden .map-wrap {
+      min-height: 380px;
+    }
+    .map-scroll-host {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 0;
+    }
+    .map-scroll-host.map-scrollable {
+      overflow: auto;
+    }
+    .map-scroll-host::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    .map-scroll-host::-webkit-scrollbar-track {
+      background: #0a1218;
+    }
+    .map-scroll-host::-webkit-scrollbar-thumb {
+      background: #3a5568;
+      border-radius: 5px;
+      border: 2px solid #0a1218;
+    }
+    .map-scroll-host::-webkit-scrollbar-thumb:hover {
+      background: #4d7088;
+    }
+    .map-scroll-host {
+      scrollbar-color: #3a5568 #0a1218;
+      scrollbar-width: thin;
+    }
+    .map-scroll-surface {
+      width: 100%;
+      height: 100%;
+    }
+    .map-svg {
+      width: 100%;
+      height: 100%;
+      min-height: 280px;
+      display: block;
+      touch-action: none;
+    }
+    .workspace.audit-hidden .map-scroll-host,
+    .workspace.audit-hidden .map-svg {
+      min-height: 380px;
+    }
+    .map-wrap.map-hover {
+      cursor: zoom-in;
+    }
+    .map-zoom-hint {
+      position: absolute;
+      bottom: 0.75rem;
+      right: 0.75rem;
+      z-index: 2;
+      font-size: 0.58rem;
+      color: var(--muted);
+      background: rgba(7,11,15,.9);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 0.25rem 0.45rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .map-wrap.map-hover .map-zoom-hint {
+      opacity: 1;
+    }
     .map-legend {
       position: absolute; bottom: 0.75rem; left: 0.75rem;
+      z-index: 2;
+      pointer-events: none;
       background: rgba(7,11,15,.92);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -179,6 +269,8 @@
     .dot { width: 8px; height: 8px; border-radius: 50%; }
     .map-badge {
       position: absolute; top: 0.75rem; right: 0.75rem;
+      z-index: 2;
+      pointer-events: none;
       font-size: 0.62rem; color: var(--muted);
       background: rgba(7,11,15,.85);
       border: 1px dashed var(--border);
@@ -249,20 +341,71 @@
       grid-column: 1 / -1;
       border-top: 1px solid var(--border);
       background: rgba(95,212,164,.04);
-      padding: 0.55rem 1.5rem;
+      padding: 0.65rem 1.5rem 0.75rem;
       font-size: 0.68rem;
       color: var(--muted);
+    }
+    .audit-head {
       display: flex;
       align-items: center;
       gap: 0.75rem;
       flex-wrap: wrap;
+      margin-bottom: 0.45rem;
     }
     .audit-strip strong { color: var(--ok); }
     .audit-strip .audit-id { font-family: monospace; color: var(--aqua); }
-    button.demo {
-      background: var(--gold);
-      color: #000;
+    .audit-latest { color: var(--muted); font-size: 0.65rem; }
+    .audit-strip.collapsed {
+      display: none;
     }
+    .audit-trail-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+    .audit-entry {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.55rem;
+      font-size: 0.64rem;
+    }
+    .audit-entry.latest { border-color: rgba(95,212,164,.35); }
+    .audit-entry-head {
+      display: flex;
+      align-items: baseline;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.2rem;
+    }
+    .audit-entry-type {
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--aqua);
+    }
+    .audit-entry-ts { color: var(--muted); font-family: monospace; font-size: 0.58rem; }
+    .audit-entry-summary { color: #c8d4de; line-height: 1.35; }
+    .audit-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-top: 0.25rem;
+    }
+    .audit-chip {
+      font-size: 0.56rem;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+      background: rgba(0,171,201,.12);
+      color: var(--aqua);
+      border: 1px solid rgba(0,171,201,.2);
+    }
+    .audit-chip.step { background: rgba(167,139,250,.12); color: #e9d5ff; border-color: rgba(167,139,250,.25); }
+    .audit-chip.cite { background: rgba(255,199,44,.08); color: var(--gold); border-color: rgba(255,199,44,.2); }
+    .audit-chip.approver { background: rgba(95,212,164,.1); color: var(--ok); border-color: rgba(95,212,164,.25); }
     button.triage {
       background: var(--purple);
       color: #fff;
@@ -270,6 +413,12 @@
     button.action {
       background: var(--ok);
       color: #000;
+    }
+    button.pipeline {
+      background: linear-gradient(135deg, var(--gold) 0%, #e8a020 100%);
+      color: #000;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,.15);
     }
     .rank-item {
       font-size: 0.72rem;
@@ -532,13 +681,14 @@
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Week 2 · Day 11</span>
+      <span class="pill gold" id="phasePill">Week 2 · Day 13</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
-        <button class="demo" id="runWeek1Demo">Week 1 Demo</button>
+        <button class="pipeline" id="runPipeline">Run Pipeline</button>
         <button id="runMonitor">Monitor</button>
         <button class="triage" id="runTriage">Triage</button>
         <button class="action" id="runAction">Action</button>
+        <button type="button" class="toggle active" id="toggleAuditTrail" aria-pressed="true" title="Show or hide audit trail panel">Audit Trail</button>
         <button class="secondary" id="refreshSignals">Refresh</button>
       </div>
     </div>
@@ -550,7 +700,7 @@
     <span class="alert-meta" id="alertMeta"></span>
   </div>
 
-  <div class="workspace">
+  <div class="workspace" id="workspace">
 
     <aside class="panel">
       <div class="panel-head">
@@ -572,9 +722,14 @@
         <h2>Command Map</h2>
         <span id="mapMeta">Thin GIS · triage sync</span>
       </div>
-      <div class="map-wrap">
+      <div class="map-wrap" id="mapWrap">
         <span class="map-badge" id="mapBadge">Loading map layers…</span>
-        <svg class="map-svg" id="mapSvg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" aria-label="Nassau metro command map"></svg>
+        <span class="map-zoom-hint" id="mapZoomHint">Scroll to zoom · scrollbars when zoomed · double-click reset</span>
+        <div class="map-scroll-host" id="mapScrollHost">
+          <div class="map-scroll-surface" id="mapScrollSurface">
+            <svg class="map-svg" id="mapSvg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" aria-label="Nassau metro command map"></svg>
+          </div>
+        </div>
         <div class="map-legend">
           <div><span class="dot" style="background:#ff6b6b"></span> Hospital (public)</div>
           <div><span class="dot" style="background:#c084fc"></span> Hospital (private)</div>
@@ -653,8 +808,11 @@
       </div>
     </footer>
     <div class="audit-strip" id="auditStrip">
-      <strong>Audit</strong>
-      <span id="auditText">No audit entries yet — run Week 1 Demo</span>
+      <div class="audit-head">
+        <strong>Audit Trail</strong>
+        <span id="auditLatest" class="audit-latest">No entries yet — click Run Pipeline</span>
+      </div>
+      <div class="audit-trail-list" id="auditTrailList"></div>
     </div>
   </div>
 
@@ -693,6 +851,11 @@
     let lastTriageMap = null;
     let hitlState = null;
     let hitlModalRole = null;
+    let mapBaseViewBox = { x: 0, y: 0, w: 800, h: 480 };
+    let mapZoom = 1;
+    const MAP_ZOOM_MIN = 1;
+    const MAP_ZOOM_MAX = 5;
+    let auditTrailVisible = true;
 
     const HITL_ROLES = {
       nemt: "nemt_supervisor",
@@ -834,12 +997,108 @@
       }
 
       renderHitl(data.status);
-      if (data.audit) renderAudit(data.audit);
-      if (data.releaseAudit) renderAudit(data.releaseAudit);
+      if (data.audit) loadAuditTrail();
+      if (data.releaseAudit) loadAuditTrail();
       if (data.tripleComplete || data.dualComplete) {
         document.getElementById("briefMode").textContent = "triple HITL approved · demo";
       }
       closeHitlModal();
+    }
+
+    function parseViewBox(vb) {
+      const p = String(vb || "0 0 800 480").trim().split(/\s+/).map(Number);
+      return { x: p[0] || 0, y: p[1] || 0, w: p[2] || 800, h: p[3] || 480 };
+    }
+
+    function applyMapViewBox(vb) {
+      document.getElementById("mapSvg").setAttribute(
+        "viewBox",
+        `${vb.x} ${vb.y} ${vb.w} ${vb.h}`
+      );
+    }
+
+    function resetMapViewBox(viewBoxStr) {
+      mapBaseViewBox = parseViewBox(viewBoxStr);
+      mapZoom = 1;
+      applyMapViewBox(mapBaseViewBox);
+      applyMapZoomSurface();
+    }
+
+    function applyMapZoomSurface() {
+      const host = document.getElementById("mapScrollHost");
+      const surface = document.getElementById("mapScrollSurface");
+      const hostW = Math.max(host.clientWidth, 1);
+      const hostH = Math.max(host.clientHeight, 1);
+
+      if (mapZoom <= 1.001) {
+        mapZoom = 1;
+        surface.style.width = "100%";
+        surface.style.height = "100%";
+        host.scrollLeft = 0;
+        host.scrollTop = 0;
+        host.classList.remove("map-scrollable");
+        return;
+      }
+
+      host.classList.add("map-scrollable");
+      surface.style.width = `${Math.ceil(hostW * mapZoom)}px`;
+      surface.style.height = `${Math.ceil(hostH * mapZoom)}px`;
+    }
+
+    function clampMapScroll() {
+      const host = document.getElementById("mapScrollHost");
+      const surface = document.getElementById("mapScrollSurface");
+      const maxX = Math.max(surface.offsetWidth - host.clientWidth, 0);
+      const maxY = Math.max(surface.offsetHeight - host.clientHeight, 0);
+      host.scrollLeft = Math.min(maxX, Math.max(0, host.scrollLeft));
+      host.scrollTop = Math.min(maxY, Math.max(0, host.scrollTop));
+    }
+
+    function resetMapView() {
+      mapZoom = 1;
+      applyMapViewBox(mapBaseViewBox);
+      applyMapZoomSurface();
+    }
+
+    function zoomMapWheel(e) {
+      e.preventDefault();
+      const host = document.getElementById("mapScrollHost");
+      const rect = host.getBoundingClientRect();
+      const factor = e.deltaY > 0 ? 1 / 1.12 : 1.12;
+      const prevZoom = mapZoom;
+      const newZoom = Math.min(MAP_ZOOM_MAX, Math.max(MAP_ZOOM_MIN, mapZoom * factor));
+      if (Math.abs(newZoom - prevZoom) < 0.001) return;
+
+      const hostW = Math.max(host.clientWidth, 1);
+      const hostH = Math.max(host.clientHeight, 1);
+      const ratioX = (host.scrollLeft + (e.clientX - rect.left)) / (hostW * prevZoom);
+      const ratioY = (host.scrollTop + (e.clientY - rect.top)) / (hostH * prevZoom);
+
+      mapZoom = newZoom;
+      applyMapZoomSurface();
+      host.scrollLeft = ratioX * hostW * mapZoom - (e.clientX - rect.left);
+      host.scrollTop = ratioY * hostH * mapZoom - (e.clientY - rect.top);
+      clampMapScroll();
+    }
+
+    function initMapZoom() {
+      const wrap = document.getElementById("mapWrap");
+      const host = document.getElementById("mapScrollHost");
+      wrap.addEventListener("mouseenter", () => wrap.classList.add("map-hover"));
+      wrap.addEventListener("mouseleave", () => wrap.classList.remove("map-hover"));
+      host.addEventListener("wheel", zoomMapWheel, { passive: false });
+      wrap.addEventListener("dblclick", resetMapView);
+      window.addEventListener("resize", applyMapZoomSurface);
+    }
+
+    function setAuditTrailVisible(visible) {
+      auditTrailVisible = visible;
+      document.getElementById("workspace").classList.toggle("audit-hidden", !visible);
+      document.getElementById("auditStrip").classList.toggle("collapsed", !visible);
+      const btn = document.getElementById("toggleAuditTrail");
+      btn.classList.toggle("active", visible);
+      btn.setAttribute("aria-pressed", String(visible));
+      btn.textContent = visible ? "Audit Trail" : "Audit Trail (off)";
     }
 
     function switchOpsTab(tab) {
@@ -950,6 +1209,7 @@
       }
 
       svg.innerHTML = html;
+      resetMapViewBox(layers.viewBox);
     }
 
     async function loadMap(level = 2, ranks = tripRanks, preferTriage = false) {
@@ -1047,7 +1307,7 @@
 
       const visible = logs.filter((e) => e.event !== "tool_result");
       if (!visible.length) {
-        ul.innerHTML = `<li class="empty"><div class="tl-event">No agent runs yet</div><div class="tl-detail">Click <em>Run Monitor</em> to start</div></li>`;
+        ul.innerHTML = `<li class="empty"><div class="tl-event">No agent runs yet</div><div class="tl-detail">Click <em>Run Pipeline</em> or <em>Monitor</em> to start</div></li>`;
         return;
       }
 
@@ -1242,6 +1502,31 @@
       else loadHitl();
     }
 
+    async function runPipeline() {
+      const btn = document.getElementById("runPipeline");
+      const agentBtns = ["runMonitor", "runTriage", "runAction"].map((id) => document.getElementById(id));
+      btn.disabled = true;
+      btn.textContent = "Running…";
+      agentBtns.forEach((b) => { b.disabled = true; });
+      try {
+        const res = await fetch("/api/orchestrator/run", { method: "POST" });
+        const data = await res.json();
+        if (data.ok) {
+          if (data.signals) renderAlert(data.signals);
+          renderBrief(data.monitor);
+          renderTriage(data.triage);
+          renderAction(data.action);
+          if (data.audit) renderAudit(data.audit);
+          document.getElementById("briefMode").textContent = "pipeline · HITL staged · demo";
+        }
+        await loadLogs();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Run Pipeline";
+        agentBtns.forEach((b) => { b.disabled = false; });
+      }
+    }
+
     async function runAction() {
       const btn = document.getElementById("runAction");
       btn.disabled = true;
@@ -1277,39 +1562,61 @@
       }
     }
 
-    function renderAudit(entry) {
-      const el = document.getElementById("auditText");
-      if (!entry) {
-        el.textContent = "No audit entries yet — run Week 1 Demo";
+    function renderAuditTrail(trail) {
+      const latestEl = document.getElementById("auditLatest");
+      const listEl = document.getElementById("auditTrailList");
+      if (!trail?.entries?.length) {
+        latestEl.textContent = "No entries yet — click Run Pipeline";
+        listEl.innerHTML = "";
         return;
       }
-      el.innerHTML = `<span class="audit-id">${entry.id}</span> · ${entry.summary || entry.type} · ${fmtTime(entry.ts)}`;
+
+      const latest = trail.latest;
+      latestEl.innerHTML = latest
+        ? `<span class="audit-id">${latest.id}</span> · ${latest.summary || latest.type} · ${fmtTime(latest.ts)}`
+        : "";
+
+      listEl.innerHTML = trail.entries.slice(0, 8).map((e, i) => {
+        const stepsHtml = (e.steps || [])
+          .map((s) => `<span class="audit-chip step">${s.label || s.id}${s.ts ? ` ${fmtTime(s.ts)}` : ""}</span>`)
+          .join("");
+        const citesHtml = (e.citations || [])
+          .slice(0, 4)
+          .map((c) => `<span class="audit-chip cite" title="${c.text || ""}">${c.ref}</span>`)
+          .join("");
+        const approversHtml = (e.approvers || [])
+          .map((a) => {
+            const label = a.label || a.role || "approver";
+            const ts = a.approvedAt ? fmtTime(a.approvedAt) : "";
+            return `<span class="audit-chip approver">${label}: ${a.name || "—"}${ts ? ` @ ${ts}` : ""}</span>`;
+          })
+          .join("");
+        const meta = [stepsHtml, citesHtml, approversHtml].filter(Boolean).join("");
+        return `<div class="audit-entry${i === 0 ? " latest" : ""}">
+          <div class="audit-entry-head">
+            <span class="audit-id">${e.id}</span>
+            <span class="audit-entry-type">${e.type.replace(/_/g, " ")}</span>
+            <span class="audit-entry-ts">${fmtTime(e.ts)}</span>
+          </div>
+          <div class="audit-entry-summary">${e.summary || e.type}</div>
+          ${meta ? `<div class="audit-meta-row">${meta}</div>` : ""}
+        </div>`;
+      }).join("");
+    }
+
+    function renderAudit(entry) {
+      loadAuditTrail();
+    }
+
+    async function loadAuditTrail() {
+      const res = await fetch("/api/audit/trail?limit=12");
+      const data = await res.json();
+      renderAuditTrail(data);
+      return data;
     }
 
     async function loadAudit() {
-      const res = await fetch("/api/audit/latest");
-      const data = await res.json();
-      renderAudit(data.entry);
-    }
-
-    async function runWeek1Demo() {
-      const btn = document.getElementById("runWeek1Demo");
-      btn.disabled = true;
-      btn.textContent = "Running…";
-      try {
-        const res = await fetch("/api/demo/week1", { method: "POST" });
-        const data = await res.json();
-        if (data.ok) {
-          renderAlert(data.signals);
-          renderBrief(data.monitor);
-          renderMap(data.map);
-          renderAudit(data.audit);
-          await loadLogs();
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Week 1 Demo";
-      }
+      return loadAuditTrail();
     }
 
     async function loadStatus() {
@@ -1357,10 +1664,13 @@
     document.getElementById("tabMonitor").addEventListener("click", () => switchOpsTab("monitor"));
     document.getElementById("tabTriage").addEventListener("click", () => switchOpsTab("triage"));
     document.getElementById("tabAction").addEventListener("click", () => switchOpsTab("action"));
+    document.getElementById("runPipeline").addEventListener("click", runPipeline);
     document.getElementById("runMonitor").addEventListener("click", runMonitor);
     document.getElementById("runTriage").addEventListener("click", runTriage);
     document.getElementById("runAction").addEventListener("click", runAction);
-    document.getElementById("runWeek1Demo").addEventListener("click", runWeek1Demo);
+    document.getElementById("toggleAuditTrail").addEventListener("click", () => {
+      setAuditTrailVisible(!auditTrailVisible);
+    });
     document.getElementById("refreshSignals").addEventListener("click", () => loadSignals(true));
 
     for (const cfg of HITL_ROLE_UI) {
@@ -1374,6 +1684,8 @@
     document.getElementById("hitlModal").addEventListener("click", (e) => {
       if (e.target.id === "hitlModal") closeHitlModal();
     });
+
+    initMapZoom();
 
     (async () => {
       await loadStatus();

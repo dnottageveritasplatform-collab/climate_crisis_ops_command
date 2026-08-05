@@ -11,7 +11,9 @@
     "brief:monitor": "node -e \"import('./src/agents/monitor/brief.js').then(m=>m.runMonitorBrief()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
     "demo:week1": "node -e \"import('./src/demo/week1.js').then(m=>m.runWeek1Demo()).then(r=>console.log(JSON.stringify({ok:r.ok,exitCriteria:r.exitCriteria,auditId:r.audit?.id,briefLevel:r.monitor?.brief?.level,mapAtRisk:r.map?.atRiskCount},null,2)))\"",
     "triage:rank": "node -e \"import('./src/agents/triage/rank.js').then(m=>m.runTriageRank()).then(r=>console.log(JSON.stringify({ok:true,topTrip:r.ranking.rankedTrips[0],conflicts:r.ranking.corridorConflicts,mapSync:r.map?.syncSource,atRisk:r.map?.atRiskCount},null,2)))\"",
-    "action:pack": "node -e \"import('./src/agents/action/pack.js').then(m=>m.runActionPack()).then(r=>console.log(JSON.stringify({ok:true,checklist:r.pack.checklist.length,bulletin:r.pack.hospitalBulletin.subject,driverComms:r.pack.driverComms.length},null,2)))\""
+    "action:pack": "node -e \"import('./src/agents/action/pack.js').then(m=>m.runActionPack()).then(r=>console.log(JSON.stringify({ok:true,checklist:r.pack.checklist.length,bulletin:r.pack.hospitalBulletin.subject,driverComms:r.pack.driverComms.length},null,2)))\"",
+    "pipeline:run": "node -e \"import('./src/orchestrator/index.js').then(m=>m.runPipeline()).then(r=>console.log(JSON.stringify({ok:r.ok,pipelineId:r.pipelineId,threshold:r.threshold,hitlGate:r.hitlGate,ranked:r.triage.ranking.rankedTrips.length,checklist:r.action.pack.checklist.length},null,2)))\"",
+    "audit:trail": "node -e \"import('./src/audit/index.js').then(async m=>{const {runPipeline}=await import('./src/orchestrator/index.js');await runPipeline();console.log(JSON.stringify(m.buildAuditTrail(8),null,2))})\""
   },
   "engines": {
     "node": ">=18"
