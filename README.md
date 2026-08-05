@@ -54,7 +54,33 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ## Status
 
-**Week 2, Day 9 complete** — Action agent generates operational checklist, COMMS-03 hospital bulletin draft, and driver SMS drafts. All drafts require dual HITL before send. Demo mode — no Nebius/LLM required.
+**Week 2, Day 11 complete** — Thin map layer synced to Triage output: ranked trip pins, affected zone, corridor status (closed/restricted), and facility impact labels update when Triage runs. Demo mode — no LLM required.
+
+### Day 11 quick test
+
+```bash
+npm start
+curl -X POST http://127.0.0.1:8787/api/agents/triage/rank
+curl http://127.0.0.1:8787/api/geo/layers/triage
+npm run triage:rank
+# Open http://127.0.0.1:8787 — Run Monitor → Triage; map shows #rank pins, CORR status, facility #rank, triage-sync badge
+```
+
+Map sync: Triage ranks trips/facilities/corridors → `buildMapLayersFromTriage` projects pins + zone + corridor conflicts → UI badge shows "triage sync".
+
+### Day 10 quick test
+
+```bash
+npm start
+# Run Monitor → Triage → Action in UI, or:
+curl -X POST http://127.0.0.1:8787/api/agents/action/pack
+curl http://127.0.0.1:8787/api/hitl/status
+curl -X POST http://127.0.0.1:8787/api/hitl/approve -H "Content-Type: application/json" -d "{\"role\":\"nemt_supervisor\",\"approver\":\"NEMT Supervisor (demo)\"}"
+curl -X POST http://127.0.0.1:8787/api/hitl/approve -H "Content-Type: application/json" -d "{\"role\":\"hospital_liaison\",\"approver\":\"Hospital Liaison (demo)\"}"
+# Open http://127.0.0.1:8787 — Review/Approve buttons in Dual HITL gate; audit strip logs both approvers
+```
+
+HITL flow: Action pack stages COMMS-03 → each role Review (edit bulletin) + Approve → dual release logged in audit.
 
 ### Day 9 quick test
 

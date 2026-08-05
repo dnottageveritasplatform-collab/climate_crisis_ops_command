@@ -1,5 +1,6 @@
 import { getAtRiskTrips, corridorStatusForLevel } from "../../dispatch/index.js";
 import { recordActionPack } from "../../audit/index.js";
+import { stageHitlPack } from "../../hitl/index.js";
 import { logAgentEvent } from "../runtime/logger.js";
 import { runTool } from "../runtime/tools.js";
 
@@ -49,6 +50,7 @@ export async function runActionPack({ level } = {}) {
   logAgentEvent("agent_complete", { agent, mode: "demo", message: "Action pack ready" });
 
   const audit = recordActionPack({ signal, pack, threshold, mode: "demo" });
+  const hitl = stageHitlPack(pack, { auditId: audit.id, level: threshold });
 
   return {
     agent,
@@ -63,6 +65,7 @@ export async function runActionPack({ level } = {}) {
     ],
     pack,
     audit,
+    hitl,
   };
 }
 

@@ -9,6 +9,7 @@ import dispatchRouter from "./routes/dispatch.js";
 import sopsRouter from "./routes/sops.js";
 import auditRouter from "./routes/audit.js";
 import demoRouter from "./routes/demo.js";
+import hitlRouter from "./routes/hitl.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -21,6 +22,7 @@ app.use("/api/dispatch", dispatchRouter);
 app.use("/api/sops", sopsRouter);
 app.use("/api/audit", auditRouter);
 app.use("/api/demo", demoRouter);
+app.use("/api/hitl", hitlRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({
@@ -29,14 +31,14 @@ app.get("/api/health", (_req, res) => {
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "week-2-day-9",
+    phase: "week-2-day-11",
     llm: "demo_mode — Nebius optional when business email available",
   });
 });
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "week-2-day-9",
+    phase: "week-2-day-11",
     week1Complete: true,
     llm: { provider: "demo", nebius: "deferred — no business email yet" },
     openclaw: {
@@ -48,9 +50,9 @@ app.get("/api/status", (_req, res) => {
       signals: "ingest_ready",
       agents: "monitor + triage + action_ready",
       orchestrator: "pending",
-      hitl: "pending",
+      hitl: "dual_role_ready",
       audit: "trail_ready",
-      geo: "layers_ready",
+      geo: "triage_sync_ready",
       dispatch: "sample_manifest",
       sops: "rag_corpus",
       ui: "command_shell_map",

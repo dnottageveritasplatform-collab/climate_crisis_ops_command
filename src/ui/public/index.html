@@ -447,6 +447,74 @@
       background: var(--panel); color: var(--muted);
       border: 1px solid var(--border); cursor: not-allowed;
     }
+    .role-actions button.enabled {
+      cursor: pointer; color: var(--text);
+      border-color: rgba(0,171,201,.4);
+    }
+    .role-actions button.enabled:hover { background: rgba(0,171,201,.12); color: var(--aqua); }
+    .role-actions button.approve-btn.enabled {
+      border-color: rgba(0,200,120,.4); color: var(--ok);
+    }
+    .role-actions button.approve-btn.enabled:hover { background: rgba(0,200,120,.12); }
+    .role-status.approved {
+      background: rgba(0,200,120,.12); color: var(--ok);
+      border-color: rgba(0,200,120,.3);
+    }
+    .role-status.review {
+      background: rgba(0,171,201,.12); color: var(--aqua);
+      border-color: rgba(0,171,201,.3);
+    }
+    .role-status.idle {
+      background: rgba(255,255,255,.04); color: var(--muted);
+      border-color: var(--border);
+    }
+    .hitl-released-banner {
+      font-size: 0.62rem; padding: 0.4rem 0.55rem; margin-top: 0.45rem;
+      background: rgba(0,200,120,.1); border: 1px solid rgba(0,200,120,.35);
+      border-radius: 6px; color: var(--ok); text-align: center;
+    }
+
+    .hitl-modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,.65); align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .hitl-modal-backdrop.open { display: flex; }
+    .hitl-modal {
+      width: min(560px, 100%); max-height: 90vh; overflow-y: auto;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.1rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    }
+    .hitl-modal h4 {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--gold); margin-bottom: 0.35rem;
+    }
+    .hitl-modal .modal-title {
+      font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;
+    }
+    .hitl-modal label {
+      display: block; font-size: 0.62rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted); margin: 0.65rem 0 0.3rem;
+    }
+    .hitl-modal input, .hitl-modal textarea {
+      width: 100%; font: inherit; font-size: 0.72rem;
+      background: var(--panel-2); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); padding: 0.45rem 0.55rem;
+    }
+    .hitl-modal textarea { min-height: 180px; resize: vertical; font-family: ui-monospace, monospace; }
+    .hitl-modal-actions {
+      display: flex; gap: 0.5rem; margin-top: 0.85rem; justify-content: flex-end;
+    }
+    .hitl-modal-actions button {
+      padding: 0.45rem 0.75rem; font-size: 0.68rem; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+      cursor: pointer;
+    }
+    .hitl-modal-actions button.primary {
+      background: rgba(0,200,120,.15); border-color: rgba(0,200,120,.4); color: var(--ok);
+    }
+    .hitl-modal-actions button:hover { filter: brightness(1.08); }
 
     @media (max-width: 1100px) {
       .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; height: auto; }
@@ -467,7 +535,7 @@
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Week 2 · Day 9</span>
+      <span class="pill gold" id="phasePill">Week 2 · Day 11</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
         <button class="demo" id="runWeek1Demo">Week 1 Demo</button>
@@ -505,7 +573,7 @@
     <section class="panel">
       <div class="panel-head">
         <h2>Command Map</h2>
-        <span id="mapMeta">Thin GIS · live layers</span>
+        <span id="mapMeta">Thin GIS · triage sync</span>
       </div>
       <div class="map-wrap">
         <span class="map-badge" id="mapBadge">Loading map layers…</span>
@@ -557,28 +625,47 @@
       <div class="hitl-panel">
         <h3>Dual HITL Approval Gate</h3>
         <div class="hitl-roles">
-          <div class="role">
+          <div class="role" id="roleNemt">
             <div class="role-head"><span class="icon">🚌</span><strong>NEMT Supervisor</strong></div>
-            <span class="role-status" id="hitlNemt">Awaiting brief</span>
+            <span class="role-status idle" id="hitlNemt">Awaiting action pack</span>
             <div class="role-actions">
-              <button disabled title="Week 2 Day 10">Review</button>
-              <button disabled title="Week 2 Day 10">Approve</button>
+              <button type="button" id="btnNemtReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnNemtApprove" disabled>Approve</button>
             </div>
           </div>
-          <div class="role">
+          <div class="role" id="roleHospital">
             <div class="role-head"><span class="icon">🏥</span><strong>Hospital Liaison</strong></div>
-            <span class="role-status" id="hitlHospital">Awaiting brief</span>
+            <span class="role-status idle" id="hitlHospital">Awaiting action pack</span>
             <div class="role-actions">
-              <button disabled title="Week 2 Day 10">Review</button>
-              <button disabled title="Week 2 Day 10">Approve</button>
+              <button type="button" id="btnHospitalReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnHospitalApprove" disabled>Approve</button>
             </div>
           </div>
         </div>
+        <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Dual approval complete — demo send blocked</div>
       </div>
     </footer>
     <div class="audit-strip" id="auditStrip">
       <strong>Audit</strong>
       <span id="auditText">No audit entries yet — run Week 1 Demo</span>
+    </div>
+  </div>
+
+  <div class="hitl-modal-backdrop" id="hitlModal" aria-hidden="true">
+    <div class="hitl-modal" role="dialog" aria-labelledby="hitlModalTitle">
+      <h4 id="hitlModalRole">Role review</h4>
+      <div class="modal-title" id="hitlModalTitle">COMMS-03 hospital bulletin</div>
+      <p class="brief-empty" id="hitlModalSummary" style="margin-bottom:0.5rem"></p>
+      <label for="hitlBulletinSubject">Subject (editable)</label>
+      <input type="text" id="hitlBulletinSubject" />
+      <label for="hitlBulletinBody">Bulletin body (editable)</label>
+      <textarea id="hitlBulletinBody"></textarea>
+      <label for="hitlNotes">Approval notes (optional)</label>
+      <input type="text" id="hitlNotes" placeholder="e.g. Confirmed P1 dialysis routing with clinical coordinator" />
+      <div class="hitl-modal-actions">
+        <button type="button" id="hitlModalClose">Cancel</button>
+        <button type="button" class="primary" id="hitlModalApprove">Approve with edits</button>
+      </div>
     </div>
   </div>
 
@@ -596,6 +683,147 @@
     };
 
     let tripRanks = {};
+    let lastTriageMap = null;
+    let hitlState = null;
+    let hitlModalRole = null;
+
+    const HITL_ROLES = {
+      nemt: "nemt_supervisor",
+      hospital: "hospital_liaison",
+    };
+
+    function roleStatusText(roleState, released) {
+      if (released || roleState.status === "approved") return "Approved";
+      if (roleState.status === "in_review") return "In review";
+      if (roleState.status === "awaiting") return "Pending review";
+      return roleState.status;
+    }
+
+    function setRoleButtons(reviewBtn, approveBtn, roleState, released) {
+      const canAct = hitlState?.active && !released && roleState.status !== "approved";
+      reviewBtn.disabled = !canAct;
+      approveBtn.disabled = !canAct;
+      reviewBtn.classList.toggle("enabled", canAct);
+      approveBtn.classList.toggle("enabled", canAct);
+    }
+
+    function renderHitl(status) {
+      hitlState = status;
+      const nemtEl = document.getElementById("hitlNemt");
+      const hospitalEl = document.getElementById("hitlHospital");
+      const banner = document.getElementById("hitlReleasedBanner");
+
+      if (!status?.active) {
+        nemtEl.textContent = "Awaiting action pack";
+        hospitalEl.textContent = "Awaiting action pack";
+        nemtEl.className = "role-status idle";
+        hospitalEl.className = "role-status idle";
+        banner.hidden = true;
+        setRoleButtons(
+          document.getElementById("btnNemtReview"),
+          document.getElementById("btnNemtApprove"),
+          { status: "idle" },
+          true
+        );
+        setRoleButtons(
+          document.getElementById("btnHospitalReview"),
+          document.getElementById("btnHospitalApprove"),
+          { status: "idle" },
+          true
+        );
+        return;
+      }
+
+      const nemt = status.roles[HITL_ROLES.nemt];
+      const hospital = status.roles[HITL_ROLES.hospital];
+      const released = status.released;
+
+      nemtEl.textContent = roleStatusText(nemt, released);
+      hospitalEl.textContent = roleStatusText(hospital, released);
+      nemtEl.className = `role-status ${released || nemt.status === "approved" ? "approved" : nemt.status === "in_review" ? "review" : ""}`;
+      hospitalEl.className = `role-status ${released || hospital.status === "approved" ? "approved" : hospital.status === "in_review" ? "review" : ""}`;
+
+      setRoleButtons(document.getElementById("btnNemtReview"), document.getElementById("btnNemtApprove"), nemt, released);
+      setRoleButtons(document.getElementById("btnHospitalReview"), document.getElementById("btnHospitalApprove"), hospital, released);
+
+      banner.hidden = !released;
+      if (released) {
+        banner.textContent = "✓ Dual approval complete — action pack cleared for release (demo: send blocked)";
+      }
+    }
+
+    async function loadHitl() {
+      const res = await fetch("/api/hitl/status");
+      const data = await res.json();
+      renderHitl(data);
+      return data;
+    }
+
+    function closeHitlModal() {
+      hitlModalRole = null;
+      const modal = document.getElementById("hitlModal");
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    async function openHitlReview(role) {
+      const res = await fetch(`/api/hitl/review?role=${encodeURIComponent(role)}`);
+      const content = await res.json();
+      if (!content.ok) {
+        alert(content.error || "Nothing staged for review");
+        return;
+      }
+
+      await fetch("/api/hitl/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+
+      hitlModalRole = role;
+      document.getElementById("hitlModalRole").textContent = `${content.roleLabel} · COMMS-03 review`;
+      document.getElementById("hitlModalTitle").textContent = content.hospitalBulletin?.subject || "Hospital bulletin draft";
+      document.getElementById("hitlModalSummary").textContent = content.summary || "";
+      document.getElementById("hitlBulletinSubject").value = content.hospitalBulletin?.subject || "";
+      document.getElementById("hitlBulletinBody").value = content.hospitalBulletin?.body || "";
+      document.getElementById("hitlNotes").value = "";
+
+      const modal = document.getElementById("hitlModal");
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      await loadHitl();
+    }
+
+    async function submitHitlApproval(role, fromModal = false) {
+      const body = { role };
+      if (fromModal) {
+        body.bulletinSubject = document.getElementById("hitlBulletinSubject").value;
+        body.bulletinBody = document.getElementById("hitlBulletinBody").value;
+        body.notes = document.getElementById("hitlNotes").value || undefined;
+        body.approver = role === HITL_ROLES.nemt ? "NEMT Supervisor (demo)" : "Hospital Liaison (demo)";
+      } else {
+        body.approver = role === HITL_ROLES.nemt ? "NEMT Supervisor (demo)" : "Hospital Liaison (demo)";
+      }
+
+      const res = await fetch("/api/hitl/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        alert(data.error || "Approval failed");
+        return;
+      }
+
+      renderHitl(data.status);
+      if (data.audit) renderAudit(data.audit);
+      if (data.releaseAudit) renderAudit(data.releaseAudit);
+      if (data.dualComplete) {
+        document.getElementById("briefMode").textContent = "dual HITL approved · demo";
+      }
+      closeHitlModal();
+    }
 
     function switchOpsTab(tab) {
       const tabs = ["monitor", "triage", "action"];
@@ -608,13 +836,19 @@
     function renderMap(layers, ranks = tripRanks) {
       const svg = document.getElementById("mapSvg");
       const badge = document.getElementById("mapBadge");
+      const mapMeta = document.getElementById("mapMeta");
       if (!layers?.ok) {
         badge.textContent = "Map unavailable";
         return;
       }
 
       svg.setAttribute("viewBox", layers.viewBox);
-      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk`;
+      const syncLabel = layers.syncSource === "triage" ? " · triage sync" : "";
+      const conflictNote = layers.conflictCount ? ` · ${layers.conflictCount} corridor conflict(s)` : "";
+      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}`;
+      mapMeta.textContent = layers.syncSource === "triage"
+        ? `Thin GIS · synced to triage${conflictNote}`
+        : "Thin GIS · level-based layers";
 
       const z = layers.zone;
       const coast = `M 80 320 Q 180 280 280 300 T 480 260 T 720 290 L 720 420 L 80 420 Z`;
@@ -629,18 +863,21 @@
       for (const c of layers.corridors) {
         const s = c.svg;
         const dash = s.dash ? `stroke-dasharray="${s.dash}"` : "";
+        const width = s.width || 4;
         const midX = Math.round((s.x1 + s.x2) / 2);
         const midY = Math.round((s.y1 + s.y2) / 2);
+        const statusLabel = c.status === "closed" ? "CLOSED" : c.status === "restricted" ? "RESTRICTED" : "OPEN";
         html += `
-          <line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}" stroke="${c.color}" stroke-width="4" ${dash} opacity="0.85"/>
-          <rect x="${midX - 36}" y="${midY - 14}" width="72" height="18" rx="4" fill="#121a22" stroke="${c.color}" stroke-width="1"/>
-          <text x="${midX}" y="${midY - 2}" text-anchor="middle" fill="${c.color}" font-size="9" font-family="system-ui" font-weight="600">${c.id}</text>
+          <line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}" stroke="${c.color}" stroke-width="${width}" ${dash} opacity="0.9"/>
+          <rect x="${midX - 42}" y="${midY - 16}" width="84" height="${c.atRiskTrips ? 28 : 18}" rx="4" fill="#121a22" stroke="${c.color}" stroke-width="1"/>
+          <text x="${midX}" y="${midY - 2}" text-anchor="middle" fill="${c.color}" font-size="9" font-family="system-ui" font-weight="600">${c.id} · ${statusLabel}</text>
+          ${c.atRiskTrips ? `<text x="${midX}" y="${midY + 10}" text-anchor="middle" fill="#ffc72c" font-size="8" font-family="system-ui">${c.atRiskTrips} at-risk</text>` : ""}
         `;
       }
 
       for (const t of layers.trips) {
-        const rank = ranks[t.id];
-        if (!t.atRisk && !rank) continue;
+        const rank = t.rank ?? ranks[t.id];
+        if (layers.syncSource !== "triage" && !t.atRisk && !rank) continue;
         const s = t.svg;
         html += `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${t.color}" stroke="#000" stroke-width="1"/>`;
         if (rank) {
@@ -652,6 +889,7 @@
         const s = f.svg;
         html += `
           <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${f.color}" stroke="#fff" stroke-width="1.5"/>
+          ${f.rank ? `<text x="${s.x}" y="${s.y - 14}" text-anchor="middle" fill="#ffc72c" font-size="9" font-weight="700" font-family="system-ui">#${f.rank}</text>` : ""}
           <text x="${s.x}" y="${s.y + s.r + 18}" text-anchor="middle" fill="${f.color}" font-size="9" font-family="system-ui"${f.role === "hospital_partner" ? ' font-weight="600"' : ""}>${f.name.split(" ").slice(0, 2).join(" ")}</text>
         `;
       }
@@ -663,7 +901,16 @@
       svg.innerHTML = html;
     }
 
-    async function loadMap(level = 2, ranks = tripRanks) {
+    async function loadMap(level = 2, ranks = tripRanks, preferTriage = false) {
+      if (preferTriage || Object.keys(ranks).length) {
+        const triageRes = await fetch("/api/geo/layers/triage");
+        if (triageRes.ok) {
+          const data = await triageRes.json();
+          lastTriageMap = data;
+          renderMap(data, ranks);
+          return data;
+        }
+      }
       const res = await fetch(`/api/geo/layers?level=${level}`);
       const data = await res.json();
       renderMap(data, ranks);
@@ -697,7 +944,7 @@
       el.innerHTML = "";
       for (const [name, status] of Object.entries(modules)) {
         const mod = document.createElement("span");
-        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging")
+        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging") || status.includes("dual_role")
           ? "ready"
           : status.includes("shell") || status.includes("ingest") || status.includes("spike")
             ? "stub"
@@ -823,8 +1070,6 @@
       if (result.audit) renderAudit(result.audit);
 
       switchOpsTab("monitor");
-      document.getElementById("hitlNemt").textContent = "Pending review";
-      document.getElementById("hitlHospital").textContent = "Pending review";
     }
 
     function renderTriage(result) {
@@ -873,7 +1118,12 @@
       `;
 
       switchOpsTab("triage");
-      loadMap(r.level, tripRanks);
+      if (result.map) {
+        lastTriageMap = result.map;
+        renderMap(result.map);
+      } else {
+        loadMap(r.level, tripRanks, true);
+      }
       if (result.audit) renderAudit(result.audit);
     }
 
@@ -912,9 +1162,9 @@
 
       switchOpsTab("action");
       document.getElementById("briefMode").textContent = "monitor + triage + action · demo";
-      document.getElementById("hitlNemt").textContent = "COMMS-03 staged — review";
-      document.getElementById("hitlHospital").textContent = "COMMS-03 staged — review";
       if (result.audit) renderAudit(result.audit);
+      if (result.hitl) renderHitl(result.hitl);
+      else loadHitl();
     }
 
     async function runAction() {
@@ -1038,11 +1288,24 @@
     document.getElementById("runWeek1Demo").addEventListener("click", runWeek1Demo);
     document.getElementById("refreshSignals").addEventListener("click", () => loadSignals(true));
 
+    document.getElementById("btnNemtReview").addEventListener("click", () => openHitlReview(HITL_ROLES.nemt));
+    document.getElementById("btnHospitalReview").addEventListener("click", () => openHitlReview(HITL_ROLES.hospital));
+    document.getElementById("btnNemtApprove").addEventListener("click", () => submitHitlApproval(HITL_ROLES.nemt));
+    document.getElementById("btnHospitalApprove").addEventListener("click", () => submitHitlApproval(HITL_ROLES.hospital));
+    document.getElementById("hitlModalClose").addEventListener("click", closeHitlModal);
+    document.getElementById("hitlModalApprove").addEventListener("click", () => {
+      if (hitlModalRole) submitHitlApproval(hitlModalRole, true);
+    });
+    document.getElementById("hitlModal").addEventListener("click", (e) => {
+      if (e.target.id === "hitlModal") closeHitlModal();
+    });
+
     (async () => {
       await loadStatus();
       await loadSignals();
       await loadLogs();
       await loadAudit();
+      await loadHitl();
     })();
   </script>
 </body>

@@ -1,5 +1,5 @@
 import { corridorStatusForLevel, loadDispatch } from "../../dispatch/index.js";
-import { loadGeoLayers } from "../../geo/index.js";
+import { buildMapLayersFromTriage, loadGeoLayers, setLastTriageRanking } from "../../geo/index.js";
 import { recordTriageRank } from "../../audit/index.js";
 import { logAgentEvent } from "../runtime/logger.js";
 import { runTool } from "../runtime/tools.js";
@@ -31,6 +31,9 @@ export async function runTriageRank({ level } = {}) {
 
   const ranking = buildTriageRanking(threshold, signal, dispatch);
 
+  setLastTriageRanking(ranking);
+  const map = buildMapLayersFromTriage(ranking);
+
   logAgentEvent("agent_complete", { agent, mode: "demo", message: "Triage rank ready" });
 
   const audit = recordTriageRank({ signal, ranking, threshold, mode: "demo" });
@@ -45,6 +48,7 @@ export async function runTriageRank({ level } = {}) {
       { tool: "summarize_dispatch", args: { level: threshold }, result: dispatch },
     ],
     ranking,
+    map,
     audit,
   };
 }
