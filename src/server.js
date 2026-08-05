@@ -29,20 +29,16 @@ app.get("/api/health", (_req, res) => {
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "week-1-day-7",
-    week1ExitCriteria: "signal → brief → audit",
+    phase: "week-2-day-9",
+    llm: "demo_mode — Nebius optional when business email available",
   });
 });
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "week-1-day-7",
+    phase: "week-2-day-9",
     week1Complete: true,
-    week1ExitCriteria: {
-      signalIn: true,
-      monitorBriefOnMap: true,
-      auditLogEntry: true,
-    },
+    llm: { provider: "demo", nebius: "deferred — no business email yet" },
     openclaw: {
       pattern: "tool-loop + logging",
       skillStub: "openclaw/workspace/skills/climate-monitor",
@@ -50,7 +46,7 @@ app.get("/api/status", (_req, res) => {
     },
     modules: {
       signals: "ingest_ready",
-      agents: "monitor_brief_ready",
+      agents: "monitor + triage + action_ready",
       orchestrator: "pending",
       hitl: "pending",
       audit: "trail_ready",

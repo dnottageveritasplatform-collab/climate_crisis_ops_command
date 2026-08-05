@@ -99,7 +99,7 @@
 
     .workspace {
       display: grid;
-      grid-template-columns: 280px 1fr 320px;
+      grid-template-columns: 280px 1fr 360px;
       grid-template-rows: 1fr auto auto;
       gap: 0;
       height: calc(100vh - 108px);
@@ -267,6 +267,112 @@
       background: var(--gold);
       color: #000;
     }
+    button.triage {
+      background: var(--purple);
+      color: #fff;
+    }
+    button.action {
+      background: var(--ok);
+      color: #000;
+    }
+    .rank-item {
+      font-size: 0.72rem;
+      padding: 0.45rem 0.55rem;
+      margin-bottom: 0.35rem;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .rank-item .rank-num {
+      display: inline-block;
+      font-weight: 800;
+      color: var(--purple);
+      min-width: 1.4rem;
+    }
+    .rank-item .score { float: right; font-size: 0.62rem; color: var(--muted); }
+    .rank-reason { font-size: 0.62rem; color: var(--muted); margin-top: 0.2rem; }
+    .conflict-item {
+      font-size: 0.68rem;
+      padding: 0.4rem 0.55rem;
+      margin-bottom: 0.3rem;
+      border-left: 3px solid var(--warn);
+      background: var(--panel-2);
+    }
+    .conflict-item.critical { border-left-color: var(--danger); }
+    .ops-tabs {
+      display: flex; gap: 0.35rem; margin-bottom: 0.65rem;
+    }
+    .ops-tabs button {
+      flex: 1; padding: 0.4rem 0.5rem; font-size: 0.65rem;
+      background: var(--panel-2); color: var(--muted);
+      border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; font-weight: 600;
+    }
+    .ops-tabs button.active {
+      color: var(--text); border-color: var(--aqua);
+      background: rgba(0,171,201,.1);
+    }
+    .ops-tabs button.active.triage-tab {
+      border-color: var(--purple);
+      background: rgba(167,139,250,.12);
+      color: #e9d5ff;
+    }
+    .ops-tabs button.active.action-tab {
+      border-color: var(--ok);
+      background: rgba(95,212,164,.12);
+      color: #b8f0d8;
+    }
+    .ops-view { display: none; }
+    .ops-view.active { display: block; }
+    #triagePanel .brief-summary {
+      border-left-color: var(--purple);
+    }
+    #actionPanel .brief-summary {
+      border-left-color: var(--ok);
+    }
+    .check-item {
+      font-size: 0.72rem;
+      padding: 0.4rem 0.55rem;
+      margin-bottom: 0.3rem;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex; gap: 0.45rem; align-items: flex-start;
+    }
+    .check-item .chk-id { color: var(--ok); font-weight: 700; font-size: 0.62rem; min-width: 2.8rem; }
+    .check-item .chk-owner { font-size: 0.58rem; color: var(--muted); display: block; margin-top: 0.15rem; }
+    .draft-block {
+      font-size: 0.65rem;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.55rem;
+      white-space: pre-wrap;
+      color: #c8d4de;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-bottom: 0.5rem;
+    }
+    .sms-item {
+      font-size: 0.68rem;
+      padding: 0.45rem;
+      margin-bottom: 0.35rem;
+      background: var(--panel-2);
+      border-left: 3px solid var(--ok);
+      border-radius: 4px;
+      color: #c8d4de;
+    }
+    .sms-item strong { color: var(--gold); }
+    .hitl-banner {
+      font-size: 0.62rem;
+      padding: 0.35rem 0.5rem;
+      background: rgba(255,179,71,.1);
+      border: 1px solid rgba(255,179,71,.3);
+      border-radius: 6px;
+      color: var(--warn);
+      margin-bottom: 0.5rem;
+    }
     .stat-row {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 0.5rem; margin-top: 0.75rem;
@@ -361,12 +467,14 @@
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Week 1 · Day 7</span>
+      <span class="pill gold" id="phasePill">Week 2 · Day 9</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
         <button class="demo" id="runWeek1Demo">Week 1 Demo</button>
-        <button id="runMonitor">Run Monitor</button>
-        <button class="secondary" id="refreshSignals">Refresh Signals</button>
+        <button id="runMonitor">Monitor</button>
+        <button class="triage" id="runTriage">Triage</button>
+        <button class="action" id="runAction">Action</button>
+        <button class="secondary" id="refreshSignals">Refresh</button>
       </div>
     </div>
   </header>
@@ -382,7 +490,7 @@
     <aside class="panel">
       <div class="panel-head">
         <h2>Agent Timeline</h2>
-        <span id="timelineMeta">Monitor · OpenClaw loop</span>
+        <span id="timelineMeta">Monitor · Triage · Action</span>
       </div>
       <div class="panel-body">
         <ul class="timeline" id="timeline">
@@ -414,11 +522,30 @@
 
     <aside class="panel">
       <div class="panel-head">
-        <h2>Monitor Brief</h2>
+        <h2>Ops Output</h2>
         <span id="briefMode">awaiting run</span>
       </div>
-      <div class="panel-body" id="briefPanel">
-        <p class="brief-empty">Run Monitor to generate a situation brief from live signals and dispatch data.</p>
+      <div class="panel-body" id="opsPanelBody">
+        <div class="ops-tabs">
+          <button type="button" id="tabMonitor" class="active">Monitor</button>
+          <button type="button" id="tabTriage" class="triage-tab">Triage</button>
+          <button type="button" id="tabAction" class="action-tab">Action</button>
+        </div>
+        <div class="ops-view active" id="viewMonitor">
+          <div id="briefPanel">
+            <p class="brief-empty">Run Monitor to generate a situation brief.</p>
+          </div>
+        </div>
+        <div class="ops-view" id="viewTriage">
+          <div id="triagePanel">
+            <p class="brief-empty">Run Triage to rank trips, facilities, and corridor conflicts.</p>
+          </div>
+        </div>
+        <div class="ops-view" id="viewAction">
+          <div id="actionPanel">
+            <p class="brief-empty">Run Action for checklist, COMMS-03 bulletin, and driver SMS drafts.</p>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -468,7 +595,17 @@
       return `Issued ${d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} · ${d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} UTC`;
     };
 
-    function renderMap(layers) {
+    let tripRanks = {};
+
+    function switchOpsTab(tab) {
+      const tabs = ["monitor", "triage", "action"];
+      tabs.forEach((t) => {
+        document.getElementById(`tab${t.charAt(0).toUpperCase()}${t.slice(1)}`).classList.toggle("active", tab === t);
+        document.getElementById(`view${t.charAt(0).toUpperCase()}${t.slice(1)}`).classList.toggle("active", tab === t);
+      });
+    }
+
+    function renderMap(layers, ranks = tripRanks) {
       const svg = document.getElementById("mapSvg");
       const badge = document.getElementById("mapBadge");
       if (!layers?.ok) {
@@ -502,9 +639,13 @@
       }
 
       for (const t of layers.trips) {
-        if (!t.atRisk) continue;
+        const rank = ranks[t.id];
+        if (!t.atRisk && !rank) continue;
         const s = t.svg;
         html += `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${t.color}" stroke="#000" stroke-width="1"/>`;
+        if (rank) {
+          html += `<text x="${s.x}" y="${s.y - 10}" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="700" font-family="system-ui">#${rank}</text>`;
+        }
       }
 
       for (const f of layers.facilities) {
@@ -522,10 +663,10 @@
       svg.innerHTML = html;
     }
 
-    async function loadMap(level = 2) {
+    async function loadMap(level = 2, ranks = tripRanks) {
       const res = await fetch(`/api/geo/layers?level=${level}`);
       const data = await res.json();
-      renderMap(data);
+      renderMap(data, ranks);
       return data;
     }
 
@@ -681,8 +822,134 @@
 
       if (result.audit) renderAudit(result.audit);
 
+      switchOpsTab("monitor");
       document.getElementById("hitlNemt").textContent = "Pending review";
       document.getElementById("hitlHospital").textContent = "Pending review";
+    }
+
+    function renderTriage(result) {
+      const panel = document.getElementById("triagePanel");
+      const r = result?.ranking;
+      if (!r) {
+        panel.innerHTML = `<p class="brief-empty">Triage run failed or returned no ranking.</p>`;
+        return;
+      }
+
+      tripRanks = Object.fromEntries(r.rankedTrips.map((t) => [t.id, t.rank]));
+
+      const atRiskTrips = r.rankedTrips.filter((t) => t.priority === "P1" || t.reasons?.some((x) => /RESTRICTED|CLOSED/.test(x)));
+      const tripsHtml = (atRiskTrips.length ? atRiskTrips : r.rankedTrips).slice(0, 5).map((t) => `
+        <div class="rank-item">
+          <span class="rank-num">#${t.rank}</span>
+          <strong>${t.id}</strong> · ${t.priority} · ${t.pickup}
+          <span class="score">${t.conflictScore} pts</span>
+          <div class="rank-reason">${(t.reasons || []).join(" · ")}</div>
+        </div>
+      `).join("");
+
+      const facilitiesHtml = r.rankedFacilities.slice(0, 3).map((f) => `
+        <div class="rank-item">
+          <span class="rank-num">#${f.rank}</span>
+          <strong>${f.name}</strong>
+          <span class="score">${f.p1Count} P1 · ${f.impactedTrips} trips</span>
+        </div>
+      `).join("");
+
+      const conflictsHtml = r.corridorConflicts.map((c) => `
+        <div class="conflict-item ${c.severity === "critical" ? "critical" : ""}">
+          <strong>${c.corridor}</strong> · ${c.status.toUpperCase()} · ${c.atRiskTrips} at-risk trip(s)
+          <div class="rank-reason">${c.name}</div>
+        </div>
+      `).join("");
+
+      panel.innerHTML = `
+        <div class="brief-summary" style="margin-bottom:0.65rem">${r.summary}</div>
+        <p class="section-label" style="margin-top:0">Ranked trips (${atRiskTrips.length || r.rankedTrips.length} at-risk)</p>
+        ${tripsHtml || "<p class='brief-empty'>No trips ranked</p>"}
+        <p class="section-label">Facility impact</p>
+        ${facilitiesHtml}
+        <p class="section-label">Corridor conflicts</p>
+        ${conflictsHtml || "<p class='brief-empty'>No conflicts</p>"}
+      `;
+
+      switchOpsTab("triage");
+      loadMap(r.level, tripRanks);
+      if (result.audit) renderAudit(result.audit);
+    }
+
+    function renderAction(result) {
+      const panel = document.getElementById("actionPanel");
+      const p = result?.pack;
+      if (!p) {
+        panel.innerHTML = `<p class="brief-empty">Action run failed or returned no pack.</p>`;
+        return;
+      }
+
+      const checklistHtml = p.checklist.map((c) => `
+        <div class="check-item">
+          <span class="chk-id">${c.id}</span>
+          <div>${c.task}<span class="chk-owner">${c.owner.replace("_", " ")} · ${c.status}</span></div>
+        </div>
+      `).join("");
+
+      const smsHtml = p.driverComms.map((d) => `
+        <div class="sms-item">
+          <strong>${d.tripId}</strong> · ${d.priority} · ${d.corridor}<br/>
+          ${d.draft}
+        </div>
+      `).join("");
+
+      panel.innerHTML = `
+        <div class="hitl-banner">⚠ DRAFT ONLY — Dual HITL required before send (NEMT supervisor + hospital liaison)</div>
+        <div class="brief-summary" style="margin-bottom:0.65rem">${p.summary}</div>
+        <p class="section-label" style="margin-top:0">Operational checklist (${p.checklist.length})</p>
+        ${checklistHtml}
+        <p class="section-label">COMMS-03 hospital bulletin</p>
+        <div class="draft-block">${p.hospitalBulletin.subject}\n\n${p.hospitalBulletin.body}</div>
+        <p class="section-label">Driver SMS drafts (${p.driverComms.length})</p>
+        ${smsHtml || "<p class='brief-empty'>No driver comms</p>"}
+      `;
+
+      switchOpsTab("action");
+      document.getElementById("briefMode").textContent = "monitor + triage + action · demo";
+      document.getElementById("hitlNemt").textContent = "COMMS-03 staged — review";
+      document.getElementById("hitlHospital").textContent = "COMMS-03 staged — review";
+      if (result.audit) renderAudit(result.audit);
+    }
+
+    async function runAction() {
+      const btn = document.getElementById("runAction");
+      btn.disabled = true;
+      btn.textContent = "Running…";
+      try {
+        const res = await fetch("/api/agents/action/pack", { method: "POST" });
+        const data = await res.json();
+        if (data.ok) {
+          renderAction(data);
+        }
+        await loadLogs();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Action";
+      }
+    }
+
+    async function runTriage() {
+      const btn = document.getElementById("runTriage");
+      btn.disabled = true;
+      btn.textContent = "Running…";
+      try {
+        const res = await fetch("/api/agents/triage/rank", { method: "POST" });
+        const data = await res.json();
+        if (data.ok) {
+          renderTriage(data);
+          document.getElementById("briefMode").textContent = "monitor + triage · demo";
+        }
+        await loadLogs();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Triage";
+      }
     }
 
     function renderAudit(entry) {
@@ -723,7 +990,10 @@
     async function loadStatus() {
       const res = await fetch("/api/status");
       const data = await res.json();
-      document.getElementById("phasePill").textContent = data.phase.replace(/_/g, " ").replace(/week 1/i, "Week 1 ·");
+      document.getElementById("phasePill").textContent = data.phase
+        .replace(/_/g, " ")
+        .replace(/week (\d)/i, "Week $1 ·")
+        .replace(/day (\d)/i, "Day $1");
       renderModules(data.modules);
     }
 
@@ -759,7 +1029,12 @@
       }
     }
 
+    document.getElementById("tabMonitor").addEventListener("click", () => switchOpsTab("monitor"));
+    document.getElementById("tabTriage").addEventListener("click", () => switchOpsTab("triage"));
+    document.getElementById("tabAction").addEventListener("click", () => switchOpsTab("action"));
     document.getElementById("runMonitor").addEventListener("click", runMonitor);
+    document.getElementById("runTriage").addEventListener("click", runTriage);
+    document.getElementById("runAction").addEventListener("click", runAction);
     document.getElementById("runWeek1Demo").addEventListener("click", runWeek1Demo);
     document.getElementById("refreshSignals").addEventListener("click", () => loadSignals(true));
 

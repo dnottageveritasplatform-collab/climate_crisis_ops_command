@@ -54,7 +54,31 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ## Status
 
-**Week 1, Day 7 complete — Week 1 exit criteria met.** Logbook #1, architecture diagram, audit trail, and one-click Week 1 demo: signal → Monitor brief → map → audit entry.
+**Week 2, Day 9 complete** — Action agent generates operational checklist, COMMS-03 hospital bulletin draft, and driver SMS drafts. All drafts require dual HITL before send. Demo mode — no Nebius/LLM required.
+
+### Day 9 quick test
+
+```bash
+npm start
+curl -X POST http://127.0.0.1:8787/api/agents/action/pack
+npm run action:pack
+# Open http://127.0.0.1:8787 — Monitor → Triage → Action; Action tab shows checklist + COMMS-03 + SMS
+```
+
+Action flow: `get_signal_status` → `summarize_dispatch` → `query_sop(COMMS-03)` → checklist + bulletin + driver comms → audit entry.
+
+### Day 8 quick test
+
+```bash
+npm start
+curl -X POST http://127.0.0.1:8787/api/agents/triage/rank
+npm run triage:rank
+# Open http://127.0.0.1:8787 — Run Monitor, then Triage; map shows #rank labels
+```
+
+Triage flow: `get_signal_status` → `summarize_dispatch(level)` → ranked trips / facilities / corridor conflicts → audit entry.
+
+**LLM note:** Leave `DEMO_MODE=true` and no `LLM_*` keys until Nebius business email is set up. Demo scoring is judge-ready.
 
 ### Day 7 quick test (Week 1 exit criteria)
 

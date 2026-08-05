@@ -9,7 +9,9 @@
     "dev": "node --watch src/server.js",
     "spike:monitor": "node -e \"import('./src/agents/monitor/brief.js').then(m=>m.runMonitorBrief()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
     "brief:monitor": "node -e \"import('./src/agents/monitor/brief.js').then(m=>m.runMonitorBrief()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
-    "demo:week1": "node -e \"import('./src/demo/week1.js').then(m=>m.runWeek1Demo()).then(r=>console.log(JSON.stringify({ok:r.ok,exitCriteria:r.exitCriteria,auditId:r.audit?.id,briefLevel:r.monitor?.brief?.level,mapAtRisk:r.map?.atRiskCount},null,2)))\""
+    "demo:week1": "node -e \"import('./src/demo/week1.js').then(m=>m.runWeek1Demo()).then(r=>console.log(JSON.stringify({ok:r.ok,exitCriteria:r.exitCriteria,auditId:r.audit?.id,briefLevel:r.monitor?.brief?.level,mapAtRisk:r.map?.atRiskCount},null,2)))\"",
+    "triage:rank": "node -e \"import('./src/agents/triage/rank.js').then(m=>m.runTriageRank()).then(r=>console.log(JSON.stringify({ok:true,topTrip:r.ranking.rankedTrips[0],conflicts:r.ranking.corridorConflicts},null,2)))\"",
+    "action:pack": "node -e \"import('./src/agents/action/pack.js').then(m=>m.runActionPack()).then(r=>console.log(JSON.stringify({ok:true,checklist:r.pack.checklist.length,bulletin:r.pack.hospitalBulletin.subject,driverComms:r.pack.driverComms.length},null,2)))\""
   },
   "engines": {
     "node": ">=18"
