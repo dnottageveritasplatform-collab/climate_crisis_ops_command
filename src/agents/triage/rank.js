@@ -1,17 +1,21 @@
+import { config } from "../../config.js";
+import { beginAgentRun, endAgentRun } from "../../efficiency/index.js";
 import { corridorStatusForLevel, loadDispatch } from "../../dispatch/index.js";
 import { buildMapLayersFromTriage, loadGeoLayers, isHospitalPartner, setLastTriageRanking } from "../../geo/index.js";
 import { recordTriageRank } from "../../audit/index.js";
 import { logAgentEvent } from "../runtime/logger.js";
+import { callLlmJson, getLlmConfig } from "../runtime/llm.js";
 import { runTool } from "../runtime/tools.js";
 
 const PRIORITY_SCORE = { P1: 100, P2: 70, P3: 40, P4: 20 };
 
 /**
- * Day 8 Triage agent: rank impacted trips, facilities, and corridor conflicts.
- * Demo mode — deterministic scoring, no LLM/Nebius required.
+ * Triage agent: rank impacted trips, facilities, and corridor conflicts.
+ * Deterministic scoring + map sync; LLM enriches summary and trip reasons when LLM mode on.
  */
 export async function runTriageRank({ level } = {}) {
   const agent = "triage";
+  const startedAt = beginAgentRun(agent);
   logAgentEvent("agent_start", { agent, message: "Triage rank started" });
 
   logAgentEvent("tool_call", { agent, tool: "get_signal_status", args: {} });
@@ -29,28 +33,119 @@ export async function runTriageRank({ level } = {}) {
     result: dispatch,
   });
 
-  const ranking = buildTriageRanking(threshold, signal, dispatch);
+  const toolResults = [
+    { tool: "get_signal_status", result: signal },
+    { tool: "summarize_dispatch", args: { level: threshold }, result: dispatch },
+  ];
+
+  const demoRanking = buildTriageRanking(threshold, signal, dispatch);
+  let ranking = demoRanking;
+  let mode = "demo";
+  const llm = getLlmConfig();
+
+  if (llm.enabled && !config.demoMode) {
+    try {
+      const llmRanking = await llmTriageRank({ toolResults, demoRanking, threshold, llm });
+      ranking = mergeLlmTriageRanking(demoRanking, llmRanking);
+      mode = llm.provider;
+    } catch (err) {
+      console.warn("[triage] LLM rank failed, using demo scoring:", err.message);
+    }
+  }
 
   setLastTriageRanking(ranking);
   const map = buildMapLayersFromTriage(ranking);
 
-  logAgentEvent("agent_complete", { agent, mode: "demo", message: "Triage rank ready" });
+  logAgentEvent("agent_complete", { agent, mode, message: "Triage rank ready" });
 
-  const audit = recordTriageRank({ signal, ranking, threshold, mode: "demo" });
+  const audit = recordTriageRank({ signal, ranking, threshold, mode });
+  const efficiency = endAgentRun(agent, mode, startedAt);
 
   return {
     agent,
-    mode: "demo",
+    mode,
     framework: "openclaw-compatible-loop",
     threshold,
-    toolResults: [
-      { tool: "get_signal_status", result: signal },
-      { tool: "summarize_dispatch", args: { level: threshold }, result: dispatch },
-    ],
+    toolResults,
     ranking,
     map,
     audit,
+    efficiency,
   };
+}
+
+const TRIAGE_LLM_SYSTEM = `You are the Triage agent for Climate & Crisis Ops Command (Nassau Metro NEMT + hospital partners).
+Given tool results and a pre-computed deterministic ranking, produce JSON that ENRICHES the ranking — do NOT reorder trips or change ranks/scores.
+
+Required keys:
+- summary (string): 2-3 sentence multi-agency triage narrative citing top trip IDs, hospital partner pressure, and corridor conflicts
+- rankedTrips (array): { id, reasons } — id must match existing trip IDs; reasons is 1-3 short strings explaining priority (corridor, P1, clinical)
+- corridorNotes (optional array): { corridor, note } — brief analyst note for CORR-01/CORR-02 conflicts
+
+Rules:
+- Use exact trip IDs (T-1001 etc.), corridor IDs, and facility names from tool results and demoRanking
+- Do not invent trips or change rank order
+- Mention PMH (Princess Margaret) and Doctor's Hospital when relevant
+- Flag CORR-02 restricted and dialysis/oncology P1 trips explicitly when present`;
+
+async function llmTriageRank({ toolResults, demoRanking, threshold, llm }) {
+  const context = {
+    threshold,
+    toolResults,
+    deterministicRanking: {
+      summary: demoRanking.summary,
+      rankedTrips: demoRanking.rankedTrips.slice(0, 12),
+      rankedFacilities: demoRanking.rankedFacilities,
+      corridorConflicts: demoRanking.corridorConflicts,
+    },
+  };
+
+  const { json } = await callLlmJson({
+    llm,
+    agent: "triage",
+    system: TRIAGE_LLM_SYSTEM,
+    user: `Enrich triage ranking JSON from this context:\n${JSON.stringify(context, null, 2)}`,
+  });
+  return json;
+}
+
+/** Overlay LLM narrative onto deterministic ranking (ranks/scores/map pins unchanged). */
+function mergeLlmTriageRanking(demoRanking, llmRanking) {
+  const ranking = structuredClone(demoRanking);
+
+  if (typeof llmRanking.summary === "string" && llmRanking.summary.trim()) {
+    ranking.summary = llmRanking.summary.trim();
+  }
+
+  if (Array.isArray(llmRanking.rankedTrips)) {
+    const byId = Object.fromEntries(
+      llmRanking.rankedTrips.filter((t) => t.id).map((t) => [t.id, t])
+    );
+    ranking.rankedTrips = ranking.rankedTrips.map((trip) => {
+      const llmTrip = byId[trip.id];
+      if (!llmTrip?.reasons) return trip;
+      const reasons = Array.isArray(llmTrip.reasons)
+        ? llmTrip.reasons.map(String).filter(Boolean)
+        : [String(llmTrip.reasons)];
+      return reasons.length ? { ...trip, reasons } : trip;
+    });
+  }
+
+  if (Array.isArray(llmRanking.corridorNotes)) {
+    const notes = Object.fromEntries(
+      llmRanking.corridorNotes.filter((c) => c.corridor).map((c) => [c.corridor, c.note])
+    );
+    ranking.corridorConflicts = ranking.corridorConflicts.map((c) =>
+      notes[c.corridor] ? { ...c, analystNote: String(notes[c.corridor]) } : c
+    );
+  }
+
+  ranking.confidence = {
+    score: 0.85,
+    basis: ["deterministic scoring", "dispatch manifest", "corridor status", "llm enrichment"],
+  };
+
+  return ranking;
 }
 
 function buildTriageRanking(level, signal, dispatch) {
@@ -182,12 +277,16 @@ function severityRank(s) {
 
 function buildSummary(rankedTrips, rankedFacilities, corridorConflicts, level) {
   const top = rankedTrips.slice(0, 3).map((t) => t.id).join(", ") || "none";
-  const topFacility = rankedFacilities[0]?.name || "unknown";
+  const hospitalPartners = rankedFacilities
+    .filter((f) => f.role === "hospital_partner" || f.role === "hospital_partner_private")
+    .map((f) => f.name)
+    .slice(0, 2)
+    .join(" + ");
   const conflicts = corridorConflicts.filter((c) => c.severity !== "watch").length;
   return (
-    `Level ${level} triage: ${rankedTrips.length} trip(s) ranked. ` +
-    `Top impacts: ${top}. ` +
-    `Primary facility pressure: ${topFacility}. ` +
-    `${conflicts} corridor conflict(s) require routing review.`
+    `Level ${level} multi-agency triage: ${rankedTrips.length} trip(s) ranked across NEMT + hospital partners. ` +
+    `Highest priority: ${top}. ` +
+    `Hospital pressure: ${hospitalPartners || rankedFacilities[0]?.name || "unknown"}. ` +
+    `${conflicts} corridor conflict(s) — liaisons must review before COMMS-03 release.`
   );
 }

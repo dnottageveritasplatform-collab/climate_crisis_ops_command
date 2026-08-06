@@ -1,5 +1,6 @@
 node_modules/
 .env
+docs/MINIMAX.txt
 .DS_Store
 Thumbs.db
 *.log

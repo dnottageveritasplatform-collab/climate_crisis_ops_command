@@ -4,10 +4,10 @@
   "weather": {
     "level": 2,
     "label": "Prepare",
-    "event": "Tropical Storm Warning - New Providence (DEMO)",
+    "event": "Tropical Storm Warning — New Providence (DEMO)",
     "issuedAt": "2026-08-03T18:00:00Z",
     "source": "demo_mock",
-    "summary": "Tropical Storm Alma approaching NW Bahamas. Sustained winds 45-55 kt. Storm surge 2-4 ft possible on north shore. NHC track cone includes New Providence.",
+    "summary": "Tropical Storm Alma approaching NW Bahamas. Sustained winds 45–55 kt. Storm surge 2–4 ft possible on north shore. Multi-agency transport coordination advised for Nassau Metro NEMT and hospital partners (PMH, Doctor's Hospital).",
     "affectedZones": ["New Providence", "Paradise Island"]
   },
   "institutional": [
@@ -16,8 +16,8 @@
       "source": "UN OCHA Caribbean (demo)",
       "type": "humanitarian",
       "severity": "moderate",
-      "headline": "Flash Update: Tropical system may disrupt health transport in Nassau metro",
-      "summary": "OCHA notes dialysis and oncology patients at elevated risk if bridge closures occur. Coordination with local NEMT operators recommended.",
+      "headline": "Flash Update: Dialysis transport at risk if CORR-01/CORR-02 close",
+      "summary": "OCHA recommends coordinated holds between Nassau Metro NEMT and Princess Margaret / Doctor's Hospital transport desks. P1 dialysis patients flagged across both hospital partners.",
       "issuedAt": "2026-08-03T17:30:00Z"
     },
     {
@@ -25,8 +25,8 @@
       "source": "World Bank GFDRR (demo)",
       "type": "infrastructure",
       "severity": "watch",
-      "headline": "Paradise Island bridge corridor flagged in regional exposure index",
-      "summary": "Historical flood exposure on Eastern Road low segment correlates with prior storm washouts. Monitor CORR-01 and CORR-02 status.",
+      "headline": "Paradise Island bridge + Eastern Road segments in regional exposure index",
+      "summary": "Historical flood exposure on CORR-01 (Paradise Island approach) and CORR-02 (Eastern Road low segment). NEMT operators should sync corridor status with hospital liaisons before releasing P1 routes.",
       "issuedAt": "2026-08-03T16:45:00Z"
     }
   ]

@@ -1,6 +1,8 @@
 import { config } from "../../config.js";
+import { beginAgentRun, endAgentRun } from "../../efficiency/index.js";
 import { recordMonitorBrief } from "../../audit/index.js";
 import { logAgentEvent } from "../runtime/logger.js";
+import { callLlmJson, getLlmConfig } from "../runtime/llm.js";
 import { listTools, runTool } from "../runtime/tools.js";
 
 /**
@@ -8,6 +10,7 @@ import { listTools, runTool } from "../runtime/tools.js";
  */
 export async function runMonitorBrief() {
   const agent = "monitor";
+  const startedAt = beginAgentRun(agent);
   logAgentEvent("agent_start", { agent, message: "Monitor brief started" });
 
   logAgentEvent("tool_call", { agent, tool: "get_signal_status", args: {} });
@@ -30,7 +33,14 @@ export async function runMonitorBrief() {
 
   if (llm.enabled && !config.demoMode) {
     mode = llm.provider;
-    brief = await llmBrief(toolResults, llm);
+    const { json } = await callLlmJson({
+      llm,
+      agent,
+      system:
+        "You are the Monitor agent for Climate & Crisis Ops Command. Produce a concise situation brief JSON with keys: severity, level, event, geography, summary, sopCitations (array of {sopId, section, ref, text}), recommendedActions (array), institutionalSignals (array), affectedCorridors (object), confidence ({score, basis}).",
+      user: `Tool results:\n${JSON.stringify(toolResults, null, 2)}`,
+    });
+    brief = normalizeLlmBrief(json, signalResult);
   } else {
     brief = buildThresholdBrief(toolResults);
   }
@@ -44,6 +54,8 @@ export async function runMonitorBrief() {
     mode,
   });
 
+  const efficiency = endAgentRun(agent, mode, startedAt);
+
   return {
     agent,
     mode,
@@ -53,6 +65,7 @@ export async function runMonitorBrief() {
     toolResults,
     brief,
     audit,
+    efficiency,
   };
 }
 
@@ -108,10 +121,10 @@ function buildSummary(signal, dispatch) {
   const corridors = (dispatch.corridors || []).join(", ");
   const geo = signal.serviceArea || "service area";
   return (
-    `Level ${signal.level} ${signal.label} for ${geo}. ` +
-    `${inst} institutional signal(s). ` +
-    `${atRisk} trip(s) at risk of ${dispatch.totalTrips} scheduled. ` +
-    `Corridors: ${corridors}.`
+    `Level ${signal.level} ${signal.label} — multi-agency coordination for ${geo}. ` +
+    `${inst} institutional signal(s) (OCHA + GFDRR demo feeds). ` +
+    `${atRisk} of ${dispatch.totalTrips} NEMT trips at risk; hospital partners PMH and Doctor's Hospital on shared manifest. ` +
+    `Corridor sync required: ${corridors}.`
   );
 }
 
@@ -167,44 +180,27 @@ function findResult(toolResults, tool) {
   return toolResults.find((t) => t.tool === tool)?.result || {};
 }
 
-function getLlmConfig() {
-  const baseUrl = (process.env.LLM_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
-  const apiKey = process.env.LLM_API_KEY || process.env.OPENAI_API_KEY || "";
-  const model = process.env.LLM_MODEL || process.env.OPENAI_MODEL || "gpt-4o-mini";
-  const provider =
-    process.env.LLM_PROVIDER ||
-    (baseUrl.includes("11434") || baseUrl.includes("ollama") ? "ollama" : null) ||
-    (baseUrl.includes("groq.com") ? "groq" : null) ||
-    (apiKey ? "openai" : null) ||
-    "llm";
-  const enabled = Boolean(process.env.LLM_BASE_URL || apiKey);
-  return { baseUrl, apiKey, model, provider, enabled };
-}
-
-async function llmBrief(toolResults, llm) {
-  const payload = JSON.stringify(toolResults, null, 2);
-  const headers = { "Content-Type": "application/json" };
-  if (llm.apiKey) headers.Authorization = `Bearer ${llm.apiKey}`;
-
-  const res = await fetch(`${llm.baseUrl}/chat/completions`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      model: llm.model,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are the Monitor agent for Climate & Crisis Ops Command. Produce a concise situation brief JSON with keys: severity, level, event, geography, summary, sopCitations (array of {sopId, section, ref, text}), recommendedActions (array), institutionalSignals (array), affectedCorridors (object), confidence ({score, basis}).",
-        },
-        { role: "user", content: `Tool results:\n${payload}` },
-      ],
-      response_format: { type: "json_object" },
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`${llm.provider} error: ${res.status} ${await res.text()}`);
+/** Coerce LLM JSON into the shape the UI and audit expect. */
+function normalizeLlmBrief(brief, signal) {
+  const b = { ...brief };
+  if (b.level == null) b.level = signal?.level ?? 2;
+  if (!Array.isArray(b.recommendedActions)) {
+    b.recommendedActions = b.recommendedActions ? [String(b.recommendedActions)] : [];
   }
-  const data = await res.json();
-  return JSON.parse(data.choices[0].message.content);
+  if (!Array.isArray(b.sopCitations)) b.sopCitations = [];
+  if (!Array.isArray(b.institutionalSignals)) {
+    b.institutionalSignals = b.institutionalSignals ? [String(b.institutionalSignals)] : [];
+  }
+  if (b.confidence) {
+    const basis = b.confidence.basis;
+    if (basis != null && !Array.isArray(basis)) {
+      b.confidence = { ...b.confidence, basis: [String(basis)] };
+    } else if (!basis) {
+      b.confidence = { ...b.confidence, basis: ["llm"] };
+    }
+    if (b.confidence.score > 1) b.confidence.score = b.confidence.score / 100;
+  } else {
+    b.confidence = { score: 0.75, basis: ["llm"] };
+  }
+  return b;
 }

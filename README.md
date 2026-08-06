@@ -27,6 +27,9 @@ Open http://127.0.0.1:8787 — health check at `/api/health`.
 
 - `SPRINT.docx` — 21-day plan, demo script, pitch outline, Logbook templates
 - `docs/logbook-week1.md` — Logbook entry #1 (Day 7, paste-ready)
+- `docs/logbook-week2.md` — Logbook entry #2 (Day 14, paste-ready)
+- `docs/demo-2min-capture.md` — 2-min screen capture script (Day 14)
+- `docs/demo-5min-rehearsal.md` — 5-min pitch rehearsal (Day 17)
 - `docs/architecture-diagram.html` — Week 1 architecture diagram (Day 7)
 - `docs/architecture.docx` — system architecture, dual HITL, thin GIS layer, Phase 2 roadmap
 - `docs/track-switch-note.docx` — send to Future Caribbean organizers (Day 1)
@@ -45,7 +48,8 @@ src/audit/        Audit log (Week 2)
 src/sops/         Crisis SOP RAG corpus (Week 1 Day 6+)
 src/dispatch/     NEMT dispatch manifest loader (Week 1 Day 6+)
 src/geo/          Thin map layers (Week 1 Day 6+)
-src/ui/public/    Command surface shell
+src/eval/          Eval harness — scripted scenarios (Week 3)
+src/efficiency/    Token + latency logging (Week 3)
 data/             Sample dispatch CSV + GeoJSON corridors/facilities
 docs/             Architecture and SOP Word docs
 ```
@@ -56,7 +60,60 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ## Status
 
-**Week 2, Day 13 complete** — Full audit trail: pipeline steps, SOP citations, triple approver names + timestamps. Scrollable audit panel in UI; `GET /api/audit/trail`.
+**Week 3, Day 17 complete** — 5-minute demo rehearsal script with eval + efficiency stats injection.
+
+### Day 17 quick test
+
+```bash
+npm run eval:run
+npm run demo:rehearsal
+curl.exe http://127.0.0.1:8787/api/demo/rehearsal
+curl.exe "http://127.0.0.1:8787/api/demo/rehearsal?format=text"
+```
+
+**Deliverables:** `docs/demo-5min-rehearsal.md` · `src/demo/rehearsal.js` · `GET /api/demo/rehearsal`
+
+Rehearse live demo per beat sheet; proof segment pulls 8/8 eval + last pipeline ms/tokens. Shorter judge cut: `docs/demo-2min-capture.md`.
+
+### Day 16 quick test
+
+```bash
+npm run efficiency:pipeline
+npm run efficiency:summary
+curl.exe http://127.0.0.1:8787/api/efficiency/summary
+curl.exe http://127.0.0.1:8787/api/efficiency/narrative
+```
+
+**Deliverables:** `src/efficiency/index.js` · `docs/efficiency-narrative.md` · `GET /api/efficiency/*`
+
+Metrics logged: per-agent latency, LLM prompt/completion/total tokens, last pipeline rollup. Demo mode = 0 tokens; MiniMax (or configured provider) logs usage when `DEMO_MODE=false`.
+
+### Day 15 quick test
+
+```bash
+npm run eval:run
+curl.exe http://127.0.0.1:8787/api/eval/scenarios
+curl.exe -X POST http://127.0.0.1:8787/api/eval/run
+curl.exe http://127.0.0.1:8787/api/eval/results
+```
+
+Scenarios assert at-risk trip counts, corridor status, triage rank order, COMMS-03 bulletins, triple HITL staging, map sync, and pipeline audit entries. Default eval run uses `skipLlm: true` (demo mode) for fast, deterministic CI-style checks.
+
+**Deliverables:** `data/eval/scenarios.json` · `src/eval/index.js` · `GET/POST /api/eval/*`
+
+### Day 14 quick test
+
+```bash
+npm start
+curl.exe http://127.0.0.1:8787/api/scenario
+curl.exe -X POST http://127.0.0.1:8787/api/orchestrator/run
+# Open http://127.0.0.1:8787 — scenario strip, named HITL personas, multi-agency alert copy
+# Record walkthrough using docs/demo-2min-capture.md
+```
+
+**Deliverables:** `docs/logbook-week2.md` · `docs/demo-2min-capture.md` · `docs/mockups/command-center-llm-mode.jpg`
+
+**Week 2 exit criteria:** ✅ End-to-end pipeline · ✅ Triage-synced map · ✅ Triple HITL approved · ✅ Audit trail with citations + approvers
 
 ### Day 13 quick test
 

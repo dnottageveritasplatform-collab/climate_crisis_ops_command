@@ -183,6 +183,17 @@ def build_sprint_doc():
         ],
     )
 
+    doc.add_heading("Logbook Entry #2 (Paste-Ready)", level=1)
+    doc.add_paragraph(
+        "Week 2 - Climate & Crisis Ops Command\n\n"
+        "Track: Climate Risk & Disaster Coordination.\n\n"
+        "Week 2 delivered: Triage agent + map sync, Action agent + COMMS-03, triple HITL "
+        "(NEMT + PMH + Doctor's Hospital), orchestrator pipeline, full audit trail, "
+        "multi-agency scenario polish, Logbook #2, 2-min screen capture script.\n\n"
+        "Exit criteria met: end-to-end workflow with triage-synced map and triple-approved action pack.\n\n"
+        "Next: Week 3 eval harness, efficiency narrative, 5-min demo rehearsal, staging deploy."
+    )
+
     doc.add_heading("Logbook Entry #1 (Paste-Ready)", level=1)
     doc.add_paragraph(
         "Week 1 - Climate & Crisis Ops Command\n\n"

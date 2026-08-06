@@ -60,6 +60,7 @@
     .pill.aqua { color: var(--aqua); border-color: rgba(0,171,201,.35); background: rgba(0,171,201,.08); }
     .pill.gold { color: var(--gold); border-color: rgba(255,199,44,.35); background: rgba(255,199,44,.08); }
     .pill.ok { color: var(--ok); border-color: rgba(95,212,164,.35); background: rgba(95,212,164,.08); }
+    .pill.warn { color: var(--gold); border-color: rgba(255,199,44,.45); background: rgba(255,199,44,.12); }
 
     .toolbar {
       display: flex; gap: 0.5rem; flex-wrap: wrap;
@@ -107,12 +108,45 @@
     .alert-text strong { color: var(--text); }
     .alert-meta { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
 
+    .scenario-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.45rem 1.5rem;
+      background: rgba(0, 171, 201, 0.06);
+      border-bottom: 1px solid rgba(0, 171, 201, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .scenario-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--aqua);
+      border: 1px solid rgba(0, 171, 201, 0.35);
+      background: rgba(0, 171, 201, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .scenario-text { flex: 1; min-width: 220px; color: #b8c8d4; line-height: 1.35; }
+    .scenario-demo {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
     .workspace {
       display: grid;
       grid-template-columns: 280px 1fr 360px;
       grid-template-rows: 1fr auto auto;
       gap: 0;
-      height: calc(100vh - 108px);
+      height: calc(100vh - 144px);
       min-height: 620px;
     }
     .workspace.audit-hidden {
@@ -577,7 +611,9 @@
       border: 1px solid var(--border);
       color: var(--muted);
     }
-    .role-head { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem; }
+    .role-head { display: flex; flex-direction: column; gap: 0.1rem; margin-bottom: 0.35rem; }
+    .role-head-row { display: flex; align-items: center; gap: 0.35rem; }
+    .role-sub { font-size: 0.58rem; color: var(--muted); font-weight: 400; margin-left: 1.35rem; }
     .role-head .icon { font-size: 0.9rem; opacity: 0.7; }
     .role-head strong { color: var(--text); font-size: 0.68rem; }
     .role-status {
@@ -676,12 +712,12 @@
       <div class="brand-icon">CCOC</div>
       <div>
         <h1>Climate &amp; Crisis Ops Command</h1>
-        <p>Future Caribbean 2026 · NEMT + Hospital Liaison Coordination</p>
+        <p>Future Caribbean 2026 · Multi-agency NEMT + hospital coordination</p>
       </div>
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Week 2 · Day 13</span>
+      <span class="pill gold" id="phasePill">Week 3 · Day 17</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
@@ -698,6 +734,12 @@
     <span class="alert-level" id="alertLevel">—</span>
     <p class="alert-text" id="alertText">Loading signal feed…</p>
     <span class="alert-meta" id="alertMeta"></span>
+  </div>
+
+  <div class="scenario-strip" id="scenarioStrip">
+    <span class="scenario-tag">Multi-agency scenario</span>
+    <span class="scenario-text" id="scenarioText">Tropical Storm Alma — Nassau Metro NEMT + PMH + Doctor's Hospital · CORR-01 / CORR-02 corridor sync</span>
+    <span class="scenario-demo" id="scenarioDemo">DEMO DATA</span>
   </div>
 
   <div class="workspace" id="workspace">
@@ -777,10 +819,13 @@
         <div class="modules" id="modules"></div>
       </div>
       <div class="hitl-panel">
-        <h3>Triple HITL Approval Gate</h3>
+        <h3>Triple HITL · Multi-agency approval gate</h3>
         <div class="hitl-roles">
           <div class="role" id="roleNemt">
-            <div class="role-head"><span class="icon">🚌</span><strong>NEMT Supervisor</strong></div>
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🚌</span><strong>NEMT Supervisor</strong></div>
+              <span class="role-sub">Maria Clarke · Nassau Metro NEMT</span>
+            </div>
             <span class="role-status idle" id="hitlNemt">Awaiting action pack</span>
             <div class="role-actions">
               <button type="button" id="btnNemtReview" disabled>Review</button>
@@ -788,7 +833,10 @@
             </div>
           </div>
           <div class="role" id="rolePmh">
-            <div class="role-head"><span class="icon">🏥</span><strong>PMH Liaison</strong></div>
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🏥</span><strong>PMH Liaison</strong></div>
+              <span class="role-sub">James Rolle · Princess Margaret (public)</span>
+            </div>
             <span class="role-status idle" id="hitlPmh">Awaiting action pack</span>
             <div class="role-actions">
               <button type="button" id="btnPmhReview" disabled>Review</button>
@@ -796,7 +844,10 @@
             </div>
           </div>
           <div class="role" id="roleDoctors">
-            <div class="role-head"><span class="icon">🏨</span><strong>Doctor's Liaison</strong></div>
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🏨</span><strong>Doctor's Liaison</strong></div>
+              <span class="role-sub">Dr. Elaine Moss · Doctor's Hospital (private)</span>
+            </div>
             <span class="role-status idle" id="hitlDoctors">Awaiting action pack</span>
             <div class="role-actions">
               <button type="button" id="btnDoctorsReview" disabled>Review</button>
@@ -849,12 +900,24 @@
 
     let tripRanks = {};
     let lastTriageMap = null;
+    let llmProviderLabel = "LLM";
+    let mapLoadGen = 0;
     let hitlState = null;
     let hitlModalRole = null;
     let mapBaseViewBox = { x: 0, y: 0, w: 800, h: 480 };
     let mapZoom = 1;
     const MAP_ZOOM_MIN = 1;
     const MAP_ZOOM_MAX = 5;
+    function formatLlmProvider(provider) {
+      const key = String(provider || "llm").toLowerCase();
+      const labels = { minimax: "MiniMax", groq: "Groq", openai: "OpenAI", ollama: "Ollama" };
+      return labels[key] || key.charAt(0).toUpperCase() + key.slice(1);
+    }
+
+    function llmWaitHint(seconds) {
+      return `${llmProviderLabel} LLM${seconds ? ` (${seconds})` : ""}`;
+    }
+
     let auditTrailVisible = true;
 
     const HITL_ROLES = {
@@ -870,9 +933,9 @@
     ];
 
     const HITL_APPROVER_NAMES = {
-      [HITL_ROLES.nemt]: "NEMT Supervisor (demo)",
-      [HITL_ROLES.pmh]: "PMH Liaison (demo)",
-      [HITL_ROLES.doctors]: "Doctor's Liaison (demo)",
+      [HITL_ROLES.nemt]: "Maria Clarke, Dispatch Supervisor (Nassau Metro · demo)",
+      [HITL_ROLES.pmh]: "James Rolle, Transport Coordinator (PMH · demo)",
+      [HITL_ROLES.doctors]: "Dr. Elaine Moss, Transport Liaison (Doctor's · demo)",
     };
 
     function roleStatusText(roleState, released) {
@@ -1110,6 +1173,11 @@
     }
 
     function renderMap(layers, ranks = tripRanks) {
+      mapLoadGen++;
+      paintMap(layers, ranks);
+    }
+
+    function paintMap(layers, ranks = tripRanks) {
       const svg = document.getElementById("mapSvg");
       const badge = document.getElementById("mapBadge");
       const mapMeta = document.getElementById("mapMeta");
@@ -1213,22 +1281,25 @@
     }
 
     async function loadMap(level = 2, ranks = tripRanks, preferTriage = false) {
+      const gen = ++mapLoadGen;
       if (preferTriage || Object.keys(ranks).length) {
         const triageRes = await fetch("/api/geo/layers/triage");
         if (triageRes.ok) {
           const data = await triageRes.json();
+          if (gen !== mapLoadGen) return data;
           lastTriageMap = data;
-          renderMap(data, ranks);
+          paintMap(data, ranks);
           return data;
         }
       }
       const res = await fetch(`/api/geo/layers?level=${level}`);
       const data = await res.json();
-      renderMap(data, ranks);
+      if (gen !== mapLoadGen) return data;
+      paintMap(data, ranks);
       return data;
     }
 
-    function renderAlert(signals) {
+    function renderAlert(signals, { skipMap = false } = {}) {
       const strip = document.getElementById("alertStrip");
       const level = document.getElementById("alertLevel");
       const text = document.getElementById("alertText");
@@ -1245,9 +1316,12 @@
       level.textContent = `LEVEL ${signals.level} · ${signals.label.toUpperCase()}`;
       const summary = signals.weather?.summary || "";
       const instCount = signals.institutional?.length || 0;
-      text.innerHTML = `<strong>${signals.event}</strong> · ${summary.split(".")[0] || signals.serviceArea} · ${instCount} institutional signal${instCount === 1 ? "" : "s"} active`;
+      const instHint = instCount
+        ? ` · OCHA + GFDRR demo feeds active — NEMT + hospital liaisons align on corridor holds`
+        : "";
+      text.innerHTML = `<strong>${signals.event}</strong> · ${summary.split(".")[0] || signals.serviceArea}${instHint} · ${instCount} institutional signal${instCount === 1 ? "" : "s"}`;
       meta.textContent = fmtIssued(signals.weather?.issuedAt || signals.fetchedAt);
-      loadMap(signals.level ?? 2);
+      if (!skipMap) loadMap(signals.level ?? 2);
     }
 
     function renderModules(modules) {
@@ -1339,7 +1413,19 @@
       return `<li><span class="cite-ref">${c.ref || c.sopId || "SOP"}</span>${c.text}</li>`;
     }
 
-    function renderBrief(result) {
+    function formatConfidence(confidence) {
+      if (confidence?.score == null) return "demo";
+      const score = confidence.score <= 1 ? Math.round(confidence.score * 100) : Math.round(confidence.score);
+      const basis = confidence.basis;
+      const basisText = Array.isArray(basis)
+        ? basis.join(", ")
+        : basis
+          ? String(basis)
+          : "llm";
+      return `${score}% (${basisText})`;
+    }
+
+    function renderBrief(result, { skipMap = false } = {}) {
       const panel = document.getElementById("briefPanel");
       const modeEl = document.getElementById("briefMode");
       if (!result?.brief) {
@@ -1352,9 +1438,9 @@
       modeEl.textContent = `${result.mode} mode`;
 
       const atRisk = dispatch.atRiskTrips ?? dispatch.p1Trips;
-      const conf = b.confidence?.score != null
-        ? `${Math.round(b.confidence.score * 100)}% (${(b.confidence.basis || []).join(", ")})`
-        : "demo";
+      const conf = formatConfidence(b.confidence);
+      const actions = Array.isArray(b.recommendedActions) ? b.recommendedActions : [];
+      const citations = Array.isArray(b.sopCitations) ? b.sopCitations : [];
 
       panel.innerHTML = `
         <div class="severity-row">
@@ -1371,12 +1457,12 @@
         </div>
         <p class="confidence">Confidence: ${conf}</p>
         <p class="section-label">Recommended actions</p>
-        <ul class="actions">${(b.recommendedActions || []).map((a) => `<li>${a}</li>`).join("")}</ul>
+        <ul class="actions">${actions.map((a) => `<li>${a}</li>`).join("")}</ul>
         <p class="section-label">SOP citations</p>
-        <ul class="citations">${(b.sopCitations || []).map(formatCitation).join("")}</ul>
+        <ul class="citations">${citations.map(formatCitation).join("")}</ul>
       `;
 
-      loadMap(result.threshold ?? b.level ?? 2);
+      if (!skipMap) loadMap(result.threshold ?? b.level ?? 2);
 
       if (result.audit) renderAudit(result.audit);
 
@@ -1428,7 +1514,7 @@
       const conflictsHtml = r.corridorConflicts.map((c) => `
         <div class="conflict-item ${c.severity === "critical" ? "critical" : ""}">
           <strong>${c.corridor}</strong> · ${c.status.toUpperCase()} · ${c.atRiskTrips} at-risk trip(s)
-          <div class="rank-reason">${c.name}</div>
+          <div class="rank-reason">${c.analystNote || c.name}</div>
         </div>
       `).join("");
 
@@ -1444,9 +1530,10 @@
       `;
 
       switchOpsTab("triage");
+      document.getElementById("briefMode").textContent = `${result.mode || "demo"} mode · triage rank`;
       if (result.map) {
         lastTriageMap = result.map;
-        renderMap(result.map);
+        renderMap(result.map, tripRanks);
       } else {
         loadMap(r.level, tripRanks, true);
       }
@@ -1496,7 +1583,7 @@
       `;
 
       switchOpsTab("action");
-      document.getElementById("briefMode").textContent = "monitor + triage + action · demo";
+      document.getElementById("briefMode").textContent = `${result.mode || "demo"} mode · action pack`;
       if (result.audit) renderAudit(result.audit);
       if (result.hitl) renderHitl(result.hitl);
       else loadHitl();
@@ -1508,18 +1595,31 @@
       btn.disabled = true;
       btn.textContent = "Running…";
       agentBtns.forEach((b) => { b.disabled = true; });
+      setRunStatus(`Pipeline running — ${llmWaitHint("60–120s")} on Monitor + Triage + Action…`);
       try {
-        const res = await fetch("/api/orchestrator/run", { method: "POST" });
-        const data = await res.json();
-        if (data.ok) {
-          if (data.signals) renderAlert(data.signals);
-          renderBrief(data.monitor);
-          renderTriage(data.triage);
-          renderAction(data.action);
-          if (data.audit) renderAudit(data.audit);
-          document.getElementById("briefMode").textContent = "pipeline · HITL staged · demo";
+        const data = await postAgent("/api/orchestrator/run");
+        if (data.signals) renderAlert(data.signals, { skipMap: true });
+        renderBrief(data.monitor, { skipMap: true });
+        renderTriage(data.triage);
+        renderAction(data.action);
+        if (data.map) {
+          lastTriageMap = data.map;
+          renderMap(data.map, tripRanks);
+        }
+        if (data.audit) renderAudit(data.audit);
+        document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
+        if (data.efficiency) {
+          const e = data.efficiency;
+          setRunStatus(
+            `Pipeline complete · ${e.totalLatencyMs} ms · ${e.totalTokens ?? 0} tokens · ${JSON.stringify(e.modes || {})}`
+          );
+        } else {
+          setRunStatus("Pipeline complete");
         }
         await loadLogs();
+      } catch (err) {
+        setRunStatus("Pipeline failed");
+        alert(`Pipeline failed: ${err.message}`);
       } finally {
         btn.disabled = false;
         btn.textContent = "Run Pipeline";
@@ -1531,13 +1631,16 @@
       const btn = document.getElementById("runAction");
       btn.disabled = true;
       btn.textContent = "Running…";
+      setRunStatus(`Action agent — ${llmWaitHint("20–40s")}…`);
       try {
-        const res = await fetch("/api/agents/action/pack", { method: "POST" });
-        const data = await res.json();
-        if (data.ok) {
-          renderAction(data);
-        }
+        const data = await postAgent("/api/agents/action/pack");
+        renderAction(data);
+        if (data.audit) renderAudit(data.audit);
+        setRunStatus("Action complete");
         await loadLogs();
+      } catch (err) {
+        setRunStatus("Action failed");
+        alert(`Action failed: ${err.message}`);
       } finally {
         btn.disabled = false;
         btn.textContent = "Action";
@@ -1548,14 +1651,16 @@
       const btn = document.getElementById("runTriage");
       btn.disabled = true;
       btn.textContent = "Running…";
+      setRunStatus(`Triage agent — ${llmWaitHint("15–30s")}…`);
       try {
-        const res = await fetch("/api/agents/triage/rank", { method: "POST" });
-        const data = await res.json();
-        if (data.ok) {
-          renderTriage(data);
-          document.getElementById("briefMode").textContent = "monitor + triage · demo";
-        }
+        const data = await postAgent("/api/agents/triage/rank");
+        renderTriage(data);
+        if (data.audit) renderAudit(data.audit);
+        setRunStatus("Triage complete");
         await loadLogs();
+      } catch (err) {
+        setRunStatus("Triage failed");
+        alert(`Triage failed: ${err.message}`);
       } finally {
         btn.disabled = false;
         btn.textContent = "Triage";
@@ -1619,14 +1724,58 @@
       return loadAuditTrail();
     }
 
+    function renderScenario(scenario) {
+      if (!scenario) return;
+      if (scenario.strip) document.getElementById("scenarioText").textContent = scenario.strip;
+      if (scenario.demoDisclaimer) {
+        document.getElementById("scenarioDemo").textContent = scenario.demoDisclaimer.split("·")[0].trim();
+      }
+    }
+
     async function loadStatus() {
-      const res = await fetch("/api/status");
-      const data = await res.json();
+      const [statusRes, healthRes] = await Promise.all([
+        fetch("/api/status"),
+        fetch("/api/health"),
+      ]);
+      const data = await statusRes.json();
+      const health = await healthRes.json();
       document.getElementById("phasePill").textContent = data.phase
         .replace(/_/g, " ")
         .replace(/week (\d)/i, "Week $1 ·")
         .replace(/day (\d)/i, "Day $1");
+      renderScenario(data.scenario);
+      const demoPill = document.getElementById("demoPill");
+      if (health.demoMode) {
+        demoPill.textContent = "Demo Mode";
+        demoPill.className = "pill ok";
+      } else if (health.llmKeyConfigured === false) {
+        llmProviderLabel = formatLlmProvider(health.llmProvider);
+        demoPill.textContent = `LLM · ${llmProviderLabel} · no key`;
+        demoPill.className = "pill warn";
+      } else {
+        llmProviderLabel = formatLlmProvider(health.llmProvider);
+        demoPill.textContent = `LLM · ${llmProviderLabel}`;
+        demoPill.className = "pill aqua";
+      }
       renderModules(data.modules);
+    }
+
+    function setRunStatus(message) {
+      document.getElementById("timelineMeta").textContent = message || "Monitor · Triage · Action";
+    }
+
+    async function postAgent(url) {
+      const res = await fetch(url, { method: "POST" });
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(`Server returned invalid response (HTTP ${res.status}). Is npm start running?`);
+      }
+      if (!res.ok || data.ok === false) {
+        throw new Error(data.error || `Request failed (HTTP ${res.status})`);
+      }
+      return data;
     }
 
     async function loadSignals(refresh = false) {
@@ -1647,17 +1796,20 @@
       const btn = document.getElementById("runMonitor");
       btn.disabled = true;
       btn.textContent = "Running…";
+      setRunStatus(`Monitor agent — calling ${llmWaitHint("30–60s")}…`);
       try {
-        const res = await fetch("/api/agents/monitor/brief", { method: "POST" });
-        const data = await res.json();
-        if (data.ok) {
-          renderBrief(data);
-          if (data.audit) renderAudit(data.audit);
-        }
+        const data = await postAgent("/api/agents/monitor/brief");
+        renderBrief(data);
+        if (data.audit) renderAudit(data.audit);
+        document.getElementById("briefMode").textContent = `${data.mode || "demo"} mode`;
+        setRunStatus("Monitor complete");
         await loadLogs();
+      } catch (err) {
+        setRunStatus("Monitor failed");
+        alert(`Monitor failed: ${err.message}`);
       } finally {
         btn.disabled = false;
-        btn.textContent = "Run Monitor";
+        btn.textContent = "Monitor";
       }
     }
 
@@ -1688,11 +1840,16 @@
     initMapZoom();
 
     (async () => {
-      await loadStatus();
-      await loadSignals();
-      await loadLogs();
-      await loadAudit();
-      await loadHitl();
+      try {
+        await loadStatus();
+        await loadSignals();
+        await loadLogs();
+        await loadAudit();
+        await loadHitl();
+      } catch (err) {
+        console.error("Startup load failed:", err);
+        setRunStatus("Startup error — is the server running?");
+      }
     })();
   </script>
 </body>

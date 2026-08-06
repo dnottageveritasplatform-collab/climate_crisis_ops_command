@@ -2,6 +2,8 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { config } from "./config.js";
+import { getLlmConfig } from "./agents/runtime/llm.js";
+import { SCENARIO, scenarioStripText } from "./scenario/index.js";
 import agentsRouter from "./routes/agents.js";
 import signalsRouter from "./routes/signals.js";
 import geoRouter from "./routes/geo.js";
@@ -11,6 +13,8 @@ import auditRouter from "./routes/audit.js";
 import demoRouter from "./routes/demo.js";
 import hitlRouter from "./routes/hitl.js";
 import orchestratorRouter from "./routes/orchestrator.js";
+import evalRouter from "./routes/eval.js";
+import efficiencyRouter from "./routes/efficiency.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -25,22 +29,48 @@ app.use("/api/audit", auditRouter);
 app.use("/api/demo", demoRouter);
 app.use("/api/hitl", hitlRouter);
 app.use("/api/orchestrator", orchestratorRouter);
+app.use("/api/eval", evalRouter);
+app.use("/api/efficiency", efficiencyRouter);
 
 app.get("/api/health", (_req, res) => {
+  const llm = getLlmConfig();
   res.json({
     ok: true,
     service: "climate-crisis-ops-command",
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "week-2-day-13",
-    llm: "demo_mode — Nebius optional when business email available",
+    phase: "week-3-day-17",
+    llmProvider: config.demoMode ? null : llm.provider,
+    llmModel: config.demoMode ? null : llm.model,
+    llmKeyConfigured: config.demoMode ? null : llm.keyConfigured,
+    llmKeyKind: config.demoMode ? null : llm.keyKind,
+    llm: config.demoMode
+      ? "demo_mode — set DEMO_MODE=false + LLM_* for live briefs"
+      : `${llm.provider} — Monitor + Triage + Action agents`,
+    eval: "8 scripted scenarios — POST /api/eval/run",
+    efficiency: "token + latency logging — GET /api/efficiency/summary",
+  });
+});
+
+app.get("/api/scenario", (_req, res) => {
+  res.json({
+    ok: true,
+    ...SCENARIO,
+    strip: scenarioStripText(),
   });
 });
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "week-2-day-13",
+    phase: "week-3-day-17",
+    week3Day17Complete: true,
+    scenario: {
+      id: SCENARIO.id,
+      title: SCENARIO.title,
+      strip: scenarioStripText(),
+      demoDisclaimer: SCENARIO.demoDisclaimer,
+    },
     week1Complete: true,
     llm: { provider: "demo", nebius: "deferred — no business email yet" },
     openclaw: {
@@ -57,7 +87,10 @@ app.get("/api/status", (_req, res) => {
       geo: "triage_sync_ready",
       dispatch: "sample_manifest",
       sops: "rag_corpus",
-      ui: "command_shell_map",
+      eval: "harness_ready",
+      efficiency: "token_latency_logging",
+      demo: "rehearsal_ready",
+      ui: "command_shell_map_polished",
     },
   });
 });

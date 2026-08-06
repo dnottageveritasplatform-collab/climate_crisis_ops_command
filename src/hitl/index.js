@@ -1,4 +1,5 @@
 import { appendAuditEntry } from "../audit/index.js";
+import { hitlApproverName } from "../scenario/index.js";
 
 /** Triple-role HITL: NEMT supervisor + PMH liaison + Doctor's Hospital liaison */
 export const ROLES = {
@@ -11,9 +12,9 @@ export const ROLES = {
 export const HOSPITAL_LIAISON = ROLES.HOSPITAL_LIAISON_PMH;
 
 const ROLE_LABELS = {
-  [ROLES.NEMT_SUPERVISOR]: "NEMT Supervisor",
-  [ROLES.HOSPITAL_LIAISON_PMH]: "PMH Liaison",
-  [ROLES.HOSPITAL_LIAISON_DOCTORS]: "Doctor's Liaison",
+  [ROLES.NEMT_SUPERVISOR]: "NEMT Supervisor · Nassau Metro",
+  [ROLES.HOSPITAL_LIAISON_PMH]: "PMH Liaison · Princess Margaret",
+  [ROLES.HOSPITAL_LIAISON_DOCTORS]: "Doctor's Liaison · Private partner",
 };
 
 const ROLE_FACILITY = {
@@ -71,7 +72,7 @@ function gateSummary(gate) {
       ok: true,
       active: false,
       state: "idle",
-      message: "Awaiting action pack — run Action to stage COMMS-03 for triple approval",
+      message: "Awaiting action pack — run Pipeline or Action to stage COMMS-03 for triple multi-agency approval",
       roles: Object.fromEntries(REQUIRED_ROLES.map((r) => [r, { ...emptyRoleState(), label: ROLE_LABELS[r] }])),
     };
   }
@@ -104,7 +105,7 @@ function gateSummary(gate) {
     roles: roleStates,
     message: gate.released || allApproved
       ? "Triple HITL complete — all approvers signed off (demo: send blocked)"
-      : "COMMS-03 staged — NEMT + both hospital liaisons must review and approve",
+      : "COMMS-03 staged — NEMT supervisor + PMH liaison + Doctor's liaison must each review and approve",
   };
 }
 
@@ -226,7 +227,7 @@ export function approveHitl(role, { approver, notes, bulletinSubject, bulletinBo
 
   roleState.status = "approved";
   roleState.approvedAt = new Date().toISOString();
-  roleState.approver = approver || ROLE_LABELS[role];
+  roleState.approver = approver || hitlApproverName(role);
   roleState.notes = notes || null;
   if (roleState.reviewedAt == null) roleState.reviewedAt = roleState.approvedAt;
 

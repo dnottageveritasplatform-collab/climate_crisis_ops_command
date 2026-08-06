@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "description": "Scripted storm escalation scenarios for CCOC eval harness (Day 15). Levels drive triage/action; signal feed stays demo.",
+  "scenarios": [
+    {
+      "id": "eval-l1-monitor",
+      "name": "Level 1 Monitor — calm corridor baseline",
+      "level": 1,
+      "expect": {
+        "threshold": 1,
+        "atRiskTrips": 0,
+        "corridorStatus": { "CORR-01": "open", "CORR-02": "open" },
+        "checklistMin": 5,
+        "hospitalBulletins": 2,
+        "driverCommsMin": 0,
+        "hitlStaged": true,
+        "sopCitationsMin": 1
+      }
+    },
+    {
+      "id": "eval-l2-prepare",
+      "name": "Level 2 Prepare — CORR-02 restricted (primary demo)",
+      "level": 2,
+      "expect": {
+        "threshold": 2,
+        "atRiskTrips": 4,
+        "corridorStatus": { "CORR-02": "restricted" },
+        "minRankedTrips": 8,
+        "corridorConflictsMin": 1,
+        "checklistMin": 6,
+        "hospitalBulletins": 2,
+        "driverCommsMin": 4,
+        "hitlStaged": true,
+        "mapSyncSource": "triage",
+        "sopCitationsMin": 2
+      }
+    },
+    {
+      "id": "eval-l2-triage-rank",
+      "name": "Level 2 Triage — P1 dialysis trips ranked first",
+      "level": 2,
+      "expect": {
+        "threshold": 2,
+        "minRankedTrips": 8,
+        "topTripId": "T-1001",
+        "hitlHospitalPartnersMin": 2,
+        "corridorConflictsMin": 1
+      }
+    },
+    {
+      "id": "eval-l2-action-pack",
+      "name": "Level 2 Action — COMMS-03 + driver SMS drafts",
+      "level": 2,
+      "expect": {
+        "threshold": 2,
+        "checklistMin": 7,
+        "hospitalBulletins": 2,
+        "driverCommsMin": 4,
+        "hitlStaged": true,
+        "packHitlRequired": true
+      }
+    },
+    {
+      "id": "eval-l3-restrict",
+      "name": "Level 3 Restrict — both corridors closed",
+      "level": 3,
+      "expect": {
+        "threshold": 3,
+        "atRiskTrips": 7,
+        "corridorStatus": { "CORR-01": "closed", "CORR-02": "closed" },
+        "corridorConflictsMin": 2,
+        "driverCommsMin": 7,
+        "hitlStaged": true
+      }
+    },
+    {
+      "id": "eval-l3-comms-urgent",
+      "name": "Level 3 Action — urgent COMMS-03 subject line",
+      "level": 3,
+      "expect": {
+        "threshold": 3,
+        "hospitalBulletins": 2,
+        "bulletinSubjectContains": "URGENT",
+        "hitlStaged": true
+      }
+    },
+    {
+      "id": "eval-l4-suspend",
+      "name": "Level 4 Suspend — max hold posture",
+      "level": 4,
+      "expect": {
+        "threshold": 4,
+        "atRiskTrips": 7,
+        "checklistMin": 6,
+        "hitlStaged": true
+      }
+    },
+    {
+      "id": "eval-l2-pipeline-audit",
+      "name": "Level 2 Pipeline — full chain + audit entry",
+      "level": 2,
+      "expect": {
+        "threshold": 2,
+        "pipelineSteps": ["monitor", "triage", "action"],
+        "auditType": "pipeline_run",
+        "hitlStaged": true,
+        "minRankedTrips": 8
+      }
+    }
+  ]
+}
