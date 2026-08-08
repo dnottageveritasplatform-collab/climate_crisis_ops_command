@@ -64,7 +64,7 @@ npm run deploy:check
 
 ## Post-deploy checklist
 
-- [ ] `/api/health` returns `ok: true`, `phase: week-3-day-19`
+- [ ] `/api/health` returns `ok: true`, `phase: week-3-day-21`, `sprintComplete: true`
 - [ ] UI loads — scenario strip + map visible
 - [ ] **Run Pipeline** completes (demo mode ~1 s)
 - [ ] Triple HITL approve flow works

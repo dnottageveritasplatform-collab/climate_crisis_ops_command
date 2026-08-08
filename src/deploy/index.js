@@ -46,7 +46,7 @@ export function buildDeployChecklist(baseUrl = `http://127.0.0.1:${config.port}`
 
   return {
     ok: failed.length === 0,
-    phase: "week-3-day-19",
+    phase: "week-3-day-21",
     baseUrl,
     demoMode: config.demoMode,
     port: config.port,

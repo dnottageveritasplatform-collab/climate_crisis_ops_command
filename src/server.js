@@ -17,6 +17,7 @@ import evalRouter from "./routes/eval.js";
 import efficiencyRouter from "./routes/efficiency.js";
 import defensibilityRouter from "./routes/defensibility.js";
 import deployRouter from "./routes/deploy.js";
+import logbookRouter from "./routes/logbook.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -35,6 +36,7 @@ app.use("/api/eval", evalRouter);
 app.use("/api/efficiency", efficiencyRouter);
 app.use("/api/defensibility", defensibilityRouter);
 app.use("/api/deploy", deployRouter);
+app.use("/api/logbook", logbookRouter);
 
 app.get("/api/health", (_req, res) => {
   const llm = getLlmConfig();
@@ -44,7 +46,8 @@ app.get("/api/health", (_req, res) => {
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "week-3-day-19",
+    phase: "week-3-day-21",
+    sprintComplete: true,
     llmProvider: config.demoMode ? null : llm.provider,
     llmModel: config.demoMode ? null : llm.model,
     llmKeyConfigured: config.demoMode ? null : llm.keyConfigured,
@@ -56,6 +59,8 @@ app.get("/api/health", (_req, res) => {
     efficiency: "token + latency logging — GET /api/efficiency/summary",
     defensibility: "Broward credibility + Phase 2 CAD/EMS roadmap — GET /api/defensibility/narrative",
     deploy: "staging checklist — GET /api/deploy/checklist",
+    logbook: "Week 3 summary + mentor questions — GET /api/logbook/week3",
+    demoDay: "live run + Q&A prep — GET /api/demo/runbook · POST /api/demo/preflight",
   });
 });
 
@@ -69,7 +74,10 @@ app.get("/api/scenario", (_req, res) => {
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "week-3-day-19",
+    phase: "week-3-day-21",
+    sprintComplete: true,
+    week3Day21Complete: true,
+    week3Day20Complete: true,
     week3Day19Complete: true,
     scenario: {
       id: SCENARIO.id,
@@ -95,9 +103,10 @@ app.get("/api/status", (_req, res) => {
       sops: "rag_corpus",
       eval: "harness_ready",
       efficiency: "token_latency_logging",
-      demo: "rehearsal_ready",
+      demo: "demo_day_ready",
       defensibility: "narrative_ready",
       deploy: "staging_ready",
+      logbook: "week3_ready",
       ui: "command_shell_map_polished",
     },
   });

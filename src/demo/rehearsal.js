@@ -149,7 +149,7 @@ export function buildRehearsalScript(ctx = {}) {
 
   return {
     ok: true,
-    phase: "week-3-day-19",
+    phase: "week-3-day-21",
     title: "Climate & Crisis Ops Command — 5-minute demo rehearsal",
     totalDurationSec: 300,
     scenario: {

@@ -20,7 +20,13 @@
     "demo:rehearsal": "node -e \"import('./src/demo/rehearsal.js').then(m=>console.log(m.formatRehearsalScriptText(m.buildRehearsalScript())))\"",
     "defensibility:summary": "node -e \"import('./src/defensibility/index.js').then(m=>console.log(JSON.stringify(m.buildDefensibilitySummary(),null,2)))\"",
     "deploy:check": "node -e \"import('./src/deploy/index.js').then(m=>console.log(JSON.stringify(m.buildDeployChecklist(),null,2)))\"",
-    "docker:build": "docker build -t ccoc:staging ."
+    "docker:build": "docker build -t ccoc:staging .",
+    "demo:video": "node scripts/build-demo-video.mjs",
+    "logbook:week3": "node -e \"import('./src/logbook/index.js').then(m=>console.log(m.formatLogbookWeek3Text()))\"",
+    "mentor:questions": "node -e \"import('./src/logbook/index.js').then(m=>console.log(m.formatMentorQuestionsText()))\"",
+    "demo:preflight": "node -e \"import('./src/demo/day21.js').then(m=>m.runDemoDayPreflight()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
+    "demo:runbook": "node -e \"import('./src/demo/day21.js').then(m=>console.log(m.formatDemoDayRunbookText()))\"",
+    "demo:qa": "node -e \"import('./src/demo/day21.js').then(m=>console.log(m.formatQaPrepText()))\""
   },
   "engines": {
     "node": ">=18"

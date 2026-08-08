@@ -28,6 +28,10 @@ Open http://127.0.0.1:8787 — health check at `/api/health`.
 - `SPRINT.docx` — 21-day plan, demo script, pitch outline, Logbook templates
 - `docs/logbook-week1.md` — Logbook entry #1 (Day 7, paste-ready)
 - `docs/logbook-week2.md` — Logbook entry #2 (Day 14, paste-ready)
+- `docs/logbook-week3.md` — Logbook entry #3 (Day 20, paste-ready)
+- `docs/mentor-questions.md` — Prioritized mentor ask list (Day 20)
+- `docs/demo-day-runbook.md` — Demo day live run checklist (Day 21)
+- `docs/demo-day-qa.md` — Judge Q&A prep (Day 21)
 - `docs/demo-2min-capture.md` — 2-min screen capture script (Day 14)
 - `docs/demo-5min-rehearsal.md` — 5-min pitch rehearsal (Day 17)
 - `docs/defensibility-slide.md` — Broward + defensibility pitch copy (Day 18)
@@ -55,6 +59,9 @@ src/geo/          Thin map layers (Week 1 Day 6+)
 src/eval/          Eval harness — scripted scenarios (Week 3)
 src/efficiency/    Token + latency logging (Week 3)
 src/defensibility/ Defensibility narrative + Phase 2 roadmap (Week 3)
+src/deploy/         Staging deploy checklist (Week 3)
+src/logbook/        Logbook #3 + mentor questions (Week 3)
+src/demo/           Rehearsal + demo day runbook (Week 3)
 data/             Sample dispatch CSV + GeoJSON corridors/facilities
 docs/             Architecture and SOP Word docs
 ```
@@ -65,7 +72,39 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ## Status
 
-**Week 3, Day 19 complete** — Docker staging deploy, deploy checklist API, backup demo video guide.
+**21-day sprint complete** — Demo day live run + Q&A prep. Preflight, runbook, and judge Q&A ready.
+
+### Day 21 quick test
+
+```bash
+npm run demo:preflight
+npm run demo:runbook
+npm run demo:qa
+curl.exe http://127.0.0.1:8787/api/demo/runbook
+curl.exe http://127.0.0.1:8787/api/demo/qa
+curl.exe -X POST http://127.0.0.1:8787/api/demo/preflight
+# Live demo: http://127.0.0.1:8787 — Run Pipeline → triple HITL → audit
+```
+
+**Deliverables:** `src/demo/day21.js` · `docs/demo-day-runbook.md` · `docs/demo-day-qa.md` · `GET/POST /api/demo/*`
+
+**Sprint exit criteria:** ✅ End-to-end workflow · ✅ 8/8 eval · ✅ Efficiency metrics · ✅ 5-min demo · ✅ Staging + backup · ✅ Logbooks #1–3
+
+### Day 20 quick test
+
+```bash
+npm run eval:run
+npm run logbook:week3
+npm run mentor:questions
+curl.exe http://127.0.0.1:8787/api/logbook/week3
+curl.exe "http://127.0.0.1:8787/api/logbook/week3?format=text"
+curl.exe http://127.0.0.1:8787/api/logbook/mentor-questions
+curl.exe "http://127.0.0.1:8787/api/logbook/mentor-questions?priority=high&format=text"
+```
+
+**Deliverables:** `src/logbook/index.js` · `docs/logbook-week3.md` · `docs/mentor-questions.md` · `GET /api/logbook/*`
+
+Paste-ready Logbook #3 for organizers; mentor questions tagged by rubric (3 high-priority for demo day).
 
 ### Day 19 quick test
 
