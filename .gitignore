@@ -10,4 +10,6 @@ coverage/
 ~$*
 __pycache__/
 *.pyc
+docs/demo-backup-capture.mp4
+*.mp4
 data/geo/streets-raw.json

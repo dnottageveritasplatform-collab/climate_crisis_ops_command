@@ -15,6 +15,8 @@ import hitlRouter from "./routes/hitl.js";
 import orchestratorRouter from "./routes/orchestrator.js";
 import evalRouter from "./routes/eval.js";
 import efficiencyRouter from "./routes/efficiency.js";
+import defensibilityRouter from "./routes/defensibility.js";
+import deployRouter from "./routes/deploy.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -31,6 +33,8 @@ app.use("/api/hitl", hitlRouter);
 app.use("/api/orchestrator", orchestratorRouter);
 app.use("/api/eval", evalRouter);
 app.use("/api/efficiency", efficiencyRouter);
+app.use("/api/defensibility", defensibilityRouter);
+app.use("/api/deploy", deployRouter);
 
 app.get("/api/health", (_req, res) => {
   const llm = getLlmConfig();
@@ -40,7 +44,7 @@ app.get("/api/health", (_req, res) => {
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "week-3-day-17",
+    phase: "week-3-day-19",
     llmProvider: config.demoMode ? null : llm.provider,
     llmModel: config.demoMode ? null : llm.model,
     llmKeyConfigured: config.demoMode ? null : llm.keyConfigured,
@@ -50,6 +54,8 @@ app.get("/api/health", (_req, res) => {
       : `${llm.provider} — Monitor + Triage + Action agents`,
     eval: "8 scripted scenarios — POST /api/eval/run",
     efficiency: "token + latency logging — GET /api/efficiency/summary",
+    defensibility: "Broward credibility + Phase 2 CAD/EMS roadmap — GET /api/defensibility/narrative",
+    deploy: "staging checklist — GET /api/deploy/checklist",
   });
 });
 
@@ -63,8 +69,8 @@ app.get("/api/scenario", (_req, res) => {
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "week-3-day-17",
-    week3Day17Complete: true,
+    phase: "week-3-day-19",
+    week3Day19Complete: true,
     scenario: {
       id: SCENARIO.id,
       title: SCENARIO.title,
@@ -90,6 +96,8 @@ app.get("/api/status", (_req, res) => {
       eval: "harness_ready",
       efficiency: "token_latency_logging",
       demo: "rehearsal_ready",
+      defensibility: "narrative_ready",
+      deploy: "staging_ready",
       ui: "command_shell_map_polished",
     },
   });
@@ -102,7 +110,7 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(publicDir, "index.html"));
 });
 
-app.listen(config.port, () => {
+app.listen(config.port, "0.0.0.0", () => {
   console.log(
     `Climate & Crisis Ops Command listening on http://127.0.0.1:${config.port} (demoMode=${config.demoMode})`
   );

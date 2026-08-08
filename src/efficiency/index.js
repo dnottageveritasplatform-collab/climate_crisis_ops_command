@@ -120,7 +120,7 @@ export function buildEfficiencySummary() {
 
   return {
     ok: true,
-    phase: "week-3-day-17",
+    phase: "week-3-day-19",
     lastPipeline: lastPipeline || null,
     totals: {
       agentRunsLogged: agentRuns.length,

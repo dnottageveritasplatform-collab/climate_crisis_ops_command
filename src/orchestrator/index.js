@@ -57,7 +57,7 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
 
   return {
     ok: true,
-    phase: "week-3-day-17",
+    phase: "week-3-day-19",
     pipelineId: audit.id,
     threshold,
     steps: ["monitor", "triage", "action"],

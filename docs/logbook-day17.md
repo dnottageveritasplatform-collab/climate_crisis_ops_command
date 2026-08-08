@@ -45,8 +45,8 @@ curl.exe "http://127.0.0.1:8787/api/demo/rehearsal?format=text"
 - **Proof beat:** cite 8/8 eval + last pipeline token line from UI after Run Pipeline
 - **2-min cut:** rehearse `demo-2min-capture.md` separately for judge video
 
-### Tomorrow (Day 18)
-Per sprint plan: defensibility slide / staging prep (see `SPRINT.docx`).
+### Tomorrow (Day 19)
+Staging deploy + backup offline demo video (Nebius or PaaS; see mentor guidance).
 
 ### Rubric note
 **Agentic AI:** 5-min script walks full Monitor → Triage → Action → triple HITL chain on one surface. **Efficiency:** proof segment cites eval suite (0 tokens) + logged pipeline metrics. **Defensibility:** audit trail + SOP citations called out explicitly in beats 3:30–4:30.

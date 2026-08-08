@@ -17,7 +17,10 @@
     "eval:run": "node -e \"import('./src/eval/index.js').then(m=>m.runEvalSuite({skipLlm:true})).then(r=>console.log(JSON.stringify({ok:r.ok,summary:r.summary,totalLatencyMs:r.totalLatencyMs,failed:r.results.filter(x=>!x.passed).map(x=>x.scenarioId)},null,2)))\"",
     "efficiency:summary": "node -e \"import('./src/efficiency/index.js').then(m=>console.log(JSON.stringify(m.buildEfficiencySummary(),null,2)))\"",
     "efficiency:pipeline": "node -e \"import('./src/orchestrator/index.js').then(m=>m.runPipeline()).then(r=>console.log(JSON.stringify({ok:r.ok,pipelineId:r.pipelineId,efficiency:r.efficiency,modes:{monitor:r.monitor?.mode,triage:r.triage?.mode,action:r.action?.mode}},null,2)))\"",
-    "demo:rehearsal": "node -e \"import('./src/demo/rehearsal.js').then(m=>console.log(m.formatRehearsalScriptText(m.buildRehearsalScript())))\""
+    "demo:rehearsal": "node -e \"import('./src/demo/rehearsal.js').then(m=>console.log(m.formatRehearsalScriptText(m.buildRehearsalScript())))\"",
+    "defensibility:summary": "node -e \"import('./src/defensibility/index.js').then(m=>console.log(JSON.stringify(m.buildDefensibilitySummary(),null,2)))\"",
+    "deploy:check": "node -e \"import('./src/deploy/index.js').then(m=>console.log(JSON.stringify(m.buildDeployChecklist(),null,2)))\"",
+    "docker:build": "docker build -t ccoc:staging ."
   },
   "engines": {
     "node": ">=18"

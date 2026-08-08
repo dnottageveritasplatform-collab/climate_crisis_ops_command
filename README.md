@@ -30,6 +30,10 @@ Open http://127.0.0.1:8787 — health check at `/api/health`.
 - `docs/logbook-week2.md` — Logbook entry #2 (Day 14, paste-ready)
 - `docs/demo-2min-capture.md` — 2-min screen capture script (Day 14)
 - `docs/demo-5min-rehearsal.md` — 5-min pitch rehearsal (Day 17)
+- `docs/defensibility-slide.md` — Broward + defensibility pitch copy (Day 18)
+- `docs/phase2-roadmap.md` — CAD/EMS integration roadmap (Day 18)
+- `docs/staging-deploy.md` — Staging deploy guide (Day 19)
+- `docs/backup-demo-video.md` — Offline MP4 capture (Day 19)
 - `docs/architecture-diagram.html` — Week 1 architecture diagram (Day 7)
 - `docs/architecture.docx` — system architecture, dual HITL, thin GIS layer, Phase 2 roadmap
 - `docs/track-switch-note.docx` — send to Future Caribbean organizers (Day 1)
@@ -50,6 +54,7 @@ src/dispatch/     NEMT dispatch manifest loader (Week 1 Day 6+)
 src/geo/          Thin map layers (Week 1 Day 6+)
 src/eval/          Eval harness — scripted scenarios (Week 3)
 src/efficiency/    Token + latency logging (Week 3)
+src/defensibility/ Defensibility narrative + Phase 2 roadmap (Week 3)
 data/             Sample dispatch CSV + GeoJSON corridors/facilities
 docs/             Architecture and SOP Word docs
 ```
@@ -60,7 +65,33 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ## Status
 
-**Week 3, Day 17 complete** — 5-minute demo rehearsal script with eval + efficiency stats injection.
+**Week 3, Day 19 complete** — Docker staging deploy, deploy checklist API, backup demo video guide.
+
+### Day 19 quick test
+
+```bash
+npm run deploy:check
+npm run docker:build
+docker run --rm -p 8787:8787 -e DEMO_MODE=true ccoc:staging
+curl.exe http://127.0.0.1:8787/api/deploy/checklist
+```
+
+**Deliverables:** `Dockerfile` · `docs/staging-deploy.md` · `docs/backup-demo-video.md` · `GET /api/deploy/checklist`
+
+Recommended staging: `DEMO_MODE=true` on Nebius (Container VM, no GPU) or Render/Railway. Record backup MP4 per `docs/backup-demo-video.md`.
+
+### Day 18 quick test
+
+```bash
+npm run defensibility:summary
+curl.exe http://127.0.0.1:8787/api/defensibility/summary
+curl.exe http://127.0.0.1:8787/api/defensibility/narrative
+curl.exe http://127.0.0.1:8787/api/defensibility/phase2
+```
+
+**Deliverables:** `src/defensibility/index.js` · `docs/defensibility-slide.md` · `docs/phase2-roadmap.md` · `GET /api/defensibility/*`
+
+Paste-ready pitch slides: Broward County IT founder proof + five defensibility pillars + Phase 2 CAD read-only / EMS-adjacent tracks.
 
 ### Day 17 quick test
 
