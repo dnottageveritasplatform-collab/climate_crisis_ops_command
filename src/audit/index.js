@@ -70,6 +70,8 @@ export function buildAuditTrail(limit = 15) {
       agents: e.agents,
       steps: e.steps,
       citations: e.citations,
+      cadCrossRef: e.cadCrossRef,
+      handoffCrossRef: e.handoffCrossRef,
       approvers: e.approvers || normalizeApprovers(e.hitl?.approvers),
       hitl: e.hitl,
       mode: e.mode,
@@ -162,11 +164,27 @@ export function recordActionPack({ signal, pack, threshold, mode }) {
 }
 
 /** Record full agent pipeline (Monitor → Triage → Action + HITL gate). */
-export function recordPipelineRun({ signals, monitor, triage, action, hitl, threshold, mode }) {
+export function recordPipelineRun({
+  signals,
+  monitor,
+  triage,
+  action,
+  hitl,
+  threshold,
+  mode,
+  cadCrossRef,
+  handoffCrossRef,
+}) {
   const ts = new Date().toISOString();
+  const cadNote = cadCrossRef?.matchedCount
+    ? ` · CAD ${cadCrossRef.matchedCount}/${cadCrossRef.atRiskCount} cross-ref`
+    : "";
+  const handoffNote = handoffCrossRef?.matchedCount
+    ? ` · handoff ${handoffCrossRef.matchedCount}/${handoffCrossRef.atRiskCount}`
+    : "";
   return appendAuditEntry({
     type: "pipeline_run",
-    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}`,
+    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${cadNote}${handoffNote}`,
     signal: {
       level: threshold,
       label: signals?.label,
@@ -182,7 +200,34 @@ export function recordPipelineRun({ signals, monitor, triage, action, hitl, thre
       hitlGateId: hitl?.id,
       hitlRequired: action.pack?.hitlRequired ?? true,
       hitlRoles: hitl?.roles ? Object.keys(hitl.roles) : [],
+      cadCrossRef: cadCrossRef
+        ? {
+            matchedCount: cadCrossRef.matchedCount,
+            atRiskCount: cadCrossRef.atRiskCount,
+            matches: cadCrossRef.matches?.slice(0, 6),
+          }
+        : undefined,
+      handoffCrossRef: handoffCrossRef
+        ? {
+            matchedCount: handoffCrossRef.matchedCount,
+            atRiskCount: handoffCrossRef.atRiskCount,
+            pendingQueueCount: handoffCrossRef.pendingQueueCount,
+            matches: handoffCrossRef.matches?.slice(0, 6),
+          }
+        : undefined,
     },
+    cadCrossRef: cadCrossRef?.matches?.map((m) => ({
+      tripId: m.tripId,
+      runId: m.runId,
+      incidentId: m.incidentId,
+      unitId: m.unitId,
+    })),
+    handoffCrossRef: handoffCrossRef?.matches?.map((m) => ({
+      tripId: m.linkedTripId,
+      handoffId: m.handoffId,
+      emsRunId: m.emsRunId,
+      status: m.status,
+    })),
     steps: [
       { id: "monitor", label: "Monitor brief", agent: "monitor", auditId: monitor.audit?.id, ts: monitor.audit?.ts },
       { id: "triage", label: "Triage rank", agent: "triage", auditId: triage.audit?.id, ts: triage.audit?.ts },

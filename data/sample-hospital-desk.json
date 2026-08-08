@@ -1,0 +1,30 @@
+{
+  "source": "hospital_transport_liaison_desk",
+  "updatedAt": "2026-08-08T20:00:00Z",
+  "scopeGuard": "Read-only hospital transport desk signals — not EMS dispatch or 911 response.",
+  "hospitals": [
+    {
+      "facilityId": "FAC-01",
+      "name": "Princess Margaret Hospital",
+      "bedPressurePct": 87,
+      "bedPressureLevel": "high",
+      "diversionStatus": "watch",
+      "electiveHold": false,
+      "availableBeds": 18,
+      "transportDeskContact": "James Rolle",
+      "notes": "Dialysis + oncology inbound pressure — liaise before P1 routing"
+    },
+    {
+      "facilityId": "FAC-04",
+      "name": "Doctor's Hospital",
+      "bedPressurePct": 72,
+      "bedPressureLevel": "elevated",
+      "diversionStatus": "open",
+      "electiveHold": true,
+      "electiveHoldReason": "Storm prep — defer non-urgent discharges until corridor status confirmed",
+      "availableBeds": 31,
+      "transportDeskContact": "Dr. Elaine Moss",
+      "notes": "Private partner desk — COMMS-03 bulletin path active"
+    }
+  ]
+}

@@ -68,4 +68,22 @@
 
 ```bash
 curl.exe http://127.0.0.1:8787/api/defensibility/phase2
+curl.exe http://127.0.0.1:8787/api/cad/summary
+curl.exe http://127.0.0.1:8787/api/cad/cross-ref?level=2
+curl.exe http://127.0.0.1:8787/api/transport-desk/summary
+curl.exe http://127.0.0.1:8787/api/transport-desk/cross-ref?level=2
 ```
+
+### Phase 2 Day 1 (CAD read-only overlay) ✅
+
+- `src/cad/` — CSV adapter + webhook ingest stub
+- `data/sample-cad-export.csv` — pilot CAD export linked to dispatch manifest
+- Pipeline audit cross-references at-risk trips with CAD run/incident IDs
+- Map overlay shows read-only unit status pins
+
+### Phase 2 Day 2 (EMS-adjacent transport desk) ✅
+
+- `src/transport-desk/` — hospital desk + handoff queue JSON adapters
+- `data/sample-hospital-desk.json` · `data/sample-ems-handoff-queue.json`
+- Monitor tool `get_transport_desk_status` · pipeline handoff audit cross-ref
+- UI transport desk strip + hospital bed pressure on map

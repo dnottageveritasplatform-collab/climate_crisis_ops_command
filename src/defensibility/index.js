@@ -1,4 +1,4 @@
-/** Day 18 — defensibility narrative, founder credibility, Phase 2 CAD/EMS roadmap. */
+/** Day 18 + Phase 2 Day 1 — defensibility narrative, founder credibility, Phase 2 CAD/EMS roadmap. */
 
 export const FOUNDER_CREDIBILITY = {
   headline: "County-scale multi-agency GIS coordination — Broward County IT lineage",
@@ -64,7 +64,16 @@ export const PHASE2_ROADMAP = {
         "Correlate CCOC at-risk trips with CAD incident IDs for audit cross-reference",
         "Optional ESRI/ArcGIS feature service for corridor closures (replace static GeoJSON)",
       ],
-      status: "planned",
+      status: "in_progress",
+      day1: {
+        complete: true,
+        deliverables: [
+          "src/cad/ — CSV adapter + webhook ingest stub",
+          "data/sample-cad-export.csv — pilot CAD export format",
+          "GET /api/cad/* — overlay, summary, cross-ref, map-units",
+          "Pipeline audit logs CAD run/incident IDs for at-risk trips",
+        ],
+      },
     },
     {
       id: "ems-adjacent",
@@ -74,7 +83,16 @@ export const PHASE2_ROADMAP = {
         "EMS-to-NEMT handoff queue visibility (scheduled inter-facility, not 911 response)",
         "Shelter and fleet logistics personas (Phase 2 HITL roles)",
       ],
-      status: "planned",
+      status: "in_progress",
+      day2: {
+        complete: true,
+        deliverables: [
+          "src/transport-desk/ — hospital desk + handoff queue JSON adapters",
+          "data/sample-hospital-desk.json · data/sample-ems-handoff-queue.json",
+          "GET /api/transport-desk/* — summary, hospitals, handoff-queue, cross-ref",
+          "Monitor tool get_transport_desk_status · pipeline handoff audit cross-ref",
+        ],
+      },
     },
     {
       id: "public-safety-feeds",
@@ -144,7 +162,9 @@ export function buildDefensibilityNarrative() {
 export function buildPhase2Roadmap() {
   return {
     ok: true,
-    phase: "week-3-day-18",
+    phase: "phase-2-day-2",
+    day1Complete: true,
+    day2Complete: true,
     ...PHASE2_ROADMAP,
   };
 }

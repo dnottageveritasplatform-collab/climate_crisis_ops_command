@@ -1,0 +1,11 @@
+run_id,incident_id,trip_id,unit_id,unit_status,agency,incident_type,dispatched_at,lat,lon,destination
+RUN-8842,INC-2026-4421,T-1001,UNIT-12,en_route,Nassau Metro CAD,medical_transport,2026-08-04T07:45:00,25.048,-77.310,Princess Margaret Hospital
+RUN-8843,INC-2026-4422,T-1002,UNIT-07,available,Nassau Metro CAD,medical_transport,2026-08-04T09:15:00,25.078,-77.318,Clinic Bay St
+RUN-8844,INC-2026-4423,T-1003,UNIT-12,at_scene,Nassau Metro CAD,medical_transport,2026-08-04T09:50:00,25.042,-77.295,Princess Margaret Hospital
+RUN-8845,INC-2026-4424,T-1004,UNIT-09,en_route,Nassau Metro CAD,medical_transport,2026-08-04T11:00:00,25.045,-77.285,Princess Margaret Hospital
+RUN-8846,INC-2026-4425,T-1005,UNIT-03,scheduled,Nassau Metro CAD,medical_transport,2026-08-04T13:45:00,25.050,-77.270,East Nassau
+RUN-8847,INC-2026-4426,T-1006,UNIT-07,en_route,Nassau Metro CAD,medical_transport,2026-08-04T07:15:00,25.080,-77.315,Princess Margaret Hospital
+RUN-8848,INC-2026-4427,T-1007,UNIT-05,available,Nassau Metro CAD,medical_transport,2026-08-04T14:45:00,25.038,-77.325,Nassau Metro Depot
+RUN-8849,INC-2026-4428,T-1008,UNIT-09,at_scene,Nassau Metro CAD,medical_transport,2026-08-04T11:45:00,25.055,-77.305,Princess Margaret Hospital
+RUN-8850,INC-2026-4429,T-1009,UNIT-11,en_route,Nassau Metro CAD,medical_transport,2026-08-04T08:15:00,25.065,-77.330,Doctor's Hospital
+RUN-8851,INC-2026-4430,T-1010,UNIT-05,scheduled,Nassau Metro CAD,medical_transport,2026-08-04T12:45:00,25.040,-77.320,Doctor's Hospital

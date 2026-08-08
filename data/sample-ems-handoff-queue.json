@@ -1,0 +1,53 @@
+{
+  "source": "ems_to_nemt_handoff_queue",
+  "updatedAt": "2026-08-08T20:05:00Z",
+  "scopeGuard": "Scheduled inter-facility handoffs only — not 911 PSAP response.",
+  "queue": [
+    {
+      "handoffId": "HO-2201",
+      "type": "ems_to_nemt",
+      "status": "pending_nemt_accept",
+      "origin": "Princess Margaret Hospital",
+      "originFacilityId": "FAC-01",
+      "destination": "Doctor's Hospital",
+      "destinationFacilityId": "FAC-04",
+      "patientClass": "inter_facility",
+      "priority": "P2",
+      "linkedTripId": "T-1004",
+      "emsRunId": "EMS-9912",
+      "scheduledAt": "2026-08-04T11:15:00",
+      "notes": "Oncology inter-facility — NEMT supervisor must accept before dispatch"
+    },
+    {
+      "handoffId": "HO-2202",
+      "type": "ems_to_nemt",
+      "status": "nemt_assigned",
+      "origin": "Doctor's Hospital",
+      "originFacilityId": "FAC-04",
+      "destination": "Princess Margaret Hospital",
+      "destinationFacilityId": "FAC-01",
+      "patientClass": "inter_facility",
+      "priority": "P1",
+      "linkedTripId": "T-1009",
+      "emsRunId": "EMS-9915",
+      "nemtRunId": "RUN-8850",
+      "scheduledAt": "2026-08-04T08:30:00",
+      "notes": "Dialysis P1 — linked to CAD run RUN-8850"
+    },
+    {
+      "handoffId": "HO-2203",
+      "type": "ems_to_nemt",
+      "status": "pending_nemt_accept",
+      "origin": "Princess Margaret Hospital",
+      "originFacilityId": "FAC-01",
+      "destination": "Princess Margaret Hospital",
+      "destinationFacilityId": "FAC-01",
+      "patientClass": "return_transfer",
+      "priority": "P1",
+      "linkedTripId": "T-1003",
+      "emsRunId": "EMS-9918",
+      "scheduledAt": "2026-08-04T10:00:00",
+      "notes": "Return leg oncology — corridor CORR-02 restricted"
+    }
+  ]
+}

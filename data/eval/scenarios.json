@@ -101,7 +101,7 @@
       "level": 2,
       "expect": {
         "threshold": 2,
-        "pipelineSteps": ["monitor", "triage", "action"],
+        "pipelineSteps": ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref"],
         "auditType": "pipeline_run",
         "hitlStaged": true,
         "minRankedTrips": 8

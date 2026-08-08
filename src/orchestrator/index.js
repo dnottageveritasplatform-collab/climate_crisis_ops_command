@@ -5,6 +5,8 @@ import { recordPipelineRun } from "../audit/index.js";
 import { recordPipelineRun as recordPipelineEfficiency } from "../efficiency/index.js";
 import { getHitlStatus } from "../hitl/index.js";
 import { fetchSignals } from "../signals/index.js";
+import { buildCadCrossReference } from "../cad/index.js";
+import { buildHandoffCrossReference } from "../transport-desk/index.js";
 
 /**
  * Monitor → Triage → Action with triple HITL gate staged at end.
@@ -20,6 +22,8 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
   const action = await runActionPack({ level: threshold });
 
   const hitl = action.hitl ?? getHitlStatus();
+  const cadCrossRef = buildCadCrossReference(threshold);
+  const handoffCrossRef = buildHandoffCrossReference(threshold);
   const audit = recordPipelineRun({
     signals,
     monitor,
@@ -28,6 +32,8 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     hitl,
     threshold,
     mode: monitor.mode || "demo",
+    cadCrossRef,
+    handoffCrossRef,
   });
 
   const totalLatencyMs = Date.now() - pipeStart;
@@ -57,15 +63,17 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
 
   return {
     ok: true,
-    phase: "week-3-day-21",
+    phase: "phase-2-day-2",
     pipelineId: audit.id,
     threshold,
-    steps: ["monitor", "triage", "action"],
+    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref"],
     signals,
     monitor,
     triage,
     action,
     map: triage.map,
+    cadCrossRef,
+    handoffCrossRef,
     hitl,
     audit,
     efficiency,

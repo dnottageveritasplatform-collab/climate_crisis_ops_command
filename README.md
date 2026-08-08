@@ -36,6 +36,8 @@ Open http://127.0.0.1:8787 — health check at `/api/health`.
 - `docs/demo-5min-rehearsal.md` — 5-min pitch rehearsal (Day 17)
 - `docs/defensibility-slide.md` — Broward + defensibility pitch copy (Day 18)
 - `docs/phase2-roadmap.md` — CAD/EMS integration roadmap (Day 18)
+- `docs/logbook-phase2-day1.md` — Phase 2 Day 1 CAD overlay (paste-ready)
+- `docs/logbook-phase2-day2.md` — Phase 2 Day 2 transport desk (paste-ready)
 - `docs/staging-deploy.md` — Staging deploy guide (Day 19)
 - `docs/backup-demo-video.md` — Offline MP4 capture (Day 19)
 - `docs/architecture-diagram.html` — Week 1 architecture diagram (Day 7)
@@ -55,6 +57,8 @@ src/hitl/         Dual-role approvals (Week 2)
 src/audit/        Audit log (Week 2)
 src/sops/         Crisis SOP RAG corpus (Week 1 Day 6+)
 src/dispatch/     NEMT dispatch manifest loader (Week 1 Day 6+)
+src/cad/          CAD read-only overlay adapter (Phase 2 Day 1)
+src/transport-desk/ EMS-adjacent hospital desk + handoff queue (Phase 2 Day 2)
 src/geo/          Thin map layers (Week 1 Day 6+)
 src/eval/          Eval harness — scripted scenarios (Week 3)
 src/efficiency/    Token + latency logging (Week 3)
@@ -71,6 +75,42 @@ docs/             Architecture and SOP Word docs
 Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-center architecture.
 
 ## Status
+
+**Phase 2 Day 2 complete** — EMS-adjacent transport desk: bed pressure, diversion, EMS→NEMT handoff queue (read-only).
+
+### Phase 2 Day 2 quick test
+
+```bash
+npm run transport-desk:summary
+npm run transport-desk:cross-ref
+curl.exe http://127.0.0.1:8787/api/transport-desk/summary
+curl.exe http://127.0.0.1:8787/api/transport-desk/handoff-queue
+curl.exe http://127.0.0.1:8787/api/transport-desk/cross-ref?level=2
+npm run pipeline:run
+npm run eval:run
+# UI: http://127.0.0.1:8787 — transport desk strip · hospital bed % on map
+```
+
+**Deliverables:** `src/transport-desk/` · `data/sample-hospital-desk.json` · `data/sample-ems-handoff-queue.json` · `docs/logbook-phase2-day2.md` · `GET/POST /api/transport-desk/*`
+
+Read-only hospital transport desk — bed pressure + diversion + scheduled inter-facility handoff queue; not 911 dispatch.
+
+### Phase 2 Day 1 quick test
+
+```bash
+npm run cad:summary
+npm run cad:cross-ref
+curl.exe http://127.0.0.1:8787/api/cad/summary
+curl.exe http://127.0.0.1:8787/api/cad/cross-ref?level=2
+curl.exe http://127.0.0.1:8787/api/cad/overlay
+curl.exe http://127.0.0.1:8787/api/defensibility/phase2
+npm run pipeline:run
+# UI: http://127.0.0.1:8787 — map shows CAD unit pins · audit shows trip→run cross-ref
+```
+
+**Deliverables:** `src/cad/` · `data/sample-cad-export.csv` · `docs/logbook-phase2-day1.md` · `GET/POST /api/cad/*`
+
+Read-only CAD overlay — ingest pilot CSV, correlate at-risk trips with run/incident IDs, no dispatch write-back.
 
 **21-day sprint complete** — Demo day live run + Q&A prep. Preflight, runbook, and judge Q&A ready.
 

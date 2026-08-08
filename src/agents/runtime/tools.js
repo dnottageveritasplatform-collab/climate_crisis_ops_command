@@ -1,5 +1,7 @@
 import { getSignalStatus } from "../../signals/index.js";
 import { summarizeDispatch } from "../../dispatch/index.js";
+import { buildCadCrossReference } from "../../cad/index.js";
+import { getTransportDeskStatus } from "../../transport-desk/index.js";
 import { querySopCorpus } from "../../sops/index.js";
 
 const registry = {
@@ -28,6 +30,23 @@ const registry = {
       },
     },
     execute: async ({ level = 2 } = {}) => summarizeDispatch(level),
+  },
+  get_cad_cross_ref: {
+    description:
+      "Cross-reference at-risk CCOC trips with read-only CAD run/incident IDs (Phase 2 adapter)",
+    parameters: {
+      type: "object",
+      properties: {
+        level: { type: "number", description: "Escalation level 1-4" },
+      },
+    },
+    execute: async ({ level = 2 } = {}) => buildCadCrossReference(level),
+  },
+  get_transport_desk_status: {
+    description:
+      "Hospital transport desk signals — bed pressure, diversion, elective hold, EMS-to-NEMT handoff queue (read-only)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getTransportDeskStatus(),
   },
 };
 

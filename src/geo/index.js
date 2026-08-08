@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { corridorStatusForLevel, getAtRiskTrips, loadDispatch } from "../dispatch/index.js";
+import { buildCadMapUnits } from "../cad/index.js";
+import { attachTransportDeskToFacilities } from "../transport-desk/index.js";
 
 const geoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/geo");
 
@@ -154,6 +156,22 @@ export function facilityDisplayColor(role) {
 
 let lastTriageRanking = null;
 
+/** Attach read-only CAD unit pins to any map layer payload. */
+export function attachCadOverlay(layers) {
+  if (!layers?.ok) return layers;
+  const atRiskTripIds = (layers.trips || []).filter((t) => t.atRisk).map((t) => t.id);
+  const cad = buildCadMapUnits({ level: layers.level ?? 2, atRiskTripIds });
+  const facilities = attachTransportDeskToFacilities(layers.facilities || []);
+  return {
+    ...layers,
+    facilities,
+    cadOverlay: true,
+    transportDeskOverlay: true,
+    cadUnitCount: cad.unitCount,
+    cadUnits: cad.units,
+  };
+}
+
 /** Persist latest triage ranking for map sync (Day 11). */
 export function setLastTriageRanking(ranking) {
   lastTriageRanking = ranking;
@@ -261,7 +279,7 @@ export function buildMapLayersFromTriage(ranking) {
     projectedCorridors.map((c) => [c.id, c.status])
   );
 
-  return {
+  return attachCadOverlay({
     ok: true,
     syncSource: "triage",
     level,
@@ -279,7 +297,7 @@ export function buildMapLayersFromTriage(ranking) {
     conflictCount: (ranking.corridorConflicts || []).filter((c) => c.severity !== "watch").length,
     island: buildIslandOverlay(),
     streets: buildStreetOverlay(),
-  };
+  });
 }
 
 /** Build map payload with projected SVG-ready layers for the command UI. */
@@ -338,7 +356,7 @@ export function buildMapLayers(level = 2) {
   const atRiskPts = projectedTrips.filter((t) => t.atRisk).map((t) => t.svg);
   const zone = computeZone(atRiskPts);
 
-  return {
+  return attachCadOverlay({
     ok: true,
     syncSource: "level",
     level,
@@ -354,7 +372,7 @@ export function buildMapLayers(level = 2) {
     corridorStatus,
     island: buildIslandOverlay(),
     streets: buildStreetOverlay(),
-  };
+  });
 }
 
 export { MAP };

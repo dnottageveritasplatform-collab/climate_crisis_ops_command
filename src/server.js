@@ -18,6 +18,8 @@ import efficiencyRouter from "./routes/efficiency.js";
 import defensibilityRouter from "./routes/defensibility.js";
 import deployRouter from "./routes/deploy.js";
 import logbookRouter from "./routes/logbook.js";
+import cadRouter from "./routes/cad.js";
+import transportDeskRouter from "./routes/transport-desk.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -37,6 +39,8 @@ app.use("/api/efficiency", efficiencyRouter);
 app.use("/api/defensibility", defensibilityRouter);
 app.use("/api/deploy", deployRouter);
 app.use("/api/logbook", logbookRouter);
+app.use("/api/cad", cadRouter);
+app.use("/api/transport-desk", transportDeskRouter);
 
 app.get("/api/health", (_req, res) => {
   const llm = getLlmConfig();
@@ -46,8 +50,10 @@ app.get("/api/health", (_req, res) => {
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "week-3-day-21",
+    phase: "phase-2-day-2",
     sprintComplete: true,
+    phase2Started: true,
+    phase2Day2Complete: true,
     llmProvider: config.demoMode ? null : llm.provider,
     llmModel: config.demoMode ? null : llm.model,
     llmKeyConfigured: config.demoMode ? null : llm.keyConfigured,
@@ -58,6 +64,8 @@ app.get("/api/health", (_req, res) => {
     eval: "8 scripted scenarios — POST /api/eval/run",
     efficiency: "token + latency logging — GET /api/efficiency/summary",
     defensibility: "Broward credibility + Phase 2 CAD/EMS roadmap — GET /api/defensibility/narrative",
+    cad: "read-only CAD overlay + cross-ref — GET /api/cad/summary",
+    transportDesk: "hospital desk + EMS handoff queue — GET /api/transport-desk/summary",
     deploy: "staging checklist — GET /api/deploy/checklist",
     logbook: "Week 3 summary + mentor questions — GET /api/logbook/week3",
     demoDay: "live run + Q&A prep — GET /api/demo/runbook · POST /api/demo/preflight",
@@ -74,8 +82,11 @@ app.get("/api/scenario", (_req, res) => {
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "week-3-day-21",
+    phase: "phase-2-day-2",
     sprintComplete: true,
+    phase2Started: true,
+    phase2Day2Complete: true,
+    phase2Day1Complete: true,
     week3Day21Complete: true,
     week3Day20Complete: true,
     week3Day19Complete: true,
@@ -100,6 +111,8 @@ app.get("/api/status", (_req, res) => {
       audit: "full_trail_ready",
       geo: "triage_sync_ready",
       dispatch: "sample_manifest",
+      cad: "readonly_overlay",
+      transportDesk: "readonly_signals",
       sops: "rag_corpus",
       eval: "harness_ready",
       efficiency: "token_latency_logging",

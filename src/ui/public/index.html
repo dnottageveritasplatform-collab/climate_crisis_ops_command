@@ -141,12 +141,47 @@
       white-space: nowrap;
     }
 
+    .transport-desk-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 1.5rem;
+      background: rgba(167, 139, 250, 0.06);
+      border-bottom: 1px solid rgba(167, 139, 250, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .transport-desk-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--purple);
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      background: rgba(167, 139, 250, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .transport-desk-text { flex: 1; min-width: 220px; color: #c4b5fd; line-height: 1.35; }
+    .desk-chip {
+      font-size: 0.62rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      white-space: nowrap;
+    }
+    .desk-chip.warn { color: var(--warn); border-color: rgba(255,179,71,.4); }
+    .desk-chip.danger { color: var(--danger); border-color: rgba(255,107,107,.4); }
+
     .workspace {
       display: grid;
       grid-template-columns: 280px 1fr 360px;
       grid-template-rows: 1fr auto auto;
       gap: 0;
-      height: calc(100vh - 144px);
+      height: calc(100vh - 172px);
       min-height: 620px;
     }
     .workspace.audit-hidden {
@@ -717,7 +752,7 @@
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Week 3 · Day 21 · Sprint complete</span>
+      <span class="pill gold" id="phasePill">Phase 2 · Day 2 · Transport desk</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
@@ -738,8 +773,14 @@
 
   <div class="scenario-strip" id="scenarioStrip">
     <span class="scenario-tag">Multi-agency scenario</span>
-    <span class="scenario-text" id="scenarioText">Tropical Storm Alma — Nassau Metro NEMT + PMH + Doctor's Hospital · CORR-01 / CORR-02 corridor sync</span>
+    <span class="scenario-text" id="scenarioText">Tropical Storm Alma — Nassau Metro NEMT + PMH + Doctor's Hospital · CORR-01 / CORR-02 · CAD + transport desk (Phase 2)</span>
     <span class="scenario-demo" id="scenarioDemo">DEMO DATA</span>
+  </div>
+
+  <div class="transport-desk-strip" id="transportDeskStrip">
+    <span class="transport-desk-tag">Transport desk</span>
+    <span class="transport-desk-text" id="transportDeskText">Loading hospital bed pressure + EMS→NEMT handoff queue…</span>
+    <span class="desk-chip" id="transportDeskPending">— pending</span>
   </div>
 
   <div class="workspace" id="workspace">
@@ -775,7 +816,9 @@
         <div class="map-legend">
           <div><span class="dot" style="background:#ff6b6b"></span> Hospital (public)</div>
           <div><span class="dot" style="background:#c084fc"></span> Hospital (private)</div>
+          <div style="font-size:0.58rem;color:var(--muted)">Bed % pill = transport desk pressure</div>
           <div><span class="dot" style="background:#00abc9"></span> NEMT operator</div>
+          <div><span class="dot" style="background:#38bdf8"></span> CAD unit (read-only)</div>
           <div><span class="dot" style="background:#ffc72c"></span> At-risk trip</div>
           <div><span class="dot" style="background:#ffb347"></span> Restricted corridor</div>
           <div><span class="dot" style="background:#ff6b6b"></span> Closed corridor</div>
@@ -1177,6 +1220,36 @@
       paintMap(layers, ranks);
     }
 
+    function hospitalBedBadgeSvg(f, s) {
+      if (f.bedPressurePct == null) return { bed: "", hold: "", diversion: "" };
+      const color = f.bedPressureColor || "#ffb347";
+      const pillW = 52;
+      const pillH = 20;
+      const bx = s.x - pillW / 2;
+      const by = s.y - s.r - pillH - 10;
+      const bed = `
+        <rect x="${bx}" y="${by}" width="${pillW}" height="${pillH}" rx="10" fill="${color}" stroke="#fff" stroke-width="2"/>
+        <text x="${s.x}" y="${by + 14}" text-anchor="middle" fill="#000" font-size="11" font-weight="800" font-family="system-ui">BEDS ${f.bedPressurePct}%</text>
+      `;
+      let diversion = "";
+      if (f.diversionStatus && f.diversionStatus !== "open") {
+        const dy = by - 14;
+        diversion = `
+          <rect x="${bx - 4}" y="${dy}" width="${pillW + 8}" height="12" rx="6" fill="rgba(255,107,107,.25)" stroke="#ff6b6b" stroke-width="1"/>
+          <text x="${s.x}" y="${dy + 9}" text-anchor="middle" fill="#ff6b6b" font-size="7" font-weight="700" font-family="system-ui">${(f.diversionLabel || "DIVERSION").toUpperCase()}</text>
+        `;
+      }
+      let hold = "";
+      if (f.electiveHold) {
+        const hy = s.y + s.r + 22;
+        hold = `
+          <rect x="${s.x - 34}" y="${hy}" width="68" height="14" rx="7" fill="rgba(255,179,71,.2)" stroke="#ffb347" stroke-width="1.5"/>
+          <text x="${s.x}" y="${hy + 10}" text-anchor="middle" fill="#ffb347" font-size="7" font-weight="800" font-family="system-ui">ELECTIVE HOLD</text>
+        `;
+      }
+      return { bed, hold, diversion };
+    }
+
     function paintMap(layers, ranks = tripRanks) {
       const svg = document.getElementById("mapSvg");
       const badge = document.getElementById("mapBadge");
@@ -1188,11 +1261,12 @@
 
       svg.setAttribute("viewBox", layers.viewBox);
       const syncLabel = layers.syncSource === "triage" ? " · triage sync" : "";
+      const cadLabel = layers.cadOverlay ? ` · ${layers.cadUnitCount || 0} CAD unit(s)` : "";
       const conflictNote = layers.conflictCount ? ` · ${layers.conflictCount} corridor conflict(s)` : "";
-      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}`;
+      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}${cadLabel}`;
       mapMeta.textContent = layers.syncSource === "triage"
-        ? `Thin GIS · synced to triage${conflictNote}`
-        : "Thin GIS · level-based layers";
+        ? `Thin GIS · synced to triage${layers.cadOverlay ? " · CAD overlay" : ""}${conflictNote}`
+        : layers.cadOverlay ? "Thin GIS · CAD read-only overlay" : "Thin GIS · level-based layers";
 
       const z = layers.zone;
 
@@ -1265,10 +1339,22 @@
 
       for (const f of layers.facilities) {
         const s = f.svg;
+        const badges = hospitalBedBadgeSvg(f, s);
         html += `
-          <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${f.color}" stroke="#fff" stroke-width="1.5"/>
-          ${f.rank ? `<text x="${s.x}" y="${s.y - 14}" text-anchor="middle" fill="#ffc72c" font-size="9" font-weight="700" font-family="system-ui">#${f.rank}</text>` : ""}
-          <text x="${s.x}" y="${s.y + s.r + 18}" text-anchor="middle" fill="${f.color}" font-size="9" font-family="system-ui"${f.role === "hospital_partner" || f.role === "hospital_partner_private" ? ' font-weight="600"' : ""}>${f.name.split(" ").slice(0, 2).join(" ")}</text>
+          ${badges.diversion}
+          ${badges.bed}
+          <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${f.color}" stroke="#fff" stroke-width="2"/>
+          ${f.rank ? `<text x="${s.x + s.r + 14}" y="${s.y + 4}" text-anchor="start" fill="#ffc72c" font-size="10" font-weight="700" font-family="system-ui">#${f.rank}</text>` : ""}
+          <text x="${s.x}" y="${s.y + s.r + 14}" text-anchor="middle" fill="${f.color}" font-size="9" font-family="system-ui"${f.role === "hospital_partner" || f.role === "hospital_partner_private" ? ' font-weight="600"' : ""}>${f.name.split(" ").slice(0, 2).join(" ")}</text>
+          ${badges.hold}
+        `;
+      }
+
+      for (const u of layers.cadUnits || []) {
+        const s = u.svg;
+        html += `
+          <rect x="${s.x - s.r}" y="${s.y - s.r}" width="${s.r * 2}" height="${s.r * 2}" rx="2" fill="${u.color}" stroke="${u.atRiskLinked ? "#ffc72c" : "#fff"}" stroke-width="${u.atRiskLinked ? 2.5 : 1.5}" opacity="0.95"/>
+          <text x="${s.x}" y="${s.y + 4}" text-anchor="middle" fill="#001" font-size="8" font-weight="800" font-family="system-ui">${u.unitId.replace("UNIT-", "U")}</text>
         `;
       }
 
@@ -1329,7 +1415,7 @@
       el.innerHTML = "";
       for (const [name, status] of Object.entries(modules)) {
         const mod = document.createElement("span");
-        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging") || status.includes("role_ready")
+        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging") || status.includes("role_ready") || status.includes("overlay") || status.includes("readonly")
           ? "ready"
           : status.includes("shell") || status.includes("ingest") || status.includes("spike")
             ? "stub"
@@ -1356,6 +1442,15 @@
         const r = entry.result;
         const atRisk = r.atRiskTrips ?? r.p1Trips;
         return `L${r.level} · ${r.totalTrips} trips · <em>${atRisk} at risk</em> · ${(r.corridors || []).join(", ")}`;
+      }
+      if (entry.tool === "get_cad_cross_ref" && entry.result) {
+        const r = entry.result;
+        return `L${r.level} · <em>${r.matchedCount}/${r.atRiskCount}</em> CAD cross-ref · ${r.matches?.slice(0, 2).map((m) => m.runId).join(", ") || "none"}`;
+      }
+      if (entry.tool === "get_transport_desk_status" && entry.result) {
+        const r = entry.result;
+        const pressure = r.highPressureHospitals?.map((h) => `${h.name.split(" ")[0]} ${h.bedPressurePct}%`).join(", ") || "—";
+        return `${r.pendingHandoffs} handoff(s) pending · bed pressure: <em>${pressure}</em>`;
       }
       if (entry.message) return entry.message;
       if (entry.tool) return entry.tool;
@@ -1607,6 +1702,7 @@
           renderMap(data.map, tripRanks);
         }
         if (data.audit) renderAudit(data.audit);
+        await loadTransportDesk(data.threshold ?? 2);
         document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
         if (data.efficiency) {
           const e = data.efficiency;
@@ -1696,7 +1792,15 @@
             return `<span class="audit-chip approver">${label}: ${a.name || "—"}${ts ? ` @ ${ts}` : ""}</span>`;
           })
           .join("");
-        const meta = [stepsHtml, citesHtml, approversHtml].filter(Boolean).join("");
+        const cadHtml = (e.cadCrossRef || [])
+          .slice(0, 4)
+          .map((c) => `<span class="audit-chip cite" title="${c.incidentId}">${c.tripId}→${c.runId}</span>`)
+          .join("");
+        const handoffHtml = (e.handoffCrossRef || [])
+          .slice(0, 4)
+          .map((h) => `<span class="audit-chip cite" title="${h.emsRunId}">${h.tripId}→${h.handoffId}</span>`)
+          .join("");
+        const meta = [stepsHtml, citesHtml, cadHtml, handoffHtml, approversHtml].filter(Boolean).join("");
         return `<div class="audit-entry${i === 0 ? " latest" : ""}">
           <div class="audit-entry-head">
             <span class="audit-id">${e.id}</span>
@@ -1732,6 +1836,28 @@
       }
     }
 
+    function renderTransportDesk(summary) {
+      if (!summary?.ok) return;
+      const parts = (summary.bedPressureSummary || []).map((h) => {
+        const cls = h.bedPressureLevel === "high" ? "danger" : h.bedPressureLevel === "elevated" ? "warn" : "";
+        const hold = h.electiveHold ? " · elective hold" : "";
+        const div = h.diversionStatus !== "open" ? ` · ${h.diversionLabel}` : "";
+        return `<span class="desk-chip ${cls}">${h.name.split(" ")[0]} ${h.bedPressurePct}%${hold}${div}</span>`;
+      });
+      document.getElementById("transportDeskText").innerHTML =
+        `Read-only EMS-adjacent desk · ${summary.handoffQueueCount} handoff(s) in queue · ${parts.join(" ")}`;
+      const pendingEl = document.getElementById("transportDeskPending");
+      pendingEl.textContent = `${summary.pendingHandoffs} pending NEMT accept`;
+      pendingEl.className = `desk-chip ${summary.pendingHandoffs ? "warn" : ""}`;
+    }
+
+    async function loadTransportDesk(level = 2) {
+      const res = await fetch(`/api/transport-desk/summary?level=${level}`);
+      const data = await res.json();
+      renderTransportDesk(data);
+      return data;
+    }
+
     async function loadStatus() {
       const [statusRes, healthRes] = await Promise.all([
         fetch("/api/status"),
@@ -1741,6 +1867,7 @@
       const health = await healthRes.json();
       document.getElementById("phasePill").textContent = data.phase
         .replace(/_/g, " ")
+        .replace(/phase (\d)/i, "Phase $1 ·")
         .replace(/week (\d)/i, "Week $1 ·")
         .replace(/day (\d)/i, "Day $1");
       renderScenario(data.scenario);
@@ -1843,6 +1970,7 @@
       try {
         await loadStatus();
         await loadSignals();
+        await loadTransportDesk();
         await loadLogs();
         await loadAudit();
         await loadHitl();

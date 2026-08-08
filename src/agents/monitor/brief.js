@@ -79,6 +79,7 @@ function planAfterThreshold(signal) {
     { tool: "summarize_dispatch", args: { level } },
   ];
   if (level >= 2) steps.splice(1, 0, { tool: "query_sop", args: { query: "CORR" } });
+  if (level >= 2) steps.push({ tool: "get_transport_desk_status", args: {} });
   if (level >= 3) steps.splice(2, 0, { tool: "query_sop", args: { query: "COMMS-03" } });
   return steps;
 }
@@ -86,6 +87,7 @@ function planAfterThreshold(signal) {
 function buildThresholdBrief(toolResults) {
   const signal = findResult(toolResults, "get_signal_status");
   const dispatch = findResult(toolResults, "summarize_dispatch");
+  const transportDesk = findResult(toolResults, "get_transport_desk_status");
   const sopResults = toolResults.filter((t) => t.tool === "query_sop").map((t) => t.result);
 
   const citations = dedupeCitations(sopResults.flatMap((s) => s.citations || []));
@@ -96,10 +98,11 @@ function buildThresholdBrief(toolResults) {
     level,
     event: signal.event,
     geography: signal.serviceArea,
-    summary: buildSummary(signal, dispatch),
+    summary: buildSummary(signal, dispatch, transportDesk),
     sopCitations: citations,
-    recommendedActions: deriveActions(citations, dispatch, level),
+    recommendedActions: deriveActions(citations, dispatch, level, transportDesk),
     institutionalSignals: signal.institutionalHeadlines || [],
+    transportDesk: transportDesk || null,
     affectedCorridors: dispatch.corridorStatus || {},
     confidence: computeConfidence(signal),
   };
@@ -115,20 +118,28 @@ function dedupeCitations(citations) {
   });
 }
 
-function buildSummary(signal, dispatch) {
+function buildSummary(signal, dispatch, transportDesk) {
   const inst = signal.institutionalCount || 0;
   const atRisk = dispatch.atRiskTrips ?? dispatch.p1Trips ?? 0;
   const corridors = (dispatch.corridors || []).join(", ");
   const geo = signal.serviceArea || "service area";
+  let deskHint = "";
+  if (transportDesk?.highPressureHospitals?.length) {
+    const names = transportDesk.highPressureHospitals.map((h) => `${h.name} ${h.bedPressurePct}%`).join(", ");
+    deskHint = ` Transport desk: ${names} bed pressure.`;
+  }
+  if (transportDesk?.pendingHandoffs) {
+    deskHint += ` ${transportDesk.pendingHandoffs} EMS→NEMT handoff(s) pending.`;
+  }
   return (
     `Level ${signal.level} ${signal.label} — multi-agency coordination for ${geo}. ` +
     `${inst} institutional signal(s) (OCHA + GFDRR demo feeds). ` +
     `${atRisk} of ${dispatch.totalTrips} NEMT trips at risk; hospital partners PMH and Doctor's Hospital on shared manifest. ` +
-    `Corridor sync required: ${corridors}.`
+    `Corridor sync required: ${corridors}.${deskHint}`
   );
 }
 
-function deriveActions(citations, dispatch, level) {
+function deriveActions(citations, dispatch, level, transportDesk) {
   const levelSection = `Level ${level}`;
   const fromSop = citations
     .filter((c) => c.section?.startsWith(levelSection) || c.section?.includes("Restrict"))
@@ -149,7 +160,16 @@ function deriveActions(citations, dispatch, level) {
     );
   }
 
-  return [...new Set(actions)].slice(0, 6);
+  if (transportDesk?.electiveHolds?.length) {
+    actions.push(
+      `Confirm elective hold at ${transportDesk.electiveHolds.map((h) => h.name).join(", ")} before scheduling`
+    );
+  }
+  if (transportDesk?.pendingHandoffs) {
+    actions.push(`Review ${transportDesk.pendingHandoffs} pending EMS→NEMT handoff(s) in transport desk queue`);
+  }
+
+  return [...new Set(actions)].slice(0, 8);
 }
 
 function computeConfidence(signal) {

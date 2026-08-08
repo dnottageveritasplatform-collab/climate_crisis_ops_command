@@ -26,7 +26,11 @@
     "mentor:questions": "node -e \"import('./src/logbook/index.js').then(m=>console.log(m.formatMentorQuestionsText()))\"",
     "demo:preflight": "node -e \"import('./src/demo/day21.js').then(m=>m.runDemoDayPreflight()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
     "demo:runbook": "node -e \"import('./src/demo/day21.js').then(m=>console.log(m.formatDemoDayRunbookText()))\"",
-    "demo:qa": "node -e \"import('./src/demo/day21.js').then(m=>console.log(m.formatQaPrepText()))\""
+    "demo:qa": "node -e \"import('./src/demo/day21.js').then(m=>console.log(m.formatQaPrepText()))\"",
+    "cad:summary": "node -e \"import('./src/cad/index.js').then(m=>console.log(JSON.stringify(m.buildCadSummary(2),null,2)))\"",
+    "cad:cross-ref": "node -e \"import('./src/cad/index.js').then(m=>console.log(JSON.stringify(m.buildCadCrossReference(2),null,2)))\"",
+    "transport-desk:summary": "node -e \"import('./src/transport-desk/index.js').then(m=>console.log(JSON.stringify(m.buildTransportDeskSummary(2),null,2)))\"",
+    "transport-desk:cross-ref": "node -e \"import('./src/transport-desk/index.js').then(m=>console.log(JSON.stringify(m.buildHandoffCrossReference(2),null,2)))\""
   },
   "engines": {
     "node": ">=18"
