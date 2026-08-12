@@ -7,6 +7,7 @@ import {
   getCadOverlay,
   ingestCadWebhook,
 } from "../cad/index.js";
+import { buildEnrichedDispatchSummary } from "../cad/enrichment.js";
 
 const router = Router();
 
@@ -23,6 +24,11 @@ router.get("/summary", (req, res) => {
 router.get("/cross-ref", (req, res) => {
   const level = Number(req.query.level) || 2;
   res.json(buildCadCrossReference(level));
+});
+
+router.get("/enriched-dispatch", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildEnrichedDispatchSummary(level));
 });
 
 router.get("/map-units", (req, res) => {

@@ -74,6 +74,22 @@ export const PHASE2_ROADMAP = {
           "Pipeline audit logs CAD run/incident IDs for at-risk trips",
         ],
       },
+      day5: {
+        complete: true,
+        deliverables: [
+          "src/cad/enrichment.js — live CAD run + handoff status on dispatch manifest",
+          "GET /api/cad/enriched-dispatch · summarize_dispatch tool enriched",
+          "Map at-risk trips show cadRunId + unitStatus · pipeline cad_dispatch_enrich audit",
+        ],
+      },
+      day6: {
+        complete: true,
+        deliverables: [
+          "src/geo/esri.js — ESRI FeatureServer corridor adapter + webhook ingest",
+          "data/geo/esri-corridors-demo.json — pilot agency GIS demo layer",
+          "GET /api/geo/corridors/esri · get_corridor_layers Monitor tool · pipeline esri_corridor_sync",
+        ],
+      },
     },
     {
       id: "ems-adjacent",
@@ -93,6 +109,32 @@ export const PHASE2_ROADMAP = {
           "Monitor tool get_transport_desk_status · pipeline handoff audit cross-ref",
         ],
       },
+      day4: {
+        complete: true,
+        deliverables: [
+          "src/transport-desk/writeback.js — handoff accept + nemtRunId CAD linkage",
+          "POST /api/transport-desk/handoff-accept · patch mode on /ingest",
+          "Audit type handoff_writeback — separate from Triple HITL",
+          "UI demo accept HO-2201 → RUN-8845 · transport desk strip updates",
+        ],
+      },
+      day7: {
+        complete: true,
+        deliverables: [
+          "src/shelter-fleet/ — shelter capacity + fleet logistics JSON adapter",
+          "Extended HITL (5 roles): shelter coordinator + fleet logistics at L2+",
+          "GET /api/shelter-fleet/* · pipeline shelter_fleet_cross_ref",
+        ],
+      },
+      day8: {
+        complete: true,
+        deliverables: [
+          "src/audit/store.js — append-only JSONL persistence (data/audit-trail.jsonl)",
+          "GET /api/audit/eoc-briefing · GET /api/audit/persist",
+          "EOC audit briefing bundle — persisted trail + COP snapshot",
+          "Pipeline step audit_persist · Monitor tools get_audit_persist_status / get_eoc_audit_briefing",
+        ],
+      },
     },
     {
       id: "public-safety-feeds",
@@ -102,7 +144,16 @@ export const PHASE2_ROADMAP = {
         "Institutional signal adapters (NHC live + UN OCHA / GFDRR overlays — started in sprint)",
         "Common operating picture export for EOC briefings",
       ],
-      status: "planned",
+      status: "in_progress",
+      day3: {
+        complete: true,
+        deliverables: [
+          "src/public-safety/ — EOC fire/police JSON adapter + webhook ingest stub",
+          "data/sample-public-safety-units.json — corridor-assigned demo units",
+          "GET /api/public-safety/* — overlay, summary, cross-ref, map-units, cop-export",
+          "Monitor tool get_public_safety_status · pipeline EOC corridor audit cross-ref",
+        ],
+      },
     },
     {
       id: "routing-gis",
@@ -162,9 +213,15 @@ export function buildDefensibilityNarrative() {
 export function buildPhase2Roadmap() {
   return {
     ok: true,
-    phase: "phase-2-day-2",
+    phase: "phase-2-day-8",
     day1Complete: true,
     day2Complete: true,
+    day3Complete: true,
+    day4Complete: true,
+    day5Complete: true,
+    day6Complete: true,
+    day7Complete: true,
+    day8Complete: true,
     ...PHASE2_ROADMAP,
   };
 }

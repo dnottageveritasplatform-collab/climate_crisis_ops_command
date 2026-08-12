@@ -59,6 +59,7 @@ src/sops/         Crisis SOP RAG corpus (Week 1 Day 6+)
 src/dispatch/     NEMT dispatch manifest loader (Week 1 Day 6+)
 src/cad/          CAD read-only overlay adapter (Phase 2 Day 1)
 src/transport-desk/ EMS-adjacent hospital desk + handoff queue (Phase 2 Day 2)
+src/public-safety/ Fire/police EOC overlay + COP export (Phase 2 Day 3)
 src/geo/          Thin map layers (Week 1 Day 6+)
 src/eval/          Eval harness — scripted scenarios (Week 3)
 src/efficiency/    Token + latency logging (Week 3)
@@ -76,7 +77,105 @@ Built on [KnightRoad Veritas](https://knightroadveritas.app) agent + command-cen
 
 ## Status
 
-**Phase 2 Day 2 complete** — EMS-adjacent transport desk: bed pressure, diversion, EMS→NEMT handoff queue (read-only).
+**Phase 2 Day 8 complete** — Persistent JSONL audit store + EOC audit briefing export (survives restart).
+
+### Phase 2 Day 8 quick test
+
+```bash
+npm run pipeline:run
+npm run audit:persist
+npm run audit:eoc-briefing
+curl.exe http://127.0.0.1:8787/api/audit/eoc-briefing?level=2
+npm run eval:run
+# UI: Audit strip → EOC audit export link
+```
+
+**Deliverables:** `src/audit/store.js` · `src/audit/eoc-export.js` · `GET /api/audit/eoc-briefing` · pipeline `audit_persist`
+
+Append-only persistence for EOC briefings — not dispatch authority.
+
+**Phase 2 Day 7 complete** — Shelter + fleet coordination feed with extended 5-role HITL (shelter coordinator + fleet logistics at L2+).
+
+### Phase 2 Day 7 quick test
+
+```bash
+npm run shelter-fleet:summary
+curl.exe http://127.0.0.1:8787/api/shelter-fleet/summary?level=2
+curl.exe http://127.0.0.1:8787/api/shelter-fleet/cross-ref?level=2
+npm run pipeline:run
+npm run eval:run
+# UI: Shelter/fleet strip · 5-role Extended HITL panel · audit shelter/fleet chips
+```
+
+**Deliverables:** `src/shelter-fleet/` · `GET /api/shelter-fleet/*` · extended HITL · pipeline `shelter_fleet_cross_ref`
+
+Coordination + approval only — not shelter operations authority or fleet dispatch.
+
+**Phase 2 Day 6 complete** — ESRI corridor feature service adapter replaces static GeoJSON when agency provides GIS layers.
+
+### Phase 2 Day 6 quick test
+
+```bash
+npm run geo:corridors-esri
+curl.exe http://127.0.0.1:8787/api/geo/corridors/esri?level=2
+curl.exe http://127.0.0.1:8787/api/geo/corridors/source
+npm run pipeline:run
+npm run eval:run
+# UI: map badge shows "ESRI corridors" · audit chips show CORR-02·restricted
+```
+
+**Deliverables:** `src/geo/esri.js` · `GET /api/geo/corridors/esri` · `get_corridor_layers` Monitor tool · pipeline `esri_corridor_sync`
+
+Read-only corridor closure overlay — not turn-by-turn routing or ESRI Enterprise write-back.
+
+**Phase 2 Day 5 complete** — Bidirectional CAD enrichment: live run status + handoff state merged onto dispatch manifest and map.
+
+### Phase 2 Day 5 quick test
+
+```bash
+npm run cad:enriched-dispatch
+curl.exe http://127.0.0.1:8787/api/cad/enriched-dispatch?level=2
+npm run pipeline:run
+npm run eval:run
+# UI: at-risk trips show R8842 · en route labels · Monitor tool shows CAD live count
+```
+
+**Deliverables:** `src/cad/enrichment.js` · `GET /api/cad/enriched-dispatch` · enriched `summarize_dispatch` tool
+
+Enriches dispatch with live CAD + handoff data — read/sync only, not new write authority.
+
+### Phase 2 Day 4 quick test
+
+```bash
+npm run transport-desk:accept-demo
+curl.exe http://127.0.0.1:8787/api/transport-desk/writeback-status
+curl.exe -X POST http://127.0.0.1:8787/api/transport-desk/handoff-accept -H "Content-Type: application/json" -d "{\"handoffs\":[{\"handoffId\":\"HO-2201\",\"status\":\"nemt_assigned\",\"nemtRunId\":\"RUN-8845\",\"linkedTripId\":\"T-1004\"}]}"
+npm run pipeline:run
+npm run eval:run
+# UI: http://127.0.0.1:8787 — Demo accept HO-2201 · audit handoff_writeback chip
+```
+
+**Deliverables:** `src/transport-desk/writeback.js` · `POST /api/transport-desk/handoff-accept` · patch ingest · audit `handoff_writeback`
+
+Handoff accept write-back only — not COMMS-03 HITL, not 911 dispatch, not auto-send messaging.
+
+### Phase 2 Day 3 quick test
+
+```bash
+npm run public-safety:summary
+npm run public-safety:cross-ref
+npm run public-safety:cop-export
+curl.exe http://127.0.0.1:8787/api/public-safety/summary
+curl.exe http://127.0.0.1:8787/api/public-safety/cross-ref?level=2
+curl.exe http://127.0.0.1:8787/api/public-safety/cop-export?level=2
+npm run pipeline:run
+npm run eval:run
+# UI: http://127.0.0.1:8787 — EOC strip · fire/police pins on map · COP export link
+```
+
+**Deliverables:** `src/public-safety/` · `data/sample-public-safety-units.json` · `GET/POST /api/public-safety/*`
+
+Read-only EOC overlay — fire/police unit status on shared map; COP JSON bundles NEMT + transport desk + public-safety feeds for briefings. No dispatch authority.
 
 ### Phase 2 Day 2 quick test
 

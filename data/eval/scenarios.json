@@ -101,7 +101,7 @@
       "level": 2,
       "expect": {
         "threshold": 2,
-        "pipelineSteps": ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref"],
+        "pipelineSteps": ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "audit_persist"],
         "auditType": "pipeline_run",
         "hitlStaged": true,
         "minRankedTrips": 8

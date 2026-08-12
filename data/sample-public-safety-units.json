@@ -1,0 +1,47 @@
+{
+  "source": "eoc_public_safety_feed",
+  "updatedAt": "2026-08-08T21:00:00Z",
+  "scopeGuard": "Read-only situational awareness — no dispatch authority in CCOC.",
+  "units": [
+    {
+      "unitId": "FP-Engine-3",
+      "agency": "fire",
+      "agencyLabel": "Nassau Fire & Rescue",
+      "status": "staging",
+      "assignment": "CORR-02 eastern low segment — flood watch",
+      "corridor": "CORR-02",
+      "lat": 25.052,
+      "lon": -77.318
+    },
+    {
+      "unitId": "FP-Rescue-1",
+      "agency": "fire",
+      "agencyLabel": "Nassau Fire & Rescue",
+      "status": "available",
+      "assignment": "EOC mutual aid standby",
+      "corridor": null,
+      "lat": 25.058,
+      "lon": -77.335
+    },
+    {
+      "unitId": "RBPF-114",
+      "agency": "police",
+      "agencyLabel": "Royal Bahamas Police Force",
+      "status": "on_patrol",
+      "assignment": "Paradise Island bridge traffic control",
+      "corridor": "CORR-01",
+      "lat": 25.078,
+      "lon": -77.300
+    },
+    {
+      "unitId": "RBPF-203",
+      "agency": "police",
+      "agencyLabel": "Royal Bahamas Police Force",
+      "status": "on_scene",
+      "assignment": "Eastern Road corridor restriction support",
+      "corridor": "CORR-02",
+      "lat": 25.044,
+      "lon": -77.305
+    }
+  ]
+}

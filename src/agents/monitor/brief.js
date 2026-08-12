@@ -80,6 +80,9 @@ function planAfterThreshold(signal) {
   ];
   if (level >= 2) steps.splice(1, 0, { tool: "query_sop", args: { query: "CORR" } });
   if (level >= 2) steps.push({ tool: "get_transport_desk_status", args: {} });
+  if (level >= 2) steps.push({ tool: "get_public_safety_status", args: {} });
+  if (level >= 2) steps.push({ tool: "get_corridor_layers", args: { level } });
+  if (level >= 2) steps.push({ tool: "get_shelter_fleet_status", args: {} });
   if (level >= 3) steps.splice(2, 0, { tool: "query_sop", args: { query: "COMMS-03" } });
   return steps;
 }
@@ -88,6 +91,9 @@ function buildThresholdBrief(toolResults) {
   const signal = findResult(toolResults, "get_signal_status");
   const dispatch = findResult(toolResults, "summarize_dispatch");
   const transportDesk = findResult(toolResults, "get_transport_desk_status");
+  const publicSafety = findResult(toolResults, "get_public_safety_status");
+  const corridorLayers = findResult(toolResults, "get_corridor_layers");
+  const shelterFleet = findResult(toolResults, "get_shelter_fleet_status");
   const sopResults = toolResults.filter((t) => t.tool === "query_sop").map((t) => t.result);
 
   const citations = dedupeCitations(sopResults.flatMap((s) => s.citations || []));
@@ -98,12 +104,15 @@ function buildThresholdBrief(toolResults) {
     level,
     event: signal.event,
     geography: signal.serviceArea,
-    summary: buildSummary(signal, dispatch, transportDesk),
+    summary: buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLayers, shelterFleet),
     sopCitations: citations,
-    recommendedActions: deriveActions(citations, dispatch, level, transportDesk),
+    recommendedActions: deriveActions(citations, dispatch, level, transportDesk, publicSafety, corridorLayers, shelterFleet),
     institutionalSignals: signal.institutionalHeadlines || [],
     transportDesk: transportDesk || null,
-    affectedCorridors: dispatch.corridorStatus || {},
+    publicSafety: publicSafety || null,
+    corridorLayers: corridorLayers || null,
+    shelterFleet: shelterFleet || null,
+    affectedCorridors: corridorLayers?.corridorStatus || dispatch.corridorStatus || {},
     confidence: computeConfidence(signal),
   };
 }
@@ -118,7 +127,7 @@ function dedupeCitations(citations) {
   });
 }
 
-function buildSummary(signal, dispatch, transportDesk) {
+function buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLayers, shelterFleet) {
   const inst = signal.institutionalCount || 0;
   const atRisk = dispatch.atRiskTrips ?? dispatch.p1Trips ?? 0;
   const corridors = (dispatch.corridors || []).join(", ");
@@ -129,7 +138,23 @@ function buildSummary(signal, dispatch, transportDesk) {
     deskHint = ` Transport desk: ${names} bed pressure.`;
   }
   if (transportDesk?.pendingHandoffs) {
-    deskHint += ` ${transportDesk.pendingHandoffs} EMS→NEMT handoff(s) pending.`;
+    deskHint += ` ${transportDesk.pendingHandoffs} EMS→NEMT handoff(s) awaiting dispatch accept (read-only desk).`;
+  }
+  if (publicSafety?.corridorAssignments?.length) {
+    deskHint += ` EOC: ${publicSafety.fireCount} fire + ${publicSafety.policeCount} police units on shared map (${publicSafety.corridorAssignments.length} on corridors).`;
+  }
+  if (dispatch?.enriched && dispatch.cadLinkedAtRisk != null) {
+    deskHint += ` Live CAD: ${dispatch.cadLinkedAtRisk}/${atRisk} at-risk trips with run status.`;
+  }
+  if (corridorLayers?.source === "esri_feature_service") {
+    const restricted = Object.entries(corridorLayers.corridorStatus || {})
+      .filter(([, s]) => s !== "open")
+      .map(([id, s]) => `${id} ${s}`)
+      .join(", ");
+    deskHint += ` ESRI corridors: ${corridorLayers.featureCount} feature(s)${restricted ? ` — ${restricted}` : " — all open"}.`;
+  }
+  if (shelterFleet?.shelterCount) {
+    deskHint += ` Shelter/fleet: ${shelterFleet.acceptingShelters}/${shelterFleet.shelterCount} shelters accepting · ${shelterFleet.availableFleetAssets}/${shelterFleet.fleetCount} fleet available (extended HITL).`;
   }
   return (
     `Level ${signal.level} ${signal.label} — multi-agency coordination for ${geo}. ` +
@@ -139,7 +164,7 @@ function buildSummary(signal, dispatch, transportDesk) {
   );
 }
 
-function deriveActions(citations, dispatch, level, transportDesk) {
+function deriveActions(citations, dispatch, level, transportDesk, publicSafety, corridorLayers, shelterFleet) {
   const levelSection = `Level ${level}`;
   const fromSop = citations
     .filter((c) => c.section?.startsWith(levelSection) || c.section?.includes("Restrict"))
@@ -166,10 +191,30 @@ function deriveActions(citations, dispatch, level, transportDesk) {
     );
   }
   if (transportDesk?.pendingHandoffs) {
-    actions.push(`Review ${transportDesk.pendingHandoffs} pending EMS→NEMT handoff(s) in transport desk queue`);
+    actions.push(
+      `Review ${transportDesk.pendingHandoffs} handoff(s) awaiting NEMT dispatch accept (transport desk feed — not HITL)`
+    );
+  }
+  if (publicSafety?.corridorAssignments?.length) {
+    actions.push(
+      `Coordinate with EOC public-safety units on ${publicSafety.corridorAssignments.map((u) => u.corridor).join(", ")} (read-only feed)`
+    );
+  }
+  if (corridorLayers?.corridors?.some((c) => c.status !== "open")) {
+    actions.push(
+      `Verify ESRI corridor layer closures against NEMT manifest — ${corridorLayers.corridors.filter((c) => c.status !== "open").map((c) => c.name).join(", ")}`
+    );
+  }
+  if (shelterFleet?.nearCapacityShelters?.length) {
+    actions.push(
+      `Review shelter capacity on ${shelterFleet.nearCapacityShelters.map((s) => s.name).join(", ")} — shelter coordinator HITL required`
+    );
+  }
+  if (level >= 2 && shelterFleet?.fleetCount) {
+    actions.push("Stage fleet allocation draft for logistics lead extended HITL approval");
   }
 
-  return [...new Set(actions)].slice(0, 8);
+  return [...new Set(actions)].slice(0, 10);
 }
 
 function computeConfidence(signal) {

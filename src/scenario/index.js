@@ -38,6 +38,24 @@ export const SCENARIO = {
       liaison: "Dr. Elaine Moss",
       liaisonTitle: "Transport Liaison",
     },
+    {
+      id: "shelter",
+      name: "National Gymnasium Shelter",
+      shortName: "Shelter Ops",
+      role: "shelter_coordinator",
+      hitlRole: "shelter_coordinator",
+      liaison: "Keisha Bain",
+      liaisonTitle: "Shelter Coordinator",
+    },
+    {
+      id: "fleet",
+      name: "Fleet Logistics Pool",
+      shortName: "Fleet Logistics",
+      role: "fleet_logistics",
+      hitlRole: "fleet_logistics",
+      liaison: "Marcus Edgecombe",
+      liaisonTitle: "Fleet Logistics Lead",
+    },
   ],
   corridors: [
     {

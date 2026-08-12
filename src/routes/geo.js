@@ -6,6 +6,11 @@ import {
   getLastTriageRanking,
   loadGeoLayers,
 } from "../geo/index.js";
+import {
+  buildEsriCorridorSummary,
+  getCorridorLayerMeta,
+  ingestEsriCorridorWebhook,
+} from "../geo/esri.js";
 
 const router = Router();
 
@@ -44,6 +49,26 @@ router.get("/layers/triage", (req, res) => {
 
 router.get("/raw", (_req, res) => {
   res.json({ ok: true, ...loadGeoLayers() });
+});
+
+/** ESRI / agency GIS corridor layer summary (Phase 2 Day 6). */
+router.get("/corridors/esri", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildEsriCorridorSummary(level));
+});
+
+/** Active corridor layer source metadata. */
+router.get("/corridors/source", (_req, res) => {
+  res.json({ ok: true, ...getCorridorLayerMeta() });
+});
+
+/** Webhook ingest for pilot ESRI FeatureServer push updates. */
+router.post("/corridors/ingest", (req, res) => {
+  try {
+    res.json(ingestEsriCorridorWebhook(req.body));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
 });
 
 export default router;

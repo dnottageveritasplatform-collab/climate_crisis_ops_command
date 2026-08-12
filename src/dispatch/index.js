@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { parse } from "csv-parse/sync";
+import { getActiveCorridorStatus } from "../geo/esri.js";
 
 const dispatchPath = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -27,10 +28,9 @@ export function loadDispatch() {
   }));
 }
 
+/** Corridor closure status — ESRI layer when loaded, else sprint static rules. */
 export function corridorStatusForLevel(level) {
-  if (level >= 3) return { "CORR-01": "closed", "CORR-02": "closed" };
-  if (level >= 2) return { "CORR-01": "open", "CORR-02": "restricted" };
-  return { "CORR-01": "open", "CORR-02": "open" };
+  return getActiveCorridorStatus(level);
 }
 
 /** Trips at risk for a given escalation level. */

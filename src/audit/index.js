@@ -1,6 +1,13 @@
-const entries = [];
-const MAX = 100;
-let seq = 0;
+import {
+  appendPersistedAuditEntry,
+  getAuditPersistStatus,
+  loadPersistedAuditState,
+} from "./store.js";
+
+const boot = loadPersistedAuditState();
+const entries = boot.entries.slice(0, 100);
+let seq = boot.seq;
+let lastPersistResult = null;
 
 function mapCitations(citations) {
   if (!citations?.length) return [];
@@ -28,7 +35,7 @@ function uniqueCitationRefs(...lists) {
 }
 
 /**
- * Append-only audit trail — Week 2 Day 13+: steps, citations, approver timestamps.
+ * Append-only audit trail — Week 2 Day 13+; Phase 2 Day 8 JSONL persistence.
  */
 export function appendAuditEntry(entry) {
   const record = {
@@ -37,9 +44,17 @@ export function appendAuditEntry(entry) {
     ...entry,
   };
   entries.unshift(record);
+  const MAX = 100;
   if (entries.length > MAX) entries.length = MAX;
+  lastPersistResult = appendPersistedAuditEntry(record);
   console.log(`[audit] ${record.type}`, record.summary || record.id);
   return record;
+}
+
+export { getAuditPersistStatus };
+
+export function getLastAuditPersistResult() {
+  return lastPersistResult;
 }
 
 export function getAuditLog(limit = 50) {
@@ -72,6 +87,10 @@ export function buildAuditTrail(limit = 15) {
       citations: e.citations,
       cadCrossRef: e.cadCrossRef,
       handoffCrossRef: e.handoffCrossRef,
+      publicSafetyCrossRef: e.publicSafetyCrossRef,
+      enrichedDispatch: e.enrichedDispatch,
+      esriCorridorSync: e.esriCorridorSync,
+      shelterFleetCrossRef: e.shelterFleetCrossRef,
       approvers: e.approvers || normalizeApprovers(e.hitl?.approvers),
       hitl: e.hitl,
       mode: e.mode,
@@ -174,6 +193,10 @@ export function recordPipelineRun({
   mode,
   cadCrossRef,
   handoffCrossRef,
+  publicSafetyCrossRef,
+  enrichedDispatch,
+  esriCorridorSync,
+  shelterFleetCrossRef,
 }) {
   const ts = new Date().toISOString();
   const cadNote = cadCrossRef?.matchedCount
@@ -182,9 +205,22 @@ export function recordPipelineRun({
   const handoffNote = handoffCrossRef?.matchedCount
     ? ` · handoff ${handoffCrossRef.matchedCount}/${handoffCrossRef.atRiskCount}`
     : "";
+  const publicSafetyNote = publicSafetyCrossRef?.matchedCount
+    ? ` · EOC ${publicSafetyCrossRef.matchedCount} unit(s) on restricted corridors`
+    : "";
+  const enrichNote = enrichedDispatch?.cadLinkedAtRisk
+    ? ` · live CAD ${enrichedDispatch.cadLinkedAtRisk}/${enrichedDispatch.atRiskTrips} enriched`
+    : "";
+  const esriNote = esriCorridorSync?.source === "esri_feature_service"
+    ? ` · ESRI ${esriCorridorSync.featureCount} corridor(s)`
+    : "";
+  const shelterFleetNote = shelterFleetCrossRef?.matchedCount
+    ? ` · shelter/fleet ${shelterFleetCrossRef.matchedCount} on restricted corridors`
+    : "";
+  const hitlModeNote = hitl?.extendedHitl ? " · extended HITL (5)" : "";
   return appendAuditEntry({
     type: "pipeline_run",
-    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${cadNote}${handoffNote}`,
+    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}`,
     signal: {
       level: threshold,
       label: signals?.label,
@@ -199,6 +235,7 @@ export function recordPipelineRun({
       hospitalPartners: action.pack?.hospitalPartners?.map((p) => p.name) ?? [],
       hitlGateId: hitl?.id,
       hitlRequired: action.pack?.hitlRequired ?? true,
+      extendedHitl: hitl?.extendedHitl ?? action.pack?.extendedHitlRequired ?? false,
       hitlRoles: hitl?.roles ? Object.keys(hitl.roles) : [],
       cadCrossRef: cadCrossRef
         ? {
@@ -215,6 +252,37 @@ export function recordPipelineRun({
             matches: handoffCrossRef.matches?.slice(0, 6),
           }
         : undefined,
+      publicSafetyCrossRef: publicSafetyCrossRef
+        ? {
+            matchedCount: publicSafetyCrossRef.matchedCount,
+            unitCount: publicSafetyCrossRef.unitCount,
+            matches: publicSafetyCrossRef.matches?.slice(0, 6),
+          }
+        : undefined,
+      enrichedDispatch: enrichedDispatch
+        ? {
+            cadLinkedAtRisk: enrichedDispatch.cadLinkedAtRisk,
+            atRiskTrips: enrichedDispatch.atRiskTrips,
+            nemtAssignedAtRisk: enrichedDispatch.nemtAssignedAtRisk,
+            liveUnitStatusCounts: enrichedDispatch.liveUnitStatusCounts,
+          }
+        : undefined,
+      esriCorridorSync: esriCorridorSync
+        ? {
+            source: esriCorridorSync.source,
+            adapter: esriCorridorSync.adapter,
+            featureCount: esriCorridorSync.featureCount,
+            corridorStatus: esriCorridorSync.corridorStatus,
+          }
+        : undefined,
+      shelterFleetCrossRef: shelterFleetCrossRef
+        ? {
+            matchedCount: shelterFleetCrossRef.matchedCount,
+            matchedShelterCount: shelterFleetCrossRef.matchedShelterCount,
+            matchedFleetCount: shelterFleetCrossRef.matchedFleetCount,
+            atRiskOnRestrictedCount: shelterFleetCrossRef.atRiskOnRestrictedCount,
+          }
+        : undefined,
     },
     cadCrossRef: cadCrossRef?.matches?.map((m) => ({
       tripId: m.tripId,
@@ -226,18 +294,86 @@ export function recordPipelineRun({
       tripId: m.linkedTripId,
       handoffId: m.handoffId,
       emsRunId: m.emsRunId,
+      nemtRunId: m.nemtRunId,
       status: m.status,
     })),
+    publicSafetyCrossRef: publicSafetyCrossRef?.matches?.map((m) => ({
+      unitId: m.unitId,
+      agency: m.agency,
+      corridor: m.corridor,
+      corridorStatus: m.corridorStatus,
+    })),
+    enrichedDispatch: enrichedDispatch?.atRiskDetails
+      ?.filter((t) => t.cadLinked)
+      .slice(0, 4)
+      .map((t) => ({
+        tripId: t.tripId,
+        cadRunId: t.cadRunId,
+        unitStatus: t.unitStatus,
+        handoffStatus: t.handoffStatus,
+        nemtRunId: t.nemtRunId,
+      })),
+    esriCorridorSync: esriCorridorSync?.corridors?.slice(0, 4).map((c) => ({
+      id: c.id,
+      name: c.name,
+      status: c.status,
+      layerSource: c.layerSource,
+    })),
+    shelterFleetCrossRef: [
+      ...(shelterFleetCrossRef?.shelterMatches || []).slice(0, 2).map((s) => ({
+        kind: "shelter",
+        id: s.shelterId,
+        corridor: s.corridor,
+        status: s.status,
+      })),
+      ...(shelterFleetCrossRef?.fleetMatches || []).slice(0, 2).map((f) => ({
+        kind: "fleet",
+        id: f.assetId,
+        corridor: f.corridor,
+        status: f.status,
+      })),
+    ],
     steps: [
       { id: "monitor", label: "Monitor brief", agent: "monitor", auditId: monitor.audit?.id, ts: monitor.audit?.ts },
       { id: "triage", label: "Triage rank", agent: "triage", auditId: triage.audit?.id, ts: triage.audit?.ts },
       { id: "action", label: "Action pack", agent: "action", auditId: action.audit?.id, ts: action.audit?.ts },
       { id: "hitl_staged", label: "HITL staged", gateId: hitl?.id, ts: hitl?.stagedAt || ts },
+      { id: "audit_persist", label: "Audit persisted (JSONL)", ts },
     ],
     citations: uniqueCitationRefs(monitor.brief?.sopCitations, action.pack?.sopCitations),
     childAudits: [monitor.audit?.id, triage.audit?.id, action.audit?.id].filter(Boolean),
     agents: ["monitor", "triage", "action"],
     mode: mode || "demo",
+  });
+}
+
+/** Record NEMT CAD handoff accept write-back — separate from Triple HITL (COMMS-03). */
+export function recordHandoffWriteBack({ transitions, source, acceptedBy, scopeGuard }) {
+  const ts = new Date().toISOString();
+  const summary =
+    transitions.length === 1
+      ? `Handoff write-back: ${transitions[0].handoffId} ${transitions[0].from}→${transitions[0].to} · ${transitions[0].nemtRunId}`
+      : `Handoff write-back: ${transitions.length} accept(s) · ${transitions.map((t) => `${t.handoffId}→${t.nemtRunId}`).join(", ")}`;
+
+  return appendAuditEntry({
+    type: "handoff_writeback",
+    summary,
+    source: source || "pilot",
+    acceptedBy: acceptedBy || "nemt_dispatch",
+    scopeGuard,
+    handoffWriteBack: transitions.map((t) => ({
+      handoffId: t.handoffId,
+      from: t.from,
+      to: t.to,
+      linkedTripId: t.linkedTripId,
+      nemtRunId: t.nemtRunId,
+      emsRunId: t.emsRunId,
+      incidentId: t.incidentId,
+      acceptedAt: t.acceptedAt,
+      acceptedBy: t.acceptedBy,
+    })),
+    steps: [{ id: "nemt_handoff_accept", label: "NEMT handoff accept (not HITL)", ts }],
+    mode: "write_back_pilot",
   });
 }
 

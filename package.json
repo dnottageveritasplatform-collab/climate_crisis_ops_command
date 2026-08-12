@@ -30,7 +30,18 @@
     "cad:summary": "node -e \"import('./src/cad/index.js').then(m=>console.log(JSON.stringify(m.buildCadSummary(2),null,2)))\"",
     "cad:cross-ref": "node -e \"import('./src/cad/index.js').then(m=>console.log(JSON.stringify(m.buildCadCrossReference(2),null,2)))\"",
     "transport-desk:summary": "node -e \"import('./src/transport-desk/index.js').then(m=>console.log(JSON.stringify(m.buildTransportDeskSummary(2),null,2)))\"",
-    "transport-desk:cross-ref": "node -e \"import('./src/transport-desk/index.js').then(m=>console.log(JSON.stringify(m.buildHandoffCrossReference(2),null,2)))\""
+    "transport-desk:cross-ref": "node -e \"import('./src/transport-desk/index.js').then(m=>console.log(JSON.stringify(m.buildHandoffCrossReference(2),null,2)))\"",
+    "public-safety:summary": "node -e \"import('./src/public-safety/index.js').then(m=>console.log(JSON.stringify(m.buildPublicSafetySummary(2),null,2)))\"",
+    "public-safety:cross-ref": "node -e \"import('./src/public-safety/index.js').then(m=>console.log(JSON.stringify(m.buildPublicSafetyCorridorCrossRef(2),null,2)))\"",
+    "public-safety:cop-export": "node -e \"import('./src/public-safety/index.js').then(async m=>console.log(JSON.stringify(await m.buildCopExport(2),null,2)))\"",
+    "transport-desk:accept-demo": "node -e \"import('./src/transport-desk/index.js').then(m=>{m.ingestTransportDeskFeed();console.log(JSON.stringify(m.acceptNemtHandoffWriteBack([{handoffId:'HO-2201',status:'nemt_assigned',nemtRunId:'RUN-8845',linkedTripId:'T-1004'}],{source:'cli_demo'}),null,2))})\"",
+    "cad:enriched-dispatch": "node -e \"import('./src/cad/enrichment.js').then(m=>console.log(JSON.stringify(m.buildEnrichedDispatchSummary(2),null,2)))\"",
+    "geo:corridors-esri": "node -e \"import('./src/geo/esri.js').then(m=>console.log(JSON.stringify(m.buildEsriCorridorSummary(2),null,2)))\"",
+    "geo:corridors-source": "node -e \"import('./src/geo/esri.js').then(m=>console.log(JSON.stringify(m.getCorridorLayerMeta(),null,2)))\"",
+    "shelter-fleet:summary": "node -e \"import('./src/shelter-fleet/index.js').then(m=>console.log(JSON.stringify(m.buildShelterFleetSummary(2),null,2)))\"",
+    "shelter-fleet:cross-ref": "node -e \"import('./src/shelter-fleet/index.js').then(m=>console.log(JSON.stringify(m.buildShelterFleetCrossRef(2),null,2)))\"",
+    "audit:persist": "node -e \"import('./src/audit/index.js').then(m=>console.log(JSON.stringify(m.getAuditPersistStatus(),null,2)))\"",
+    "audit:eoc-briefing": "node -e \"import('./src/audit/eoc-export.js').then(m=>m.buildEocAuditBriefing({level:2})).then(r=>console.log(JSON.stringify({ok:r.ok,exportType:r.exportType,persist:r.persist,summary:r.summary},null,2)))\""
   },
   "engines": {
     "node": ">=18"

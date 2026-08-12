@@ -1,0 +1,46 @@
+{
+  "objectIdFieldName": "OBJECTID",
+  "globalIdFieldName": "GlobalID",
+  "geometryType": "esriGeometryPolyline",
+  "spatialReference": { "wkid": 4326, "latestWkid": 4326 },
+  "source": "esri_feature_service_demo",
+  "serviceName": "NassauMetro_CorridorClosures",
+  "scopeGuard": "Pilot agency GIS — replaces static GeoJSON when ESRI_CORRIDOR_URL configured.",
+  "updatedAt": "2026-08-11T18:00:00Z",
+  "features": [
+    {
+      "attributes": {
+        "OBJECTID": 1,
+        "GlobalID": "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}",
+        "id": "CORR-01",
+        "name": "Paradise Island Bridge approach",
+        "floodRisk": "high",
+        "status": "open",
+        "restrictedAtLevel": null,
+        "closedAtLevel": 3,
+        "agency": "Nassau Metro GIS",
+        "layerSource": "esri"
+      },
+      "geometry": {
+        "paths": [[[-77.32, 25.08], [-77.30, 25.09]]]
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 2,
+        "GlobalID": "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}",
+        "id": "CORR-02",
+        "name": "Eastern Road low segment",
+        "floodRisk": "medium",
+        "status": "open",
+        "restrictedAtLevel": 2,
+        "closedAtLevel": 3,
+        "agency": "Nassau Metro GIS",
+        "layerSource": "esri"
+      },
+      "geometry": {
+        "paths": [[[-77.28, 25.05], [-77.26, 25.06]]]
+      }
+    }
+  ]
+}

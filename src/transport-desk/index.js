@@ -1,14 +1,16 @@
 /** Phase 2 Day 2 — EMS-adjacent transport desk (read-only hospital + handoff signals). */
 
 import { getAtRiskTrips } from "../dispatch/index.js";
+import { getCadOverlay } from "../cad/index.js";
 import { loadHandoffQueueFeed, loadHospitalDeskFeed } from "./adapters/json.js";
+import { acceptNemtHandoffs, getLastHandoffWriteBack, NEMT_WRITEBACK_SCOPE_GUARD } from "./writeback.js";
 
 export const TRANSPORT_DESK_SCOPE_GUARD =
-  "Read-only transport desk — scheduled inter-facility handoffs only; not 911 PSAP or EMS dispatch.";
+  "Transport desk — scheduled inter-facility handoffs; pilot NEMT accept write-back (Day 4). Not 911 PSAP.";
 
-export const PHASE2_HITL_PERSONAS_PLANNED = [
-  { id: "shelter_coordinator", title: "Shelter Coordinator", status: "planned" },
-  { id: "fleet_logistics", title: "Fleet Logistics", status: "planned" },
+export const PHASE2_HITL_PERSONAS_ACTIVE = [
+  { id: "shelter_coordinator", title: "Shelter Coordinator", status: "active", phase: "phase-2-day-7" },
+  { id: "fleet_logistics", title: "Fleet Logistics", status: "active", phase: "phase-2-day-7" },
 ];
 
 let cachedDesk = null;
@@ -50,16 +52,20 @@ export function getTransportDeskOverlay({ refresh = false } = {}) {
   const pendingHandoffs = cachedDesk.handoffQueue.filter((h) =>
     ["pending_nemt_accept", "pending_ems_release"].includes(h.status)
   );
+  const assignedHandoffs = cachedDesk.handoffQueue.filter((h) => h.status === "nemt_assigned");
 
   return {
     ok: true,
-    phase: "phase-2-day-2",
-    mode: "read_only",
+    phase: "phase-2-day-4",
+    mode: pendingHandoffs.length > 0 ? "read_with_writeback" : "writeback_pilot",
     scopeGuard: TRANSPORT_DESK_SCOPE_GUARD,
+    writeBackScopeGuard: NEMT_WRITEBACK_SCOPE_GUARD,
+    writeBackEnabled: true,
     adapter: process.env.TRANSPORT_DESK_URL ? "rest" : "json",
     ...cachedDesk,
     pendingHandoffs: pendingHandoffs.length,
-    hitlPersonasPlanned: PHASE2_HITL_PERSONAS_PLANNED,
+    assignedHandoffs: assignedHandoffs.length,
+    hitlPersonasActive: PHASE2_HITL_PERSONAS_ACTIVE,
   };
 }
 
@@ -74,7 +80,7 @@ export function getTransportDeskStatus() {
 
   return {
     ok: true,
-    phase: "phase-2-day-2",
+    phase: "phase-2-day-4",
     hospitalCount: desk.hospitalCount,
     handoffQueueCount: desk.handoffCount,
     pendingHandoffs: desk.pendingHandoffs,
@@ -95,6 +101,7 @@ export function getTransportDeskStatus() {
       diversionStatus: h.diversionStatus,
       label: diversionLabel(h.diversionStatus),
     })),
+    writeBackEnabled: true,
     scopeGuard: TRANSPORT_DESK_SCOPE_GUARD,
     ingestedAt: desk.ingestedAt,
   };
@@ -121,6 +128,8 @@ export function buildHandoffCrossReference(level = 2) {
         facility: trip.facility,
         emsRunId: handoff.emsRunId,
         nemtRunId: handoff.nemtRunId,
+        acceptedAt: handoff.acceptedAt,
+        writeBackSource: handoff.writeBackSource,
         status: handoff.status,
         patientClass: handoff.patientClass,
         origin: handoff.origin,
@@ -138,7 +147,7 @@ export function buildHandoffCrossReference(level = 2) {
 
   return {
     ok: true,
-    phase: "phase-2-day-2",
+    phase: "phase-2-day-4",
     level,
     atRiskCount: atRisk.length,
     matchedCount: matches.length,
@@ -165,19 +174,22 @@ export function buildTransportDeskSummary(level = 2) {
 
   return {
     ok: true,
-    phase: "phase-2-day-2",
+    phase: "phase-2-day-4",
     headline: "EMS-adjacent transport desk — bed pressure + handoff queue",
     level,
     hospitalCount: desk.hospitalCount,
     handoffQueueCount: desk.handoffCount,
     pendingHandoffs: desk.pendingHandoffs,
+    assignedHandoffs: desk.assignedHandoffs ?? 0,
     atRiskTrips: crossRef.atRiskCount,
     handoffMatched: crossRef.matchedCount,
+    pendingAccepts: buildPendingHandoffAccepts(level),
     bedPressureSummary: pressureSummary,
     scopeGuard: TRANSPORT_DESK_SCOPE_GUARD,
+    writeBackEnabled: true,
     adapter: desk.adapter,
     ingestedAt: desk.ingestedAt,
-    hitlPersonasPlanned: PHASE2_HITL_PERSONAS_PLANNED,
+    hitlPersonasActive: PHASE2_HITL_PERSONAS_ACTIVE,
   };
 }
 
@@ -202,16 +214,45 @@ export function attachTransportDeskToFacilities(facilities = []) {
   });
 }
 
-/** Webhook stub — read-only ingest for pilot hospital desk + handoff feeds. */
+/** Pending handoffs with CAD-suggested nemtRunId for pilot write-back UI / API. */
+export function buildPendingHandoffAccepts(level = 2) {
+  const desk = getTransportDeskOverlay();
+  const overlay = getCadOverlay();
+  const runByTrip = Object.fromEntries(overlay.runs.map((r) => [r.tripId, r.runId]));
+
+  return desk.handoffQueue
+    .filter((h) => ["pending_nemt_accept", "pending_ems_release"].includes(h.status))
+    .map((h) => ({
+      handoffId: h.handoffId,
+      linkedTripId: h.linkedTripId,
+      emsRunId: h.emsRunId,
+      priority: h.priority,
+      origin: h.origin,
+      destination: h.destination,
+      suggestedNemtRunId: h.linkedTripId ? runByTrip[h.linkedTripId] || null : null,
+      cadLinkReady: !!(h.linkedTripId && runByTrip[h.linkedTripId]),
+    }));
+}
+
+/** Webhook ingest — full replace or patch handoff accept write-back. */
 export function ingestTransportDeskWebhook(payload) {
   if (!payload || typeof payload !== "object") {
     throw new Error("Transport desk webhook payload must be an object");
   }
 
+  if (payload.mode === "patch" || payload.patch === true) {
+    if (!cachedDesk) ingestTransportDeskFeed("json");
+    const queue = payload.queue || payload.handoffQueue || payload.handoffs || [];
+    return acceptNemtHandoffs(queue, {
+      source: payload.source || "webhook",
+      acceptedBy: payload.acceptedBy || "nemt_dispatch",
+    }, cachedDesk);
+  }
+
   cachedDesk = {
-    hospitals: payload.hospitals || [],
+    hospitals: payload.hospitals || cachedDesk?.hospitals || [],
     handoffQueue: payload.queue || payload.handoffQueue || [],
-    hospitalCount: (payload.hospitals || []).length,
+    hospitalCount: (payload.hospitals || cachedDesk?.hospitals || []).length,
     handoffCount: (payload.queue || payload.handoffQueue || []).length,
     source: "webhook",
     ingestedAt: new Date().toISOString(),
@@ -228,3 +269,32 @@ export function ingestTransportDeskWebhook(payload) {
     ingestedAt: cachedDesk.ingestedAt,
   };
 }
+
+/** Pilot NEMT CAD handoff accept — primary Day 4 write-back entry point. */
+export function acceptNemtHandoffWriteBack(updates, options = {}) {
+  if (!cachedDesk) ingestTransportDeskFeed("json");
+  return acceptNemtHandoffs(updates, options, cachedDesk);
+}
+
+export function getHandoffWriteBackStatus() {
+  const last = getLastHandoffWriteBack();
+  const desk = getTransportDeskOverlay();
+  return {
+    ok: true,
+    phase: "phase-2-day-4",
+    writeBackEnabled: true,
+    scopeGuard: NEMT_WRITEBACK_SCOPE_GUARD,
+    pendingHandoffs: desk.pendingHandoffs,
+    assignedHandoffs: desk.assignedHandoffs,
+    lastWriteBack: last
+      ? {
+          acceptedCount: last.acceptedCount,
+          transitions: last.transitions,
+          source: last.source,
+          acceptedAt: last.transitions[0]?.acceptedAt,
+        }
+      : null,
+  };
+}
+
+export { NEMT_WRITEBACK_SCOPE_GUARD, getLastHandoffWriteBack };

@@ -1,12 +1,16 @@
 import { runMonitorBrief } from "../agents/monitor/brief.js";
 import { runTriageRank } from "../agents/triage/rank.js";
 import { runActionPack } from "../agents/action/pack.js";
-import { recordPipelineRun } from "../audit/index.js";
+import { recordPipelineRun, getAuditPersistStatus, getLastAuditPersistResult } from "../audit/index.js";
 import { recordPipelineRun as recordPipelineEfficiency } from "../efficiency/index.js";
 import { getHitlStatus } from "../hitl/index.js";
 import { fetchSignals } from "../signals/index.js";
 import { buildCadCrossReference } from "../cad/index.js";
+import { buildEnrichedDispatchSummary } from "../cad/enrichment.js";
 import { buildHandoffCrossReference } from "../transport-desk/index.js";
+import { buildPublicSafetyCorridorCrossRef } from "../public-safety/index.js";
+import { buildEsriCorridorSummary } from "../geo/esri.js";
+import { buildShelterFleetCrossRef } from "../shelter-fleet/index.js";
 
 /**
  * Monitor → Triage → Action with triple HITL gate staged at end.
@@ -24,6 +28,10 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
   const hitl = action.hitl ?? getHitlStatus();
   const cadCrossRef = buildCadCrossReference(threshold);
   const handoffCrossRef = buildHandoffCrossReference(threshold);
+  const publicSafetyCrossRef = buildPublicSafetyCorridorCrossRef(threshold);
+  const enrichedDispatch = buildEnrichedDispatchSummary(threshold);
+  const esriCorridorSync = buildEsriCorridorSummary(threshold);
+  const shelterFleetCrossRef = buildShelterFleetCrossRef(threshold);
   const audit = recordPipelineRun({
     signals,
     monitor,
@@ -34,7 +42,16 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     mode: monitor.mode || "demo",
     cadCrossRef,
     handoffCrossRef,
+    publicSafetyCrossRef,
+    enrichedDispatch,
+    esriCorridorSync,
+    shelterFleetCrossRef,
   });
+  const auditPersist = {
+    ...getAuditPersistStatus(),
+    lastWrite: getLastAuditPersistResult(),
+    pipelineAuditId: audit.id,
+  };
 
   const totalLatencyMs = Date.now() - pipeStart;
   const agents = {
@@ -63,10 +80,10 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-2",
+    phase: "phase-2-day-8",
     pipelineId: audit.id,
     threshold,
-    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref"],
+    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "audit_persist"],
     signals,
     monitor,
     triage,
@@ -74,11 +91,16 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     map: triage.map,
     cadCrossRef,
     handoffCrossRef,
+    publicSafetyCrossRef,
+    enrichedDispatch,
+    esriCorridorSync,
+    shelterFleetCrossRef,
+    auditPersist,
     hitl,
     audit,
     efficiency,
     hitlGate: hitl.active ? hitl.state : "idle",
     message:
-      "Pipeline complete — multi-agency brief, triage map sync, and COMMS-03 action pack staged. NEMT supervisor + PMH + Doctor's liaisons must review and approve.",
+      "Pipeline complete — multi-agency brief, ESRI corridors, shelter/fleet coordination, extended HITL, and persisted audit trail.",
   };
 }

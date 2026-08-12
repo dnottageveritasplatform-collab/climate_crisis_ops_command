@@ -18,6 +18,7 @@
       --warn: #ffb347;
       --danger: #ff6b6b;
       --purple: #a78bfa;
+      --command-row-height: 414px;
     }
     * { box-sizing: border-box; margin: 0; }
     body {
@@ -26,6 +27,8 @@
       color: var(--text);
       min-height: 100vh;
       line-height: 1.45;
+      display: flex;
+      flex-direction: column;
     }
 
     .topbar {
@@ -175,17 +178,91 @@
     }
     .desk-chip.warn { color: var(--warn); border-color: rgba(255,179,71,.4); }
     .desk-chip.danger { color: var(--danger); border-color: rgba(255,107,107,.4); }
+    .desk-chip.ok { color: var(--ok); border-color: rgba(95,212,164,.4); }
+    .desk-chip.action {
+      cursor: pointer;
+      color: var(--purple);
+      border-color: rgba(167, 139, 250, 0.45);
+      background: rgba(167, 139, 250, 0.1);
+    }
+    .desk-chip.action:hover { background: rgba(167, 139, 250, 0.18); }
+    .desk-chip.action:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .eoc-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 1.5rem;
+      background: rgba(249, 115, 22, 0.06);
+      border-bottom: 1px solid rgba(249, 115, 22, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .eoc-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.35);
+      background: rgba(249, 115, 22, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .eoc-text { flex: 1; min-width: 220px; color: #fdba74; line-height: 1.35; }
+    .eoc-cop-link {
+      font-size: 0.62rem;
+      color: var(--aqua);
+      text-decoration: none;
+      border: 1px solid rgba(0, 171, 201, 0.35);
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .eoc-cop-link:hover { background: rgba(0, 171, 201, 0.08); }
+
+    .shelter-fleet-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 1.5rem;
+      background: rgba(95, 212, 164, 0.06);
+      border-bottom: 1px solid rgba(95, 212, 164, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .shelter-fleet-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ok);
+      border: 1px solid rgba(95, 212, 164, 0.35);
+      background: rgba(95, 212, 164, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .shelter-fleet-text { flex: 1; min-width: 220px; color: #a7f3d0; line-height: 1.35; }
 
     .workspace {
       display: grid;
       grid-template-columns: 280px 1fr 360px;
-      grid-template-rows: 1fr auto auto;
+      grid-template-rows: var(--command-row-height) auto auto;
       gap: 0;
-      height: calc(100vh - 172px);
-      min-height: 620px;
+      flex: 0 0 auto;
+      height: auto;
     }
     .workspace.audit-hidden {
-      grid-template-rows: 1fr auto;
+      grid-template-rows: var(--command-row-height) auto;
+    }
+    .workspace > .panel {
+      max-height: var(--command-row-height);
+      min-height: 0;
+      overflow: hidden;
     }
     .workspace > section.panel {
       display: flex;
@@ -247,20 +324,17 @@
     .map-wrap {
       position: relative;
       background: #061018;
-      flex: 1;
+      flex: 1 1 auto;
       margin: 0.85rem;
       border-radius: 10px;
       border: 1px solid var(--border);
       overflow: hidden;
-      min-height: 280px;
+      min-height: 0;
       display: flex;
       flex-direction: column;
     }
-    .workspace.audit-hidden .map-wrap {
-      min-height: 380px;
-    }
     .map-scroll-host {
-      flex: 1;
+      flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
       position: relative;
@@ -295,13 +369,9 @@
     .map-svg {
       width: 100%;
       height: 100%;
-      min-height: 280px;
+      min-height: 0;
       display: block;
       touch-action: none;
-    }
-    .workspace.audit-hidden .map-scroll-host,
-    .workspace.audit-hidden .map-svg {
-      min-height: 380px;
     }
     .map-wrap.map-hover {
       cursor: zoom-in;
@@ -421,6 +491,17 @@
       flex-wrap: wrap;
       margin-bottom: 0.45rem;
     }
+    .audit-export-link {
+      font-size: 0.62rem;
+      color: var(--aqua);
+      text-decoration: none;
+      border: 1px solid rgba(0, 171, 201, 0.35);
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+    .audit-export-link:hover { background: rgba(0, 171, 201, 0.08); }
     .audit-strip strong { color: var(--ok); }
     .audit-strip .audit-id { font-family: monospace; color: var(--aqua); }
     .audit-latest { color: var(--muted); font-size: 0.65rem; }
@@ -752,7 +833,7 @@
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Phase 2 · Day 2 · Transport desk</span>
+      <span class="pill gold" id="phasePill">Phase 2 · Day 8 · Audit persist</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
@@ -773,14 +854,31 @@
 
   <div class="scenario-strip" id="scenarioStrip">
     <span class="scenario-tag">Multi-agency scenario</span>
-    <span class="scenario-text" id="scenarioText">Tropical Storm Alma — Nassau Metro NEMT + PMH + Doctor's Hospital · CORR-01 / CORR-02 · CAD + transport desk (Phase 2)</span>
+    <span class="scenario-text" id="scenarioText">Tropical Storm Alma — Nassau Metro NEMT + PMH + Doctor's Hospital · CORR-01 / CORR-02 · CAD + transport desk + EOC units (Phase 2)</span>
     <span class="scenario-demo" id="scenarioDemo">DEMO DATA</span>
   </div>
 
   <div class="transport-desk-strip" id="transportDeskStrip">
-    <span class="transport-desk-tag">Transport desk</span>
+    <span class="transport-desk-tag">Transport desk · write-back pilot</span>
     <span class="transport-desk-text" id="transportDeskText">Loading hospital bed pressure + EMS→NEMT handoff queue…</span>
-    <span class="desk-chip" id="transportDeskPending">— pending</span>
+    <span class="desk-chip" id="transportDeskAssigned" title="Handoffs NEMT dispatch has accepted into their system">— assigned</span>
+    <span class="desk-chip" id="transportDeskPending" title="Handoffs awaiting NEMT dispatch accept — separate from COMMS-03 approval">— awaiting accept</span>
+    <button type="button" class="desk-chip action" id="demoHandoffAccept" title="Simulate NEMT dispatch accept for the next pending handoff (not Triple HITL)">Accept next handoff</button>
+  </div>
+
+  <div class="shelter-fleet-strip" id="shelterFleetStrip">
+    <span class="shelter-fleet-tag">Shelter / fleet · extended HITL</span>
+    <span class="shelter-fleet-text" id="shelterFleetText">Loading shelter capacity + fleet logistics coordination…</span>
+    <span class="desk-chip" id="shelterFleetBeds" title="Shelters accepting evacuees">— beds</span>
+    <span class="desk-chip" id="shelterFleetAssets" title="Fleet assets available for corridor restrictions">— fleet</span>
+  </div>
+
+  <div class="eoc-strip" id="eocStrip">
+    <span class="eoc-tag">EOC · read-only</span>
+    <span class="eoc-text" id="eocText">Loading fire / police unit overlay from EOC feed…</span>
+    <span class="desk-chip" id="eocCorridorUnits" title="Public-safety units assigned to restricted or closed corridors">— on corridors</span>
+    <a class="eoc-cop-link" id="eocCopLink" href="/api/public-safety/cop-export?level=2" target="_blank" rel="noopener">COP JSON export</a>
+    <a class="eoc-cop-link" id="eocAuditExportLink" href="/api/audit/eoc-briefing?level=2" target="_blank" rel="noopener">EOC audit export</a>
   </div>
 
   <div class="workspace" id="workspace">
@@ -817,9 +915,14 @@
           <div><span class="dot" style="background:#ff6b6b"></span> Hospital (public)</div>
           <div><span class="dot" style="background:#c084fc"></span> Hospital (private)</div>
           <div style="font-size:0.58rem;color:var(--muted)">Bed % pill = transport desk pressure</div>
+          <div style="font-size:0.58rem;color:var(--muted)">At-risk trip label = live CAD run (Day 5)</div>
           <div><span class="dot" style="background:#00abc9"></span> NEMT operator</div>
           <div><span class="dot" style="background:#38bdf8"></span> CAD unit (read-only)</div>
+          <div><span style="display:inline-block;width:10px;height:10px;background:#f97316;transform:rotate(45deg);margin-right:0.35rem"></span> Fire unit (EOC)</div>
+          <div><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px 2px 4px 4px;margin-right:0.35rem"></span> Police unit (EOC)</div>
           <div><span class="dot" style="background:#ffc72c"></span> At-risk trip</div>
+          <div style="font-size:0.58rem;color:var(--muted)">Purple rank = full manifest; yellow = at-risk only</div>
+          <div style="font-size:0.58rem;color:var(--muted)">Corridor lines = ESRI agency GIS when configured</div>
           <div><span class="dot" style="background:#ffb347"></span> Restricted corridor</div>
           <div><span class="dot" style="background:#ff6b6b"></span> Closed corridor</div>
           <div style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px solid var(--border);font-size:0.58rem;opacity:0.65">Streets © OpenStreetMap</div>
@@ -862,7 +965,7 @@
         <div class="modules" id="modules"></div>
       </div>
       <div class="hitl-panel">
-        <h3>Triple HITL · Multi-agency approval gate</h3>
+        <h3 id="hitlPanelTitle">Extended HITL · Multi-agency approval gate</h3>
         <div class="hitl-roles">
           <div class="role" id="roleNemt">
             <div class="role-head">
@@ -897,14 +1000,37 @@
               <button type="button" class="approve-btn" id="btnDoctorsApprove" disabled>Approve</button>
             </div>
           </div>
+          <div class="role" id="roleShelter">
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🏠</span><strong>Shelter Coordinator</strong></div>
+              <span class="role-sub">Keisha Bain · National Gymnasium</span>
+            </div>
+            <span class="role-status idle" id="hitlShelter">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnShelterReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnShelterApprove" disabled>Approve</button>
+            </div>
+          </div>
+          <div class="role" id="roleFleet">
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🚐</span><strong>Fleet Logistics</strong></div>
+              <span class="role-sub">Marcus Edgecombe · Evacuation assets</span>
+            </div>
+            <span class="role-status idle" id="hitlFleet">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnFleetReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnFleetApprove" disabled>Approve</button>
+            </div>
+          </div>
         </div>
-        <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Triple approval complete — demo send blocked</div>
+        <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Extended approval complete — demo send blocked</div>
       </div>
     </footer>
     <div class="audit-strip" id="auditStrip">
       <div class="audit-head">
         <strong>Audit Trail</strong>
         <span id="auditLatest" class="audit-latest">No entries yet — click Run Pipeline</span>
+        <a class="audit-export-link" id="auditEocExportLink" href="/api/audit/eoc-briefing?level=2" target="_blank" rel="noopener">EOC audit export</a>
       </div>
       <div class="audit-trail-list" id="auditTrailList"></div>
     </div>
@@ -967,21 +1093,28 @@
       nemt: "nemt_supervisor",
       pmh: "hospital_liaison_pmh",
       doctors: "hospital_liaison_doctors",
+      shelter: "shelter_coordinator",
+      fleet: "fleet_logistics",
     };
 
     const HITL_ROLE_UI = [
       { key: "nemt", role: HITL_ROLES.nemt, statusId: "hitlNemt", reviewBtn: "btnNemtReview", approveBtn: "btnNemtApprove" },
       { key: "pmh", role: HITL_ROLES.pmh, statusId: "hitlPmh", reviewBtn: "btnPmhReview", approveBtn: "btnPmhApprove" },
       { key: "doctors", role: HITL_ROLES.doctors, statusId: "hitlDoctors", reviewBtn: "btnDoctorsReview", approveBtn: "btnDoctorsApprove" },
+      { key: "shelter", role: HITL_ROLES.shelter, statusId: "hitlShelter", reviewBtn: "btnShelterReview", approveBtn: "btnShelterApprove" },
+      { key: "fleet", role: HITL_ROLES.fleet, statusId: "hitlFleet", reviewBtn: "btnFleetReview", approveBtn: "btnFleetApprove" },
     ];
 
     const HITL_APPROVER_NAMES = {
       [HITL_ROLES.nemt]: "Maria Clarke, Dispatch Supervisor (Nassau Metro · demo)",
       [HITL_ROLES.pmh]: "James Rolle, Transport Coordinator (PMH · demo)",
       [HITL_ROLES.doctors]: "Dr. Elaine Moss, Transport Liaison (Doctor's · demo)",
+      [HITL_ROLES.shelter]: "Keisha Bain, Shelter Coordinator (National Gymnasium · demo)",
+      [HITL_ROLES.fleet]: "Marcus Edgecombe, Fleet Logistics Lead (demo)",
     };
 
     function roleStatusText(roleState, released) {
+      if (roleState.status === "not_required") return "Not required at this level";
       if (released || roleState.status === "approved") return "Approved";
       if (roleState.status === "in_review") return "In review";
       if (roleState.status === "awaiting") return "Pending review";
@@ -989,7 +1122,8 @@
     }
 
     function setRoleButtons(reviewBtn, approveBtn, roleState, released) {
-      const canAct = hitlState?.active && !released && roleState.status !== "approved";
+      const notRequired = roleState.status === "not_required";
+      const canAct = hitlState?.active && !released && !notRequired && roleState.status !== "approved";
       reviewBtn.disabled = !canAct;
       approveBtn.disabled = !canAct;
       reviewBtn.classList.toggle("enabled", canAct);
@@ -999,6 +1133,12 @@
     function renderHitl(status) {
       hitlState = status;
       const banner = document.getElementById("hitlReleasedBanner");
+      const panelTitle = document.getElementById("hitlPanelTitle");
+      if (panelTitle) {
+        panelTitle.textContent = status?.extendedHitl
+          ? "Extended HITL · 5-role multi-agency gate"
+          : "Triple HITL · Multi-agency approval gate";
+      }
 
       if (!status?.active) {
         for (const cfg of HITL_ROLE_UI) {
@@ -1033,7 +1173,9 @@
 
       banner.hidden = !released;
       if (released) {
-        banner.textContent = "✓ Triple approval complete — action pack cleared for release (demo: send blocked)";
+        banner.textContent = status.extendedHitl
+          ? "✓ Extended HITL complete — 5-role approval cleared (demo: send blocked)"
+          : "✓ Triple approval complete — action pack cleared for release (demo: send blocked)";
       }
     }
 
@@ -1262,11 +1404,16 @@
       svg.setAttribute("viewBox", layers.viewBox);
       const syncLabel = layers.syncSource === "triage" ? " · triage sync" : "";
       const cadLabel = layers.cadOverlay ? ` · ${layers.cadUnitCount || 0} CAD unit(s)` : "";
+      const eocLabel = layers.publicSafetyOverlay ? ` · ${layers.publicSafetyUnitCount || 0} EOC unit(s)` : "";
+      const enrichLabel = layers.cadEnrichment ? " · live CAD" : "";
+      const esriLabel = layers.esriCorridorOverlay ? " · ESRI corridors" : "";
       const conflictNote = layers.conflictCount ? ` · ${layers.conflictCount} corridor conflict(s)` : "";
-      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}${cadLabel}`;
+      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}${cadLabel}${eocLabel}${enrichLabel}${esriLabel}`;
       mapMeta.textContent = layers.syncSource === "triage"
-        ? `Thin GIS · synced to triage${layers.cadOverlay ? " · CAD overlay" : ""}${conflictNote}`
-        : layers.cadOverlay ? "Thin GIS · CAD read-only overlay" : "Thin GIS · level-based layers";
+        ? `Thin GIS · synced to triage${layers.cadOverlay ? " · CAD overlay" : ""}${layers.publicSafetyOverlay ? " · EOC overlay" : ""}${layers.esriCorridorOverlay ? " · ESRI corridors" : ""}${conflictNote}`
+        : layers.cadOverlay || layers.publicSafetyOverlay || layers.esriCorridorOverlay
+          ? `Thin GIS · ${[layers.esriCorridorOverlay && "ESRI", layers.cadOverlay && "CAD", layers.publicSafetyOverlay && "EOC"].filter(Boolean).join(" + ")} read-only`
+          : "Thin GIS · level-based layers";
 
       const z = layers.zone;
 
@@ -1335,6 +1482,9 @@
         if (rank) {
           html += `<text x="${s.x}" y="${s.y - 10}" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="700" font-family="system-ui">#${rank}</text>`;
         }
+        if (t.cadRunId && (t.atRisk || rank)) {
+          html += `<text x="${s.x}" y="${s.y + s.r + 11}" text-anchor="middle" fill="#38bdf8" font-size="7" font-weight="600" font-family="system-ui">${t.cadRunId.replace("RUN-", "R")}${t.unitStatus ? ` · ${t.unitStatus.replace("_", " ")}` : ""}</text>`;
+        }
       }
 
       for (const f of layers.facilities) {
@@ -1356,6 +1506,22 @@
           <rect x="${s.x - s.r}" y="${s.y - s.r}" width="${s.r * 2}" height="${s.r * 2}" rx="2" fill="${u.color}" stroke="${u.atRiskLinked ? "#ffc72c" : "#fff"}" stroke-width="${u.atRiskLinked ? 2.5 : 1.5}" opacity="0.95"/>
           <text x="${s.x}" y="${s.y + 4}" text-anchor="middle" fill="#001" font-size="8" font-weight="800" font-family="system-ui">${u.unitId.replace("UNIT-", "U")}</text>
         `;
+      }
+
+      for (const u of layers.publicSafetyUnits || []) {
+        const s = u.svg;
+        const cx = s.x + 12;
+        const cy = s.y + 12;
+        const r = s.r;
+        const stroke = u.onRestrictedCorridor ? "#ffc72c" : "#fff";
+        const sw = u.onRestrictedCorridor ? 2.5 : 1.5;
+        if (s.shape === "diamond") {
+          html += `<polygon points="${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}" fill="${u.color}" stroke="${stroke}" stroke-width="${sw}" opacity="0.95"/>`;
+        } else {
+          html += `<path d="M ${cx} ${cy - r} L ${cx + r} ${cy - r * 0.25} L ${cx + r * 0.65} ${cy + r} L ${cx} ${cy + r * 1.05} L ${cx - r * 0.65} ${cy + r} L ${cx - r} ${cy - r * 0.25} Z" fill="${u.color}" stroke="${stroke}" stroke-width="${sw}" opacity="0.95"/>`;
+        }
+        const label = u.unitId.replace(/^(FP-|RBPF-)/, "");
+        html += `<text x="${cx}" y="${cy + 3}" text-anchor="middle" fill="#fff" font-size="7" font-weight="700" font-family="system-ui">${label}</text>`;
       }
 
       if (layers.atRiskCount > 0) {
@@ -1441,7 +1607,10 @@
       if (entry.tool === "summarize_dispatch" && entry.result) {
         const r = entry.result;
         const atRisk = r.atRiskTrips ?? r.p1Trips;
-        return `L${r.level} · ${r.totalTrips} trips · <em>${atRisk} at risk</em> · ${(r.corridors || []).join(", ")}`;
+        const cadHint = r.enriched && r.cadLinkedAtRisk != null
+          ? ` · <em>${r.cadLinkedAtRisk}/${atRisk} CAD live</em>`
+          : "";
+        return `L${r.level} · ${r.totalTrips} trips · <em>${atRisk} at risk</em>${cadHint} · ${(r.corridors || []).join(", ")}`;
       }
       if (entry.tool === "get_cad_cross_ref" && entry.result) {
         const r = entry.result;
@@ -1450,7 +1619,12 @@
       if (entry.tool === "get_transport_desk_status" && entry.result) {
         const r = entry.result;
         const pressure = r.highPressureHospitals?.map((h) => `${h.name.split(" ")[0]} ${h.bedPressurePct}%`).join(", ") || "—";
-        return `${r.pendingHandoffs} handoff(s) pending · bed pressure: <em>${pressure}</em>`;
+        return `${r.pendingHandoffs} awaiting dispatch accept (read-only) · bed pressure: <em>${pressure}</em>`;
+      }
+      if (entry.tool === "get_public_safety_status" && entry.result) {
+        const r = entry.result;
+        const corridors = r.corridorAssignments?.map((u) => `${u.unitId}→${u.corridor}`).slice(0, 2).join(", ") || "none";
+        return `${r.fireCount} fire + ${r.policeCount} police · corridor units: <em>${corridors}</em> (read-only EOC)`;
       }
       if (entry.message) return entry.message;
       if (entry.tool) return entry.tool;
@@ -1667,7 +1841,7 @@
       `).join("");
 
       panel.innerHTML = `
-        <div class="hitl-banner">⚠ DRAFT ONLY — Triple HITL required before send (NEMT + PMH liaison + Doctor's liaison)</div>
+        <div class="hitl-banner">⚠ DRAFT ONLY — ${p.extendedHitlRequired ? "Extended HITL (5 roles)" : "Triple HITL"} required before send (NEMT + hospital liaisons${p.extendedHitlRequired ? " + shelter + fleet" : ""})</div>
         <div class="brief-summary" style="margin-bottom:0.65rem">${p.summary}</div>
         <p class="section-label" style="margin-top:0">Operational checklist (${p.checklist.length})</p>
         ${checklistHtml}
@@ -1703,6 +1877,8 @@
         }
         if (data.audit) renderAudit(data.audit);
         await loadTransportDesk(data.threshold ?? 2);
+        await loadPublicSafety(data.threshold ?? 2);
+        await loadShelterFleet(data.threshold ?? 2);
         document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
         if (data.efficiency) {
           const e = data.efficiency;
@@ -1720,6 +1896,7 @@
         btn.disabled = false;
         btn.textContent = "Run Pipeline";
         agentBtns.forEach((b) => { b.disabled = false; });
+        requestAnimationFrame(applyMapZoomSurface);
       }
     }
 
@@ -1798,9 +1975,29 @@
           .join("");
         const handoffHtml = (e.handoffCrossRef || [])
           .slice(0, 4)
-          .map((h) => `<span class="audit-chip cite" title="${h.emsRunId}">${h.tripId}→${h.handoffId}</span>`)
+          .map((h) => `<span class="audit-chip cite" title="${h.emsRunId || ""}">${h.tripId}→${h.handoffId}${h.nemtRunId ? ` · ${h.nemtRunId}` : ""}</span>`)
           .join("");
-        const meta = [stepsHtml, citesHtml, cadHtml, handoffHtml, approversHtml].filter(Boolean).join("");
+        const writeBackHtml = (e.handoffWriteBack || [])
+          .slice(0, 4)
+          .map((w) => `<span class="audit-chip approver" title="${w.from}→${w.to}">${w.handoffId}→${w.nemtRunId}</span>`)
+          .join("");
+        const eocHtml = (e.publicSafetyCrossRef || [])
+          .slice(0, 4)
+          .map((p) => `<span class="audit-chip cite" title="${p.corridorStatus}">${p.unitId}→${p.corridor}</span>`)
+          .join("");
+        const enrichHtml = (e.enrichedDispatch || [])
+          .slice(0, 4)
+          .map((d) => `<span class="audit-chip cite" title="${d.unitStatus || ""}">${d.tripId}→${d.cadRunId}</span>`)
+          .join("");
+        const esriHtml = (e.esriCorridorSync || [])
+          .slice(0, 4)
+          .map((c) => `<span class="audit-chip cite" title="${c.name || ""}">${c.id}·${c.status}</span>`)
+          .join("");
+        const shelterFleetHtml = (e.shelterFleetCrossRef || [])
+          .slice(0, 4)
+          .map((x) => `<span class="audit-chip cite" title="${x.kind}">${x.id}→${x.corridor}</span>`)
+          .join("");
+        const meta = [stepsHtml, citesHtml, cadHtml, handoffHtml, writeBackHtml, enrichHtml, eocHtml, esriHtml, shelterFleetHtml, approversHtml].filter(Boolean).join("");
         return `<div class="audit-entry${i === 0 ? " latest" : ""}">
           <div class="audit-entry-head">
             <span class="audit-id">${e.id}</span>
@@ -1836,6 +2033,8 @@
       }
     }
 
+    let nextHandoffAccept = null;
+
     function renderTransportDesk(summary) {
       if (!summary?.ok) return;
       const parts = (summary.bedPressureSummary || []).map((h) => {
@@ -1844,11 +2043,87 @@
         const div = h.diversionStatus !== "open" ? ` · ${h.diversionLabel}` : "";
         return `<span class="desk-chip ${cls}">${h.name.split(" ")[0]} ${h.bedPressurePct}%${hold}${div}</span>`;
       });
+      const pendingAccepts = summary.pendingAccepts || [];
+      nextHandoffAccept = pendingAccepts.find((h) => h.cadLinkReady) || pendingAccepts[0] || null;
+
+      const pendingHint = summary.pendingHandoffs
+        ? ` · ${summary.pendingHandoffs} awaiting NEMT dispatch accept`
+        : "";
       document.getElementById("transportDeskText").innerHTML =
-        `Read-only EMS-adjacent desk · ${summary.handoffQueueCount} handoff(s) in queue · ${parts.join(" ")}`;
+        `${summary.writeBackEnabled ? "NEMT write-back pilot (not Triple HITL)" : "Situational feed only"} · ${summary.handoffQueueCount} handoff(s)${pendingHint} · ${parts.join(" ")}`;
+
+      const assignedEl = document.getElementById("transportDeskAssigned");
+      const assigned = summary.assignedHandoffs ?? 0;
+      assignedEl.textContent = assigned
+        ? `${assigned} dispatch accepted`
+        : "0 dispatch accepted";
+      assignedEl.className = assigned ? "desk-chip ok" : "desk-chip";
+
       const pendingEl = document.getElementById("transportDeskPending");
-      pendingEl.textContent = `${summary.pendingHandoffs} pending NEMT accept`;
-      pendingEl.className = `desk-chip ${summary.pendingHandoffs ? "warn" : ""}`;
+      const pending = summary.pendingHandoffs ?? 0;
+      pendingEl.textContent = pending
+        ? `${pending} awaiting dispatch accept`
+        : "none awaiting accept";
+      pendingEl.className = `desk-chip ${pending ? "warn" : "ok"}`;
+
+      const demoBtn = document.getElementById("demoHandoffAccept");
+      if (demoBtn) {
+        if (nextHandoffAccept?.cadLinkReady) {
+          demoBtn.disabled = false;
+          demoBtn.textContent = `Accept ${nextHandoffAccept.handoffId} → ${nextHandoffAccept.suggestedNemtRunId}`;
+          demoBtn.title =
+            `Simulate NEMT dispatch accept: ${nextHandoffAccept.handoffId} · trip ${nextHandoffAccept.linkedTripId} → ${nextHandoffAccept.suggestedNemtRunId} (not Triple HITL)`;
+        } else if (nextHandoffAccept) {
+          demoBtn.disabled = true;
+          demoBtn.textContent = `${nextHandoffAccept.handoffId} — no CAD run`;
+          demoBtn.title = "No matching CAD run for linked trip — pilot would reject write-back";
+        } else {
+          demoBtn.disabled = true;
+          demoBtn.textContent = "All dispatch accepted";
+          demoBtn.title = "No handoffs awaiting NEMT dispatch accept";
+        }
+      }
+    }
+
+    async function demoAcceptHandoff() {
+      const btn = document.getElementById("demoHandoffAccept");
+      if (!nextHandoffAccept?.cadLinkReady) {
+        await loadTransportDesk();
+        return;
+      }
+      const target = nextHandoffAccept;
+      btn.disabled = true;
+      btn.textContent = "Accepting…";
+      try {
+        const res = await fetch("/api/transport-desk/handoff-accept", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source: "ui_demo",
+            acceptedBy: "nemt_dispatch",
+            handoffs: [{
+              handoffId: target.handoffId,
+              status: "nemt_assigned",
+              nemtRunId: target.suggestedNemtRunId,
+              linkedTripId: target.linkedTripId,
+            }],
+          }),
+        });
+        const data = await res.json();
+        if (!data.ok && !data.partial) {
+          const errDetail = data.errors?.[0];
+          if (errDetail?.error === "invalid_transition") {
+            await loadTransportDesk();
+            return;
+          }
+          throw new Error(data.error || errDetail?.error || "Write-back failed");
+        }
+        await loadTransportDesk();
+        await loadAuditTrail();
+      } catch (err) {
+        alert(`Handoff accept failed: ${err.message}`);
+        await loadTransportDesk();
+      }
     }
 
     async function loadTransportDesk(level = 2) {
@@ -1856,6 +2131,60 @@
       const data = await res.json();
       renderTransportDesk(data);
       return data;
+    }
+
+    function renderPublicSafety(summary, crossRef) {
+      if (!summary?.ok) return;
+      const units = (summary.units || [])
+        .filter((u) => u.corridor)
+        .map((u) => `<span class="desk-chip ${u.agency === "fire" ? "warn" : ""}">${u.unitId} · ${u.corridor}</span>`)
+        .join(" ");
+      document.getElementById("eocText").innerHTML =
+        `Situational feed only (no dispatch authority) · ${summary.fireCount} fire + ${summary.policeCount} police on map · ${units || "no corridor assignments"}`;
+      const corridorEl = document.getElementById("eocCorridorUnits");
+      const onCorridors = crossRef?.matchedCount ?? summary.corridorAssignedUnits ?? 0;
+      corridorEl.textContent = onCorridors
+        ? `${onCorridors} on restricted corridor(s)`
+        : "none on restricted corridors";
+      corridorEl.className = onCorridors ? "desk-chip warn" : "desk-chip ok";
+      const copLink = document.getElementById("eocCopLink");
+      if (copLink) copLink.href = `/api/public-safety/cop-export?level=${summary.level ?? 2}`;
+    }
+
+    async function loadPublicSafety(level = 2) {
+      const [summaryRes, crossRes] = await Promise.all([
+        fetch(`/api/public-safety/summary?level=${level}`),
+        fetch(`/api/public-safety/cross-ref?level=${level}`),
+      ]);
+      const summary = await summaryRes.json();
+      const crossRef = await crossRes.json();
+      renderPublicSafety(summary, crossRef);
+      return { summary, crossRef };
+    }
+
+    function renderShelterFleet(summary, crossRef) {
+      if (!summary?.ok) return;
+      const nearCap = summary.shelters?.filter((s) => s.status === "near_capacity").map((s) => s.name).join(", ");
+      document.getElementById("shelterFleetText").innerHTML =
+        `Coordination feed · ${summary.shelterCount} shelter(s) · ${summary.fleetCount} fleet asset(s)${nearCap ? ` · near capacity: <em>${nearCap}</em>` : ""} · extended HITL personas active`;
+      const bedsEl = document.getElementById("shelterFleetBeds");
+      bedsEl.textContent = `${summary.acceptingShelters}/${summary.shelterCount} accepting`;
+      bedsEl.className = summary.acceptingShelters ? "desk-chip ok" : "desk-chip warn";
+      const assetsEl = document.getElementById("shelterFleetAssets");
+      const linked = crossRef?.matchedFleetCount ?? 0;
+      assetsEl.textContent = `${summary.availableFleetAssets} available · ${linked} on restricted corridors`;
+      assetsEl.className = linked ? "desk-chip warn" : "desk-chip ok";
+    }
+
+    async function loadShelterFleet(level = 2) {
+      const [summaryRes, crossRes] = await Promise.all([
+        fetch(`/api/shelter-fleet/summary?level=${level}`),
+        fetch(`/api/shelter-fleet/cross-ref?level=${level}`),
+      ]);
+      const summary = await summaryRes.json();
+      const crossRef = await crossRes.json();
+      renderShelterFleet(summary, crossRef);
+      return { summary, crossRef };
     }
 
     async function loadStatus() {
@@ -1951,6 +2280,7 @@
       setAuditTrailVisible(!auditTrailVisible);
     });
     document.getElementById("refreshSignals").addEventListener("click", () => loadSignals(true));
+    document.getElementById("demoHandoffAccept").addEventListener("click", demoAcceptHandoff);
 
     for (const cfg of HITL_ROLE_UI) {
       document.getElementById(cfg.reviewBtn).addEventListener("click", () => openHitlReview(cfg.role));
@@ -1971,6 +2301,8 @@
         await loadStatus();
         await loadSignals();
         await loadTransportDesk();
+        await loadPublicSafety();
+        await loadShelterFleet();
         await loadLogs();
         await loadAudit();
         await loadHitl();

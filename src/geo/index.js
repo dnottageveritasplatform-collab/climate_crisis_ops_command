@@ -1,9 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { corridorStatusForLevel, getAtRiskTrips, loadDispatch } from "../dispatch/index.js";
+import { getAtRiskTrips, loadDispatch } from "../dispatch/index.js";
 import { buildCadMapUnits } from "../cad/index.js";
+import { attachLiveCadToTrips } from "../cad/enrichment.js";
 import { attachTransportDeskToFacilities } from "../transport-desk/index.js";
+import { buildPublicSafetyMapUnits } from "../public-safety/index.js";
+import { getActiveCorridorStatus, getCorridorLayerMeta, loadCorridorLayer } from "./esri.js";
 
 const geoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/geo");
 
@@ -16,13 +19,17 @@ function readGeo(file) {
   return JSON.parse(fs.readFileSync(path.join(geoRoot, file), "utf8"));
 }
 
-/** Load static GeoJSON corridor + facility layers. */
+/** Load corridor + facility layers (ESRI demo adapter by default on Day 6+). */
 export function loadGeoLayers() {
+  const corridorLayer = loadCorridorLayer();
   return {
-    corridors: readGeo("corridors.json"),
+    corridors: corridorLayer.collection,
     facilities: readGeo("facilities.json"),
+    corridorMeta: corridorLayer.meta,
   };
 }
+
+export { getActiveCorridorStatus, getCorridorLayerMeta, buildEsriCorridorSummary } from "./esri.js";
 
 function project(lon, lat) {
   const { bbox, viewBox } = MAP;
@@ -156,19 +163,32 @@ export function facilityDisplayColor(role) {
 
 let lastTriageRanking = null;
 
-/** Attach read-only CAD unit pins to any map layer payload. */
+/** Attach Phase 2 read-only overlays (CAD, transport desk, public safety, ESRI corridors). */
 export function attachCadOverlay(layers) {
   if (!layers?.ok) return layers;
   const atRiskTripIds = (layers.trips || []).filter((t) => t.atRisk).map((t) => t.id);
-  const cad = buildCadMapUnits({ level: layers.level ?? 2, atRiskTripIds });
+  const level = layers.level ?? 2;
+  const cad = buildCadMapUnits({ level, atRiskTripIds });
+  const publicSafety = buildPublicSafetyMapUnits({ level });
   const facilities = attachTransportDeskToFacilities(layers.facilities || []);
+  const trips = attachLiveCadToTrips(layers.trips || []);
+  const corridorMeta = getCorridorLayerMeta();
   return {
     ...layers,
     facilities,
+    trips,
     cadOverlay: true,
     transportDeskOverlay: true,
+    publicSafetyOverlay: true,
+    cadEnrichment: true,
+    esriCorridorOverlay: corridorMeta.source === "esri_feature_service",
+    corridorLayerSource: corridorMeta.source,
+    corridorLayerAdapter: corridorMeta.adapter,
+    corridorServiceName: corridorMeta.serviceName,
     cadUnitCount: cad.unitCount,
     cadUnits: cad.units,
+    publicSafetyUnitCount: publicSafety.unitCount,
+    publicSafetyUnits: publicSafety.units,
   };
 }
 
@@ -303,7 +323,7 @@ export function buildMapLayersFromTriage(ranking) {
 /** Build map payload with projected SVG-ready layers for the command UI. */
 export function buildMapLayers(level = 2) {
   const { corridors, facilities } = loadGeoLayers();
-  const corridorStatus = corridorStatusForLevel(level);
+  const corridorStatus = getActiveCorridorStatus(level);
   const atRiskIds = new Set(getAtRiskTrips(level).map((t) => t.id));
   const trips = loadDispatch();
 

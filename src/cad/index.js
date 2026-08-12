@@ -4,7 +4,7 @@ import { getAtRiskTrips, loadDispatch } from "../dispatch/index.js";
 import { loadCadCsv } from "./adapters/csv.js";
 
 export const CAD_SCOPE_GUARD =
-  "Read-only CAD overlay — no PSAP call-taking, no dispatch write-back, no 911 replacement.";
+  "CAD overlay — read-only situational feeds; pilot handoff accept links nemtRunId only (Day 4). No PSAP, no full dispatch write-back.";
 
 const MAP = {
   viewBox: { width: 800, height: 480 },
@@ -224,5 +224,30 @@ export function getCadIngestStatus() {
     lastIngestAt,
     runCount: cachedOverlay?.runCount ?? 0,
     source: cachedOverlay?.source ?? null,
+  };
+}
+
+/** Verify NEMT handoff accept run ID exists in CAD and matches linked trip. */
+export function verifyHandoffCadLink(nemtRunId, linkedTripId) {
+  const overlay = getCadOverlay();
+  const run = overlay.runs.find((r) => r.runId === nemtRunId);
+  if (!run) {
+    return { ok: false, reason: "run_not_in_cad", nemtRunId };
+  }
+  if (linkedTripId && run.tripId !== linkedTripId) {
+    return {
+      ok: false,
+      reason: "trip_mismatch",
+      nemtRunId,
+      linkedTripId,
+      cadTripId: run.tripId,
+    };
+  }
+  return {
+    ok: true,
+    runId: run.runId,
+    tripId: run.tripId,
+    incidentId: run.incidentId,
+    unitId: run.unitId,
   };
 }

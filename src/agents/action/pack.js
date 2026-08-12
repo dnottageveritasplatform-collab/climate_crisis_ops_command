@@ -2,6 +2,7 @@ import { config } from "../../config.js";
 import { beginAgentRun, endAgentRun } from "../../efficiency/index.js";
 import { getAtRiskTrips, corridorStatusForLevel, loadDispatch } from "../../dispatch/index.js";
 import { getLastTriageRanking, loadGeoLayers, isHospitalPartner } from "../../geo/index.js";
+import { getShelterFleetStatus } from "../../shelter-fleet/index.js";
 import { recordActionPack } from "../../audit/index.js";
 import { stageHitlPack } from "../../hitl/index.js";
 import { logAgentEvent } from "../runtime/logger.js";
@@ -188,17 +189,32 @@ function buildActionPack(level, signal, dispatch, commsSop, levelSop) {
   const hospitalBulletins = buildHospitalBulletins(level, signal, dispatch, atRisk, corrLines, commsSop);
   const hospitalBulletin = buildCombinedHospitalBulletin(hospitalBulletins, level, commsSop);
   const driverComms = buildDriverComms(atRisk, level, corridorStatus);
+  const shelterFleet = level >= 2 ? getShelterFleetStatus() : null;
+  const { shelterRoutingBrief, fleetAllocationBrief } = buildShelterFleetBriefs(
+    level,
+    signal,
+    atRisk,
+    corrLines,
+    shelterFleet
+  );
+  const extendedHitlRequired = level >= 2 && Boolean(shelterRoutingBrief && fleetAllocationBrief);
 
   const partnerCount = hospitalBulletins.length;
+  const hitlLabel = extendedHitlRequired
+    ? "Extended HITL (5 roles): NEMT + hospital liaisons + shelter coordinator + fleet logistics"
+    : "Triple HITL: NEMT supervisor + both hospital liaisons";
 
   return {
     level,
     geography: signal.serviceArea,
-    summary: `Level ${level} ${signal.label} action pack — ${checklist.length} dispatch checklist items, ${partnerCount} hospital COMMS-03 draft(s) (PMH + Doctor's), ${driverComms.length} driver SMS draft(s). Triple HITL: NEMT supervisor + both hospital liaisons must approve before send.`,
+    summary: `Level ${level} ${signal.label} action pack — ${checklist.length} dispatch checklist items, ${partnerCount} hospital COMMS-03 draft(s) (PMH + Doctor's), ${driverComms.length} driver SMS draft(s). ${hitlLabel} must approve before send.`,
     checklist,
     hospitalBulletins,
     hospitalBulletin,
     driverComms,
+    shelterRoutingBrief,
+    fleetAllocationBrief,
+    extendedHitlRequired,
     hitlRequired: true,
     hospitalPartners: hospitalBulletins.map((b) => ({
       id: b.facilityId,
@@ -262,12 +278,85 @@ function buildChecklist(level, dispatch, atRisk, corridorStatus) {
 
   items.push({
     id: "CHK-07",
-    task: "Route triple HITL approval: NEMT supervisor + PMH liaison + Doctor's Hospital liaison sign-off",
+    task: level >= 2
+      ? "Route extended HITL approval: NEMT + hospital liaisons + shelter coordinator + fleet logistics"
+      : "Route triple HITL approval: NEMT supervisor + PMH liaison + Doctor's Hospital liaison sign-off",
     owner: "all",
     status: "pending",
   });
 
+  if (level >= 2) {
+    items.push({
+      id: "CHK-08",
+      task: "Confirm shelter routing draft with National Gymnasium coordinator (extended HITL)",
+      owner: "shelter_coordinator",
+      status: "pending",
+    });
+    items.push({
+      id: "CHK-09",
+      task: "Confirm fleet asset allocation for CORR-02 restricted corridor (extended HITL)",
+      owner: "fleet_logistics",
+      status: "pending",
+    });
+  }
+
   return items;
+}
+
+function buildShelterFleetBriefs(level, signal, atRisk, corrLines, shelterFleet) {
+  if (level < 2 || !shelterFleet?.ok) {
+    return { shelterRoutingBrief: null, fleetAllocationBrief: null };
+  }
+
+  const nearCapacity = shelterFleet.nearCapacityShelters?.[0];
+  const stagingFleet = shelterFleet.fleetSummary?.filter((f) => f.status !== "available") || [];
+
+  const shelterRoutingBrief = {
+    template: "SHELTER-ROUTE",
+    subject: `Shelter routing coordination — Level ${level} ${signal.label}`,
+    body: [
+      `TO: Shelter Coordinator — National Gymnasium / parish overflow network`,
+      `FROM: CCOC Action agent (DEMO)`,
+      `RE: At-risk NEMT trip corridor sync · ${corrLines}`,
+      ``,
+      `Shelters online: ${shelterFleet.shelterCount} · accepting: ${shelterFleet.acceptingShelters}`,
+      nearCapacity
+        ? `Near capacity: ${nearCapacity.name} (${nearCapacity.availableBeds} beds) on ${nearCapacity.corridor}`
+        : "No shelters at near-capacity threshold",
+      ``,
+      `At-risk trips requiring corridor review: ${atRisk.length}`,
+      `Coordinate non-medical evacuee routing separately from NEMT dialysis/oncology manifest.`,
+      ``,
+      `--- DRAFT ONLY — Extended HITL — Shelter coordinator must approve before routing orders ---`,
+    ].join("\n"),
+    hitlRequired: true,
+    draftOnly: true,
+    role: "shelter_coordinator",
+  };
+
+  const fleetAllocationBrief = {
+    template: "FLEET-ALLOC",
+    subject: `Fleet asset allocation — Level ${level} corridor restrictions`,
+    body: [
+      `TO: Fleet Logistics Lead`,
+      `FROM: CCOC Action agent (DEMO)`,
+      `RE: Wheelchair vans + evacuation bus staging · ${corrLines}`,
+      ``,
+      `Fleet assets tracked: ${shelterFleet.fleetCount} · available: ${shelterFleet.availableFleetAssets}`,
+      stagingFleet.length
+        ? `Committed/staging: ${stagingFleet.map((f) => `${f.assetId} (${f.status}) on ${f.corridor}`).join("; ")}`
+        : "All tracked assets available",
+      ``,
+      `Hold non-essential repositioning until hospital COMMS-03 cycle completes.`,
+      ``,
+      `--- DRAFT ONLY — Extended HITL — Fleet logistics must approve before asset orders ---`,
+    ].join("\n"),
+    hitlRequired: true,
+    draftOnly: true,
+    role: "fleet_logistics",
+  };
+
+  return { shelterRoutingBrief, fleetAllocationBrief };
 }
 
 function buildHospitalBulletins(level, signal, dispatch, atRisk, corrLines, commsSop) {

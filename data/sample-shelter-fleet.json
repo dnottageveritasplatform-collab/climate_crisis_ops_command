@@ -1,0 +1,62 @@
+{
+  "source": "shelter_fleet_coordination",
+  "updatedAt": "2026-08-11T22:00:00Z",
+  "scopeGuard": "Shelter capacity + fleet logistics signals — coordination only, not shelter operations authority.",
+  "shelters": [
+    {
+      "shelterId": "SH-01",
+      "name": "National Gymnasium",
+      "capacity": 450,
+      "occupied": 128,
+      "availableBeds": 322,
+      "status": "accepting",
+      "accessibility": "wheelchair_accessible",
+      "corridor": "CORR-02",
+      "lat": 25.058,
+      "lon": -77.328,
+      "notes": "Primary general-population shelter · medical cot wing available"
+    },
+    {
+      "shelterId": "SH-02",
+      "name": "St. Augustine's Parish Hall",
+      "capacity": 120,
+      "occupied": 94,
+      "availableBeds": 26,
+      "status": "near_capacity",
+      "accessibility": "limited",
+      "corridor": "CORR-01",
+      "lat": 25.072,
+      "lon": -77.312,
+      "notes": "Overflow routing to SH-01 when CORR-02 restricted"
+    }
+  ],
+  "fleet": [
+    {
+      "assetId": "WV-104",
+      "type": "wheelchair_van",
+      "status": "available",
+      "corridor": "CORR-01",
+      "operator": "Nassau Metro NEMT",
+      "lat": 25.065,
+      "lon": -77.318
+    },
+    {
+      "assetId": "AMB-07",
+      "type": "ambulance_bls",
+      "status": "committed",
+      "corridor": "CORR-02",
+      "operator": "EMS inter-facility pool",
+      "lat": 25.052,
+      "lon": -77.275
+    },
+    {
+      "assetId": "BUS-03",
+      "type": "evacuation_bus",
+      "status": "staging",
+      "corridor": "CORR-02",
+      "operator": "Fleet logistics",
+      "lat": 25.055,
+      "lon": -77.285
+    }
+  ]
+}

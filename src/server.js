@@ -20,6 +20,8 @@ import deployRouter from "./routes/deploy.js";
 import logbookRouter from "./routes/logbook.js";
 import cadRouter from "./routes/cad.js";
 import transportDeskRouter from "./routes/transport-desk.js";
+import publicSafetyRouter from "./routes/public-safety.js";
+import shelterFleetRouter from "./routes/shelter-fleet.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -41,6 +43,8 @@ app.use("/api/deploy", deployRouter);
 app.use("/api/logbook", logbookRouter);
 app.use("/api/cad", cadRouter);
 app.use("/api/transport-desk", transportDeskRouter);
+app.use("/api/public-safety", publicSafetyRouter);
+app.use("/api/shelter-fleet", shelterFleetRouter);
 
 app.get("/api/health", (_req, res) => {
   const llm = getLlmConfig();
@@ -50,9 +54,15 @@ app.get("/api/health", (_req, res) => {
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "phase-2-day-2",
+    phase: "phase-2-day-8",
     sprintComplete: true,
     phase2Started: true,
+    phase2Day8Complete: true,
+    phase2Day7Complete: true,
+    phase2Day6Complete: true,
+    phase2Day5Complete: true,
+    phase2Day4Complete: true,
+    phase2Day3Complete: true,
     phase2Day2Complete: true,
     llmProvider: config.demoMode ? null : llm.provider,
     llmModel: config.demoMode ? null : llm.model,
@@ -64,8 +74,12 @@ app.get("/api/health", (_req, res) => {
     eval: "8 scripted scenarios — POST /api/eval/run",
     efficiency: "token + latency logging — GET /api/efficiency/summary",
     defensibility: "Broward credibility + Phase 2 CAD/EMS roadmap — GET /api/defensibility/narrative",
-    cad: "read-only CAD overlay + cross-ref — GET /api/cad/summary",
-    transportDesk: "hospital desk + EMS handoff queue — GET /api/transport-desk/summary",
+    cad: "CAD overlay + live dispatch enrichment — GET /api/cad/enriched-dispatch",
+    geo: "ESRI corridor layer + thin map — GET /api/geo/corridors/esri",
+    transportDesk: "handoff queue + NEMT write-back pilot — GET /api/transport-desk/summary",
+    publicSafety: "fire/police EOC overlay + COP export — GET /api/public-safety/summary",
+    shelterFleet: "shelter + fleet extended HITL — GET /api/shelter-fleet/summary",
+    audit: "persistent JSONL audit + EOC briefing export — GET /api/audit/eoc-briefing",
     deploy: "staging checklist — GET /api/deploy/checklist",
     logbook: "Week 3 summary + mentor questions — GET /api/logbook/week3",
     demoDay: "live run + Q&A prep — GET /api/demo/runbook · POST /api/demo/preflight",
@@ -82,9 +96,15 @@ app.get("/api/scenario", (_req, res) => {
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "phase-2-day-2",
+    phase: "phase-2-day-8",
     sprintComplete: true,
     phase2Started: true,
+    phase2Day8Complete: true,
+    phase2Day7Complete: true,
+    phase2Day6Complete: true,
+    phase2Day5Complete: true,
+    phase2Day4Complete: true,
+    phase2Day3Complete: true,
     phase2Day2Complete: true,
     phase2Day1Complete: true,
     week3Day21Complete: true,
@@ -107,12 +127,14 @@ app.get("/api/status", (_req, res) => {
       signals: "ingest_ready",
       agents: "monitor + triage + action_ready",
       orchestrator: "pipeline_ready",
-      hitl: "triple_role_ready",
+      hitl: "extended_quintuple_ready",
       audit: "full_trail_ready",
-      geo: "triage_sync_ready",
+      geo: "esri_corridor_layer",
       dispatch: "sample_manifest",
-      cad: "readonly_overlay",
-      transportDesk: "readonly_signals",
+      cad: "live_enrichment",
+      transportDesk: "writeback_pilot",
+      publicSafety: "readonly_eoc_overlay",
+      shelterFleet: "coordination_feed_ready",
       sops: "rag_corpus",
       eval: "harness_ready",
       efficiency: "token_latency_logging",
