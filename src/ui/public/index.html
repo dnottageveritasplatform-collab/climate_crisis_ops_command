@@ -111,6 +111,31 @@
     .alert-text strong { color: var(--text); }
     .alert-meta { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
 
+    .signal-feed-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 1.5rem;
+      background: rgba(147, 197, 253, 0.06);
+      border-bottom: 1px solid rgba(147, 197, 253, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .signal-feed-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #93c5fd;
+      border: 1px solid rgba(147, 197, 253, 0.35);
+      background: rgba(147, 197, 253, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .signal-feed-text { flex: 1; min-width: 220px; color: #bfdbfe; line-height: 1.35; }
+
     .scenario-strip {
       display: flex;
       align-items: center;
@@ -833,7 +858,7 @@
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Phase 2 · Day 8 · Audit persist</span>
+      <span class="pill gold" id="phasePill">Phase 2 · Day 9 · Multi-feed signals</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
@@ -850,6 +875,14 @@
     <span class="alert-level" id="alertLevel">—</span>
     <p class="alert-text" id="alertText">Loading signal feed…</p>
     <span class="alert-meta" id="alertMeta"></span>
+  </div>
+
+  <div class="signal-feed-strip" id="signalFeedStrip">
+    <span class="signal-feed-tag">Multi-feed signals</span>
+    <span class="signal-feed-text" id="signalFeedText">Loading NHC live + institutional overlays…</span>
+    <span class="desk-chip" id="signalFeedSources" title="Active weather + institutional feed adapters">— sources</span>
+    <span class="desk-chip" id="signalFeedCorridorLinked" title="Institutional signals linked to restricted corridors">— corridor-linked</span>
+    <a class="eoc-cop-link" id="signalFeedSourcesLink" href="/api/signals/sources" target="_blank" rel="noopener">Feed sources</a>
   </div>
 
   <div class="scenario-strip" id="scenarioStrip">
@@ -1568,10 +1601,13 @@
       level.textContent = `LEVEL ${signals.level} · ${signals.label.toUpperCase()}`;
       const summary = signals.weather?.summary || "";
       const instCount = signals.institutional?.length || 0;
+      const feedCount = signals.multiFeed?.feedSourceCount || 0;
+      const linked = signals.multiFeed?.corridorLinkedSignalCount ?? 0;
+      const liveHint = signals.liveWeather ? " · NHC live overlay" : "";
       const instHint = instCount
-        ? ` · OCHA + GFDRR demo feeds active — NEMT + hospital liaisons align on corridor holds`
+        ? ` · ${feedCount} feed source(s) · OCHA + GFDRR + Red Cross demo`
         : "";
-      text.innerHTML = `<strong>${signals.event}</strong> · ${summary.split(".")[0] || signals.serviceArea}${instHint} · ${instCount} institutional signal${instCount === 1 ? "" : "s"}`;
+      text.innerHTML = `<strong>${signals.event}</strong> · ${summary.split(".")[0] || signals.serviceArea}${liveHint}${instHint} · ${instCount} institutional signal${instCount === 1 ? "" : "s"}${linked ? ` · <em>${linked} corridor-linked</em>` : ""}`;
       meta.textContent = fmtIssued(signals.weather?.issuedAt || signals.fetchedAt);
       if (!skipMap) loadMap(signals.level ?? 2);
     }
@@ -1597,7 +1633,11 @@
     function toolDetail(entry) {
       if (entry.tool === "get_signal_status" && entry.result) {
         const r = entry.result;
-        return `level: <em>${r.level}</em> · label: ${r.label} · signals: ${r.institutionalCount || 0}`;
+        return `level: <em>${r.level}</em> · label: ${r.label} · signals: ${r.institutionalCount || 0} · feeds: ${r.feedSourceCount || 0}`;
+      }
+      if (entry.tool === "get_multi_feed_status" && entry.result) {
+        const r = entry.result;
+        return `institutional: ${r.institutionalCount} · sources: ${r.feedSourceCount} · corridor-linked: ${r.corridorLinkedSignalCount}`;
       }
       if (entry.tool === "query_sop" && entry.result) {
         const r = entry.result;
@@ -1879,6 +1919,7 @@
         await loadTransportDesk(data.threshold ?? 2);
         await loadPublicSafety(data.threshold ?? 2);
         await loadShelterFleet(data.threshold ?? 2);
+        await loadMultiFeed(data.threshold ?? 2);
         document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
         if (data.efficiency) {
           const e = data.efficiency;
@@ -2187,6 +2228,34 @@
       return { summary, crossRef };
     }
 
+    function renderMultiFeed(summary, crossRef) {
+      if (!summary?.ok) return;
+      const headlines = (summary.institutional || [])
+        .slice(0, 2)
+        .map((s) => `<em>${s.source.split(" ")[0]}</em>: ${s.headline.split("—")[0].trim()}`)
+        .join(" · ");
+      document.getElementById("signalFeedText").innerHTML =
+        `NHC live + institutional overlays · ${summary.institutionalCount} signal(s) · ${headlines || "no headlines"}`;
+      const sourcesEl = document.getElementById("signalFeedSources");
+      sourcesEl.textContent = `${summary.feedSourceCount} active source(s)`;
+      sourcesEl.className = summary.feedSourceCount > 2 ? "desk-chip ok" : "desk-chip";
+      const linkedEl = document.getElementById("signalFeedCorridorLinked");
+      const linked = crossRef?.corridorLinkedSignalCount ?? summary.corridorLinkedSignalCount ?? 0;
+      linkedEl.textContent = linked ? `${linked} corridor-linked` : "none corridor-linked";
+      linkedEl.className = linked ? "desk-chip warn" : "desk-chip ok";
+    }
+
+    async function loadMultiFeed(level = 2) {
+      const [summaryRes, crossRes] = await Promise.all([
+        fetch(`/api/signals/multi-feed?level=${level}`),
+        fetch(`/api/signals/cross-ref?level=${level}`),
+      ]);
+      const summary = await summaryRes.json();
+      const crossRef = await crossRes.json();
+      renderMultiFeed(summary, crossRef);
+      return { summary, crossRef };
+    }
+
     async function loadStatus() {
       const [statusRes, healthRes] = await Promise.all([
         fetch("/api/status"),
@@ -2279,7 +2348,10 @@
     document.getElementById("toggleAuditTrail").addEventListener("click", () => {
       setAuditTrailVisible(!auditTrailVisible);
     });
-    document.getElementById("refreshSignals").addEventListener("click", () => loadSignals(true));
+    document.getElementById("refreshSignals").addEventListener("click", async () => {
+      await loadSignals(true);
+      await loadMultiFeed();
+    });
     document.getElementById("demoHandoffAccept").addEventListener("click", demoAcceptHandoff);
 
     for (const cfg of HITL_ROLE_UI) {
@@ -2303,6 +2375,7 @@
         await loadTransportDesk();
         await loadPublicSafety();
         await loadShelterFleet();
+        await loadMultiFeed();
         await loadLogs();
         await loadAudit();
         await loadHitl();

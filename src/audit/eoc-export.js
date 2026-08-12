@@ -2,6 +2,7 @@ import { buildAuditTrail } from "./index.js";
 import { getAuditPersistStatus } from "./store.js";
 import { buildCopExport } from "../public-safety/index.js";
 import { buildShelterFleetCrossRef } from "../shelter-fleet/index.js";
+import { buildMultiFeedCrossRef } from "../signals/multi-feed.js";
 
 const EOC_AUDIT_SCOPE_GUARD =
   "EOC audit briefing export — append-only persisted trail + read-only situational feeds. Not dispatch authority.";
@@ -13,6 +14,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
   const trail = buildAuditTrail(limit);
   const cop = await buildCopExport(level);
   const shelterFleet = buildShelterFleetCrossRef(level);
+  const signalMultiFeed = buildMultiFeedCrossRef(level);
   const persist = getAuditPersistStatus(trail.count);
 
   const pipelineRuns = trail.entries.filter((e) => e.type === "pipeline_run");
@@ -21,7 +23,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-8",
+    phase: "phase-2-day-9",
     exportType: "eoc_audit_briefing",
     generatedAt: new Date().toISOString(),
     level,
@@ -35,6 +37,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
       hitlReleaseCount: hitlReleases.length,
       handoffWriteBackCount: writeBacks.length,
       shelterFleetMatches: shelterFleet.matchedCount,
+      corridorLinkedSignals: signalMultiFeed.corridorLinkedSignalCount,
     },
     situation: cop.situation,
     operatingPicture: {
@@ -48,6 +51,11 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
         matchedShelterCount: shelterFleet.matchedShelterCount,
         matchedFleetCount: shelterFleet.matchedFleetCount,
         atRiskOnRestrictedCount: shelterFleet.atRiskOnRestrictedCount,
+      },
+      signalMultiFeed: {
+        institutionalCount: signalMultiFeed.institutionalCount,
+        corridorLinkedSignalCount: signalMultiFeed.corridorLinkedSignalCount,
+        matches: signalMultiFeed.matches?.slice(0, 4),
       },
     },
     auditTrail: {

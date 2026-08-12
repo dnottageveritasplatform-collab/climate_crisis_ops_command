@@ -154,6 +154,15 @@ export const PHASE2_ROADMAP = {
           "Monitor tool get_public_safety_status · pipeline EOC corridor audit cross-ref",
         ],
       },
+      day9: {
+        complete: true,
+        deliverables: [
+          "src/signals/multi-feed.js — NHC live + institutional overlay merge",
+          "data/signals/institutional-feed-demo.json — OCHA/GFDRR/Red Cross demo feeds",
+          "GET /api/signals/multi-feed · /cross-ref · /sources · POST /ingest",
+          "Pipeline step signal_multi_feed_sync · Monitor tool get_multi_feed_status",
+        ],
+      },
     },
     {
       id: "routing-gis",
@@ -213,7 +222,7 @@ export function buildDefensibilityNarrative() {
 export function buildPhase2Roadmap() {
   return {
     ok: true,
-    phase: "phase-2-day-8",
+    phase: "phase-2-day-9",
     day1Complete: true,
     day2Complete: true,
     day3Complete: true,
@@ -222,6 +231,7 @@ export function buildPhase2Roadmap() {
     day6Complete: true,
     day7Complete: true,
     day8Complete: true,
+    day9Complete: true,
     ...PHASE2_ROADMAP,
   };
 }

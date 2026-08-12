@@ -1,0 +1,35 @@
+{
+  "feeds": [
+    {
+      "id": "ocha-demo-001",
+      "source": "UN OCHA Caribbean (demo)",
+      "type": "humanitarian",
+      "severity": "moderate",
+      "headline": "Flash Update: Dialysis transport at risk if CORR-01/CORR-02 close",
+      "summary": "OCHA recommends coordinated holds between Nassau Metro NEMT and Princess Margaret / Doctor's Hospital transport desks. P1 dialysis patients flagged across both hospital partners.",
+      "corridors": ["CORR-01", "CORR-02"],
+      "issuedAt": "2026-08-03T17:30:00Z"
+    },
+    {
+      "id": "wb-demo-001",
+      "source": "World Bank GFDRR (demo)",
+      "type": "infrastructure",
+      "severity": "watch",
+      "headline": "Paradise Island bridge + Eastern Road segments in regional exposure index",
+      "summary": "Historical flood exposure on CORR-01 (Paradise Island approach) and CORR-02 (Eastern Road low segment). NEMT operators should sync corridor status with hospital liaisons before releasing P1 routes.",
+      "corridors": ["CORR-01", "CORR-02"],
+      "issuedAt": "2026-08-03T16:45:00Z"
+    },
+    {
+      "id": "caribbean-red-cross-demo",
+      "source": "Caribbean Red Cross (demo)",
+      "type": "humanitarian",
+      "severity": "watch",
+      "headline": "Evacuation support staging — shelter transport coordination advised",
+      "summary": "Red Cross regional cell recommends NEMT operators coordinate with shelter coordinators before corridor restrictions tighten. No dispatch authority — situational overlay only.",
+      "corridors": [],
+      "issuedAt": "2026-08-03T16:00:00Z"
+    }
+  ],
+  "scopeGuard": "Institutional signal overlays — read-only situational feeds; escalation level remains on operator SOP thresholds."
+}

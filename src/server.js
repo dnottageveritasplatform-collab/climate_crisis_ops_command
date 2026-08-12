@@ -54,9 +54,10 @@ app.get("/api/health", (_req, res) => {
     demoMode: config.demoMode,
     sprint: "Future Caribbean 2026",
     track: "Climate Risk & Disaster Coordination",
-    phase: "phase-2-day-8",
+    phase: "phase-2-day-9",
     sprintComplete: true,
     phase2Started: true,
+    phase2Day9Complete: true,
     phase2Day8Complete: true,
     phase2Day7Complete: true,
     phase2Day6Complete: true,
@@ -80,6 +81,7 @@ app.get("/api/health", (_req, res) => {
     publicSafety: "fire/police EOC overlay + COP export — GET /api/public-safety/summary",
     shelterFleet: "shelter + fleet extended HITL — GET /api/shelter-fleet/summary",
     audit: "persistent JSONL audit + EOC briefing export — GET /api/audit/eoc-briefing",
+    signalsMultiFeed: "NHC live + institutional overlays — GET /api/signals/multi-feed",
     deploy: "staging checklist — GET /api/deploy/checklist",
     logbook: "Week 3 summary + mentor questions — GET /api/logbook/week3",
     demoDay: "live run + Q&A prep — GET /api/demo/runbook · POST /api/demo/preflight",
@@ -96,9 +98,10 @@ app.get("/api/scenario", (_req, res) => {
 
 app.get("/api/status", (_req, res) => {
   res.json({
-    phase: "phase-2-day-8",
+    phase: "phase-2-day-9",
     sprintComplete: true,
     phase2Started: true,
+    phase2Day9Complete: true,
     phase2Day8Complete: true,
     phase2Day7Complete: true,
     phase2Day6Complete: true,
@@ -124,7 +127,7 @@ app.get("/api/status", (_req, res) => {
       gateway: "optional — install when mentors provide compute keys",
     },
     modules: {
-      signals: "ingest_ready",
+      signals: "multi_feed_ingest_ready",
       agents: "monitor + triage + action_ready",
       orchestrator: "pipeline_ready",
       hitl: "extended_quintuple_ready",

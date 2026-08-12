@@ -7,6 +7,7 @@ import { getShelterFleetStatus } from "../../shelter-fleet/index.js";
 import { buildEsriCorridorSummary } from "../../geo/esri.js";
 import { buildEocAuditBriefing } from "../../audit/eoc-export.js";
 import { getAuditPersistStatus } from "../../audit/index.js";
+import { getMultiFeedStatus } from "../../signals/multi-feed.js";
 import { querySopCorpus } from "../../sops/index.js";
 
 const registry = {
@@ -93,6 +94,12 @@ const registry = {
       },
     },
     execute: async ({ level = 2 } = {}) => buildEocAuditBriefing({ level }),
+  },
+  get_multi_feed_status: {
+    description:
+      "Multi-feed signal ingest status — NHC live + institutional overlays (OCHA/GFDRR) with corridor cross-ref (Phase 2 Day 9)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getMultiFeedStatus(),
   },
 };
 

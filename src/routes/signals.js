@@ -1,5 +1,11 @@
 import { Router } from "express";
 import { clearSignalCache, fetchSignals } from "../signals/index.js";
+import {
+  buildMultiFeedCrossRef,
+  buildMultiFeedSummary,
+  getMultiFeedSources,
+  ingestInstitutionalWebhook,
+} from "../signals/multi-feed.js";
 
 const router = Router();
 
@@ -19,6 +25,44 @@ router.post("/refresh", async (_req, res) => {
     res.json({ ok: true, refreshed: true, ...data });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get("/multi-feed", async (req, res) => {
+  try {
+    const level = Number(req.query.level) || 2;
+    res.json(buildMultiFeedSummary(level));
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get("/cross-ref", async (req, res) => {
+  try {
+    const level = Number(req.query.level) || 2;
+    res.json(buildMultiFeedCrossRef(level));
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get("/sources", async (_req, res) => {
+  try {
+    const data = await getMultiFeedSources();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post("/ingest", async (req, res) => {
+  try {
+    clearSignalCache();
+    const result = ingestInstitutionalWebhook(req.body);
+    const data = await fetchSignals({ refresh: true });
+    res.json({ ...result, signals: data });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
   }
 });
 

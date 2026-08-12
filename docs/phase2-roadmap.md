@@ -77,6 +77,8 @@ curl.exe http://127.0.0.1:8787/api/public-safety/summary
 curl.exe http://127.0.0.1:8787/api/public-safety/cop-export?level=2
 curl.exe http://127.0.0.1:8787/api/geo/corridors/esri?level=2
 curl.exe http://127.0.0.1:8787/api/geo/corridors/source
+curl.exe http://127.0.0.1:8787/api/signals/multi-feed?level=2
+curl.exe http://127.0.0.1:8787/api/signals/cross-ref?level=2
 curl.exe -X POST http://127.0.0.1:8787/api/transport-desk/handoff-accept -H "Content-Type: application/json" -d "{\"handoffs\":[{\"handoffId\":\"HO-2201\",\"status\":\"nemt_assigned\",\"nemtRunId\":\"RUN-8845\",\"linkedTripId\":\"T-1004\"}]}"
 ```
 
@@ -189,6 +191,25 @@ npm run audit:persist
 npm run audit:eoc-briefing
 curl.exe http://127.0.0.1:8787/api/audit/persist
 curl.exe http://127.0.0.1:8787/api/audit/eoc-briefing?level=2
+npm run pipeline:run
+npm run eval:run
+```
+
+### Phase 2 Day 9 (Multi-feed signal ingest) ✅
+
+- **`src/signals/multi-feed.js`** — merge NHC live + institutional JSON/REST/webhook feeds
+- **`src/signals/adapters/institutional.js`** — OCHA/GFDRR/Red Cross demo adapter
+- **`data/signals/institutional-feed-demo.json`** — pilot institutional overlay demo
+- **`GET /api/signals/multi-feed`** · **`GET /api/signals/cross-ref`** · **`GET /api/signals/sources`** · **`POST /api/signals/ingest`**
+- Monitor tool **`get_multi_feed_status`** · pipeline **`signal_multi_feed_sync`** audit step
+- Escalation level stays on demo SOP thresholds — live feeds overlay headlines only
+
+**Scope guard:** Multi-feed ingest is read-only situational overlay — not auto-escalation, not dispatch authority.
+
+```bash
+curl.exe http://127.0.0.1:8787/api/signals/multi-feed?level=2
+curl.exe http://127.0.0.1:8787/api/signals/cross-ref?level=2
+curl.exe http://127.0.0.1:8787/api/signals/sources
 npm run pipeline:run
 npm run eval:run
 ```

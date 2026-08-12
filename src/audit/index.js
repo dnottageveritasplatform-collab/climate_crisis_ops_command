@@ -91,6 +91,7 @@ export function buildAuditTrail(limit = 15) {
       enrichedDispatch: e.enrichedDispatch,
       esriCorridorSync: e.esriCorridorSync,
       shelterFleetCrossRef: e.shelterFleetCrossRef,
+      signalMultiFeedSync: e.signalMultiFeedSync,
       approvers: e.approvers || normalizeApprovers(e.hitl?.approvers),
       hitl: e.hitl,
       mode: e.mode,
@@ -197,6 +198,7 @@ export function recordPipelineRun({
   enrichedDispatch,
   esriCorridorSync,
   shelterFleetCrossRef,
+  signalMultiFeedSync,
 }) {
   const ts = new Date().toISOString();
   const cadNote = cadCrossRef?.matchedCount
@@ -217,10 +219,13 @@ export function recordPipelineRun({
   const shelterFleetNote = shelterFleetCrossRef?.matchedCount
     ? ` · shelter/fleet ${shelterFleetCrossRef.matchedCount} on restricted corridors`
     : "";
+  const signalFeedNote = signalMultiFeedSync?.corridorLinkedSignalCount
+    ? ` · signals ${signalMultiFeedSync.corridorLinkedSignalCount} corridor-linked`
+    : "";
   const hitlModeNote = hitl?.extendedHitl ? " · extended HITL (5)" : "";
   return appendAuditEntry({
     type: "pipeline_run",
-    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}`,
+    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}`,
     signal: {
       level: threshold,
       label: signals?.label,
@@ -283,6 +288,13 @@ export function recordPipelineRun({
             atRiskOnRestrictedCount: shelterFleetCrossRef.atRiskOnRestrictedCount,
           }
         : undefined,
+      signalMultiFeedSync: signalMultiFeedSync
+        ? {
+            institutionalCount: signalMultiFeedSync.institutionalCount,
+            corridorLinkedSignalCount: signalMultiFeedSync.corridorLinkedSignalCount,
+            matches: signalMultiFeedSync.matches?.slice(0, 4),
+          }
+        : undefined,
     },
     cadCrossRef: cadCrossRef?.matches?.map((m) => ({
       tripId: m.tripId,
@@ -333,6 +345,11 @@ export function recordPipelineRun({
         status: f.status,
       })),
     ],
+    signalMultiFeedSync: signalMultiFeedSync?.matches?.slice(0, 4).map((m) => ({
+      signalId: m.signalId,
+      source: m.source,
+      linkedCorridors: m.linkedCorridors,
+    })),
     steps: [
       { id: "monitor", label: "Monitor brief", agent: "monitor", auditId: monitor.audit?.id, ts: monitor.audit?.ts },
       { id: "triage", label: "Triage rank", agent: "triage", auditId: triage.audit?.id, ts: triage.audit?.ts },
