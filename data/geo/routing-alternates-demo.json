@@ -1,0 +1,23 @@
+{
+  "scopeGuard": "Corridor-aware routing preview — read-only alternate route advisories; not turn-by-turn dispatch or navigation authority.",
+  "alternates": [
+    {
+      "corridorId": "CORR-02",
+      "statusWhen": ["restricted", "closed"],
+      "alternateRouteId": "ALT-BAY-ST",
+      "alternateName": "Bay Street corridor",
+      "advisory": "Avoid Eastern Road low segment — reroute via Bay Street with hospital liaison approval",
+      "sopRef": "CORR-FLOOD-DEMO",
+      "streetNames": ["Bay Street", "Shirley Street"]
+    },
+    {
+      "corridorId": "CORR-01",
+      "statusWhen": ["restricted", "closed"],
+      "alternateRouteId": "ALT-MACKEY-BRIDGE",
+      "alternateName": "Mackey Street bridge approach",
+      "advisory": "Paradise Island corridor restricted — use Mackey Street bridge approach with escort coordination",
+      "sopRef": "CORR-FLOOD-DEMO",
+      "streetNames": ["Mackey Street", "Paradise Island Bridge"]
+    }
+  ]
+}

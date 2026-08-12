@@ -38,6 +38,8 @@
     "cad:enriched-dispatch": "node -e \"import('./src/cad/enrichment.js').then(m=>console.log(JSON.stringify(m.buildEnrichedDispatchSummary(2),null,2)))\"",
     "geo:corridors-esri": "node -e \"import('./src/geo/esri.js').then(m=>console.log(JSON.stringify(m.buildEsriCorridorSummary(2),null,2)))\"",
     "geo:corridors-source": "node -e \"import('./src/geo/esri.js').then(m=>console.log(JSON.stringify(m.getCorridorLayerMeta(),null,2)))\"",
+    "geo:routing-preview": "node -e \"import('./src/geo/routing.js').then(m=>console.log(JSON.stringify(m.buildRoutingPreviewSummary(2),null,2)))\"",
+    "geo:routing-cross-ref": "node -e \"import('./src/geo/routing.js').then(m=>console.log(JSON.stringify(m.buildRoutingPreviewCrossRef(2),null,2)))\"",
     "shelter-fleet:summary": "node -e \"import('./src/shelter-fleet/index.js').then(m=>console.log(JSON.stringify(m.buildShelterFleetSummary(2),null,2)))\"",
     "shelter-fleet:cross-ref": "node -e \"import('./src/shelter-fleet/index.js').then(m=>console.log(JSON.stringify(m.buildShelterFleetCrossRef(2),null,2)))\"",
     "audit:persist": "node -e \"import('./src/audit/index.js').then(m=>console.log(JSON.stringify(m.getAuditPersistStatus(),null,2)))\"",

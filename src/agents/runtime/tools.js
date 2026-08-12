@@ -9,6 +9,7 @@ import { buildEocAuditBriefing } from "../../audit/eoc-export.js";
 import { getAuditPersistStatus } from "../../audit/index.js";
 import { getMultiFeedStatus } from "../../signals/multi-feed.js";
 import { getSopCorpusStatus } from "../../sops/corpus.js";
+import { getRoutingPreviewStatus } from "../../geo/routing.js";
 import { querySopCorpus } from "../../sops/index.js";
 
 const registry = {
@@ -109,6 +110,12 @@ const registry = {
       "Expanded operator SOP corpus status — file count, hybrid semantic RAG mode, scenario-matched SOPs (Phase 2 Day 10)",
     parameters: { type: "object", properties: {} },
     execute: async () => getSopCorpusStatus(),
+  },
+  get_routing_preview_status: {
+    description:
+      "Corridor-aware routing preview — alternate route advisories for at-risk trips on restricted corridors (Phase 2 Day 11)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getRoutingPreviewStatus(),
   },
 };
 

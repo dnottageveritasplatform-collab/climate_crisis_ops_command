@@ -1,6 +1,7 @@
 /** Phase 2 Day 3 — fire / police read-only situational awareness + COP export. */
 
 import { getActiveCorridorStatus, getCorridorLayerMeta } from "../geo/esri.js";
+import { buildRoutingPreviewCrossRef } from "../geo/routing.js";
 import { buildCadSummary } from "../cad/index.js";
 import { buildTransportDeskSummary, getHandoffWriteBackStatus } from "../transport-desk/index.js";
 import { buildEnrichedDispatchSummary } from "../cad/enrichment.js";
@@ -184,10 +185,11 @@ export async function buildCopExport(level = 2) {
   const enrichedDispatch = buildEnrichedDispatchSummary(level);
   const corridorCrossRef = buildPublicSafetyCorridorCrossRef(level);
   const corridorMeta = getCorridorLayerMeta();
+  const routingPreview = buildRoutingPreviewCrossRef(level);
 
   return {
     ok: true,
-    phase: "phase-2-day-6",
+    phase: "phase-2-day-11",
     exportType: "common_operating_picture",
     generatedAt: new Date().toISOString(),
     level,
@@ -224,6 +226,13 @@ export async function buildCopExport(level = 2) {
       bedPressure: transportDesk.bedPressureSummary,
       writeBackEnabled: transportDesk.writeBackEnabled,
       lastWriteBack: writeBack.lastWriteBack,
+    },
+    routingPreview: {
+      tripAdvisoryCount: routingPreview.tripAdvisoryCount,
+      corridorAdvisoryCount: routingPreview.corridorAdvisoryCount,
+      tripAdvisories: routingPreview.tripAdvisories?.slice(0, 6),
+      corridorAdvisories: routingPreview.corridorAdvisories,
+      scopeGuard: routingPreview.scopeGuard,
     },
     disclaimer: "Synthetic demo COP — read-only feeds; not authoritative for dispatch.",
   };

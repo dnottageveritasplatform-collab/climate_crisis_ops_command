@@ -4,6 +4,7 @@ import { buildCopExport } from "../public-safety/index.js";
 import { buildShelterFleetCrossRef } from "../shelter-fleet/index.js";
 import { buildMultiFeedCrossRef } from "../signals/multi-feed.js";
 import { buildSopCorpusCrossRef } from "../sops/corpus.js";
+import { buildRoutingPreviewCrossRef } from "../geo/routing.js";
 
 const EOC_AUDIT_SCOPE_GUARD =
   "EOC audit briefing export — append-only persisted trail + read-only situational feeds. Not dispatch authority.";
@@ -17,6 +18,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
   const shelterFleet = buildShelterFleetCrossRef(level);
   const signalMultiFeed = buildMultiFeedCrossRef(level);
   const sopCorpus = buildSopCorpusCrossRef(level);
+  const routingPreview = buildRoutingPreviewCrossRef(level);
   const persist = getAuditPersistStatus(trail.count);
 
   const pipelineRuns = trail.entries.filter((e) => e.type === "pipeline_run");
@@ -25,7 +27,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-10",
+    phase: "phase-2-day-11",
     exportType: "eoc_audit_briefing",
     generatedAt: new Date().toISOString(),
     level,
@@ -41,6 +43,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
       shelterFleetMatches: shelterFleet.matchedCount,
       corridorLinkedSignals: signalMultiFeed.corridorLinkedSignalCount,
       matchedSops: sopCorpus.matchedSopCount,
+      routingTripAdvisories: routingPreview.tripAdvisoryCount,
     },
     situation: cop.situation,
     operatingPicture: {
@@ -65,6 +68,12 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
         totalCitations: sopCorpus.totalCitations,
         mode: sopCorpus.mode,
         matchedSopIds: sopCorpus.matchedSopIds,
+      },
+      routingPreview: {
+        tripAdvisoryCount: routingPreview.tripAdvisoryCount,
+        corridorAdvisoryCount: routingPreview.corridorAdvisoryCount,
+        restrictedCorridorCount: routingPreview.restrictedCorridorCount,
+        tripAdvisories: routingPreview.tripAdvisories?.slice(0, 4),
       },
     },
     auditTrail: {

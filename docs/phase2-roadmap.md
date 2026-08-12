@@ -234,3 +234,21 @@ curl.exe http://127.0.0.1:8787/api/sops/cross-ref?level=2
 npm run pipeline:run
 npm run eval:run
 ```
+
+### Phase 2 Day 11 (Corridor-aware routing preview) ✅
+
+- **`src/geo/routing.js`** — read-only alternate route advisories when corridors restricted/closed
+- **`data/geo/routing-alternates-demo.json`** — Bay Street + Mackey bridge alternate rules demo
+- **`GET /api/geo/routing/preview`** · **`GET /api/geo/routing/cross-ref`** · **`POST /api/geo/routing/ingest`**
+- Monitor tool **`get_routing_preview_status`** · pipeline **`routing_preview_sync`** audit step
+- COP + EOC export include **`routingPreview`** block for briefing bundles
+
+**Scope guard:** Routing preview is advisory-only — not turn-by-turn dispatch, not navigation authority; HITL still required before outbound COMMS.
+
+```bash
+curl.exe http://127.0.0.1:8787/api/geo/routing/preview?level=2
+curl.exe http://127.0.0.1:8787/api/geo/routing/cross-ref?level=2
+npm run geo:routing-preview
+npm run pipeline:run
+npm run eval:run
+```

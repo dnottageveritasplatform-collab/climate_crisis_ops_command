@@ -11,6 +11,11 @@ import {
   getCorridorLayerMeta,
   ingestEsriCorridorWebhook,
 } from "../geo/esri.js";
+import {
+  buildRoutingPreviewCrossRef,
+  buildRoutingPreviewSummary,
+  ingestRoutingAlternatesWebhook,
+} from "../geo/routing.js";
 
 const router = Router();
 
@@ -66,6 +71,27 @@ router.get("/corridors/source", (_req, res) => {
 router.post("/corridors/ingest", (req, res) => {
   try {
     res.json(ingestEsriCorridorWebhook(req.body));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+/** Corridor-aware routing preview summary (Phase 2 Day 11). */
+router.get("/routing/preview", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildRoutingPreviewSummary(level));
+});
+
+/** Cross-ref at-risk trips with alternate route advisories. */
+router.get("/routing/cross-ref", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildRoutingPreviewCrossRef(level));
+});
+
+/** Webhook ingest for pilot agency routing alternate rules. */
+router.post("/routing/ingest", (req, res) => {
+  try {
+    res.json(ingestRoutingAlternatesWebhook(req.body));
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message });
   }

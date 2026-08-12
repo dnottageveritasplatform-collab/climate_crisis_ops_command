@@ -191,7 +191,17 @@ export const PHASE2_ROADMAP = {
         "Flood-depth or wind-exposure overlays when agency GIS available",
         "On-prem / sovereign deploy path (OWC edge angle for Caribbean operators)",
       ],
-      status: "research",
+      status: "in_progress",
+      day11: {
+        complete: true,
+        deliverables: [
+          "src/geo/routing.js — corridor-aware routing preview (read-only advisories)",
+          "data/geo/routing-alternates-demo.json — Bay Street / Mackey bridge alternates",
+          "GET /api/geo/routing/preview · /cross-ref · POST /routing/ingest",
+          "Pipeline step routing_preview_sync · Monitor tool get_routing_preview_status",
+          "COP + EOC export include routingPreview block",
+        ],
+      },
     },
   ],
   notInScope: [
@@ -241,7 +251,7 @@ export function buildDefensibilityNarrative() {
 export function buildPhase2Roadmap() {
   return {
     ok: true,
-    phase: "phase-2-day-10",
+    phase: "phase-2-day-11",
     day1Complete: true,
     day2Complete: true,
     day3Complete: true,
@@ -252,6 +262,7 @@ export function buildPhase2Roadmap() {
     day8Complete: true,
     day9Complete: true,
     day10Complete: true,
+    day11Complete: true,
     ...PHASE2_ROADMAP,
   };
 }

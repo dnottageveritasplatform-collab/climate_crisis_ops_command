@@ -161,6 +161,31 @@
     }
     .sop-corpus-text { flex: 1; min-width: 220px; color: #ddd6fe; line-height: 1.35; }
 
+    .routing-preview-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 1.5rem;
+      background: rgba(52, 211, 153, 0.06);
+      border-bottom: 1px solid rgba(52, 211, 153, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .routing-preview-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      background: rgba(52, 211, 153, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .routing-preview-text { flex: 1; min-width: 220px; color: #a7f3d0; line-height: 1.35; }
+
     .scenario-strip {
       display: flex;
       align-items: center;
@@ -916,6 +941,14 @@
     <span class="desk-chip" id="sopCorpusFiles" title="Operator SOP files in crisis corpus">— files</span>
     <span class="desk-chip" id="sopCorpusMatched" title="Scenario-matched SOPs at current level">— matched</span>
     <a class="eoc-cop-link" id="sopCorpusLink" href="/api/sops/corpus" target="_blank" rel="noopener">Corpus JSON</a>
+  </div>
+
+  <div class="routing-preview-strip" id="routingPreviewStrip">
+    <span class="routing-preview-tag">GIS routing preview</span>
+    <span class="routing-preview-text" id="routingPreviewText">Loading corridor-aware alternate route advisories…</span>
+    <span class="desk-chip" id="routingPreviewRules" title="Alternate route rules loaded from agency GIS demo">— rules</span>
+    <span class="desk-chip" id="routingPreviewAdvisories" title="At-risk trips with routing advisories on restricted corridors">— advisories</span>
+    <a class="eoc-cop-link" id="routingPreviewLink" href="/api/geo/routing/preview?level=2" target="_blank" rel="noopener">Preview JSON</a>
   </div>
 
   <div class="scenario-strip" id="scenarioStrip">
@@ -1676,6 +1709,10 @@
         const r = entry.result;
         return `files: ${r.fileCount} · mode: ${r.searchMode} · scenario-matched: ${r.scenarioMatchedSops}`;
       }
+      if (entry.tool === "get_routing_preview_status" && entry.result) {
+        const r = entry.result;
+        return `rules: ${r.alternateRuleCount} · trip advisories: ${r.tripAdvisoryCount} · restricted corridors: ${r.restrictedCorridorCount}`;
+      }
       if (entry.tool === "query_sop" && entry.result) {
         const r = entry.result;
         const n = r.citations?.length ?? r.matches?.length ?? 0;
@@ -1958,6 +1995,7 @@
         await loadShelterFleet(data.threshold ?? 2);
         await loadMultiFeed(data.threshold ?? 2);
         await loadSopCorpus(data.threshold ?? 2);
+        await loadRoutingPreview(data.threshold ?? 2);
         document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
         if (data.efficiency) {
           const e = data.efficiency;
@@ -2319,6 +2357,35 @@
       return { summary, crossRef };
     }
 
+    function renderRoutingPreview(summary, crossRef) {
+      if (!summary?.ok) return;
+      const sample = (crossRef?.tripAdvisories || summary.tripAdvisories || [])
+        .slice(0, 2)
+        .map((a) => `${a.tripId} → ${a.alternateName}`)
+        .join(" · ");
+      document.getElementById("routingPreviewText").innerHTML =
+        `Advisory preview · ${summary.alternateRuleCount ?? 0} alternate rule(s)${sample ? ` · <em>${sample}</em>` : ""}`;
+      const rulesEl = document.getElementById("routingPreviewRules");
+      const ruleCount = summary.alternateRuleCount ?? 0;
+      rulesEl.textContent = `${ruleCount} rule${ruleCount === 1 ? "" : "s"}`;
+      rulesEl.className = ruleCount >= 2 ? "desk-chip ok" : "desk-chip";
+      const advEl = document.getElementById("routingPreviewAdvisories");
+      const adv = crossRef?.tripAdvisoryCount ?? summary.tripAdvisoryCount ?? 0;
+      advEl.textContent = adv ? `${adv} trip advisory(ies)` : "none at risk";
+      advEl.className = adv ? "desk-chip warn" : "desk-chip ok";
+    }
+
+    async function loadRoutingPreview(level = 2) {
+      const [summaryRes, crossRes] = await Promise.all([
+        fetch(`/api/geo/routing/preview?level=${level}`),
+        fetch(`/api/geo/routing/cross-ref?level=${level}`),
+      ]);
+      const summary = await summaryRes.json();
+      const crossRef = await crossRes.json();
+      renderRoutingPreview(summary, crossRef);
+      return { summary, crossRef };
+    }
+
     async function loadStatus() {
       const [statusRes, healthRes] = await Promise.all([
         fetch("/api/status"),
@@ -2440,6 +2507,7 @@
         await loadShelterFleet();
         await loadMultiFeed();
         await loadSopCorpus();
+        await loadRoutingPreview();
         await loadLogs();
         await loadAudit();
         await loadHitl();

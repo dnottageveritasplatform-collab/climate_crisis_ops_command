@@ -22,6 +22,7 @@ export function buildDeployChecklist(baseUrl = `http://127.0.0.1:${config.port}`
   fileOk("staging_env_example", ".env.staging.example");
   fileOk("sop_corpus", "docs/sops");
   fileOk("eval_scenarios", "data/eval/scenarios.json");
+  fileOk("routing_alternates", "data/geo/routing-alternates-demo.json");
   fileOk("backup_script", "docs/backup-demo-video.md");
   fileOk("staging_guide", "docs/staging-deploy.md");
 
