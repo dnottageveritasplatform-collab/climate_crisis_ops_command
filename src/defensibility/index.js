@@ -25,7 +25,7 @@ export const DEFENSIBILITY_PILLARS = [
     id: "sop",
     title: "Operator SOP corpus",
     detail:
-      "Keyword RAG over 3 crisis SOP files; agents cite sopId/section in audit trail. Templates are starting points — workflow + citations are the defensible layer.",
+      "Hybrid keyword + TF-IDF semantic RAG over 5 operator SOP files; agents cite sopId/section in audit trail. Templates are starting points — workflow + citations are the defensible layer.",
   },
   {
     id: "audit",
@@ -165,6 +165,25 @@ export const PHASE2_ROADMAP = {
       },
     },
     {
+      id: "operator-corpus",
+      title: "Operator SOP corpus + semantic RAG",
+      items: [
+        "Expand crisis SOP corpus beyond sprint 3-file keyword RAG",
+        "Optional hybrid TF-IDF semantic search — no vector DB in pilot window",
+        "Scenario cross-ref logs matched SOPs in pipeline audit",
+      ],
+      status: "in_progress",
+      day10: {
+        complete: true,
+        deliverables: [
+          "src/sops/semantic.js · src/sops/corpus.js — hybrid keyword + TF-IDF RAG",
+          "data/sops/shelter-coordination.txt · fleet-logistics.txt — 5-file corpus",
+          "GET /api/sops/corpus · /cross-ref · /search · pipeline sop_corpus_sync",
+          "Monitor tool get_sop_corpus_status · query_sop hybrid mode",
+        ],
+      },
+    },
+    {
       id: "routing-gis",
       title: "Deeper GIS routing",
       items: [
@@ -222,7 +241,7 @@ export function buildDefensibilityNarrative() {
 export function buildPhase2Roadmap() {
   return {
     ok: true,
-    phase: "phase-2-day-9",
+    phase: "phase-2-day-10",
     day1Complete: true,
     day2Complete: true,
     day3Complete: true,
@@ -232,6 +251,7 @@ export function buildPhase2Roadmap() {
     day7Complete: true,
     day8Complete: true,
     day9Complete: true,
+    day10Complete: true,
     ...PHASE2_ROADMAP,
   };
 }

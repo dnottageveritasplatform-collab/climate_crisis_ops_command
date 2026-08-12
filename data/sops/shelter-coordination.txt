@@ -1,0 +1,20 @@
+SHELTER-01-DEMO - Shelter Coordinator Coordination Protocol
+
+Shelter Coordinator Role:
+- Extended HITL persona at Level 2+ — approves shelter routing drafts, not shelter operations authority.
+- Coordinates with NEMT dispatch and hospital liaisons on evacuee transport to accepting shelters.
+- Read-only capacity feed from operator JSON adapter; no direct bed assignment in CCOC.
+
+Level 2 Prepare:
+- Review shelter capacity signals before releasing P1 trips through restricted corridors.
+- Flag near-capacity shelters in action pack shelterRoutingBrief for liaison review.
+- Cross-reference CORR-01/CORR-02 status with National Gymnasium and parish hall staging zones.
+
+Level 3 Restrict:
+- Hold elective shelter transfers until fleet logistics confirms alternate routing.
+- Require shelter coordinator HITL approval alongside NEMT supervisor and hospital liaisons.
+- Log shelter routing decisions in audit trail with SHELTER-01 citation.
+
+Verification:
+- Shelter coordinator approves draft only — COMMS-03 hospital bulletins remain triple/extended HITL gated.
+- No auto-routing to shelters without human approval on action pack drafts.

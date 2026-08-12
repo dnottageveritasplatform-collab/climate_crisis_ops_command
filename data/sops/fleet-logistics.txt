@@ -1,0 +1,20 @@
+FLEET-01-DEMO - Fleet Logistics Allocation Protocol
+
+Fleet Logistics Role:
+- Extended HITL persona at Level 2+ — approves fleet allocation drafts, not fleet dispatch authority.
+- Coordinates ambulance-adjacent assets and NEMT overflow capacity on restricted corridors.
+- Read-only fleet feed from operator JSON adapter; no CAD dispatch write-back from CCOC.
+
+Level 2 Prepare:
+- Review available fleet assets before corridor restrictions tighten on CORR-01/CORR-02.
+- Include fleetAllocationBrief in action pack for extended HITL gate at Level 2+.
+- Sync fleet staging positions with ESRI corridor layer status when agency GIS configured.
+
+Level 3 Restrict:
+- Restrict fleet redeployment through restricted corridors without logistics coordinator approval.
+- Cross-reference at-risk trips on CORR-02 with available fleet assets in coordination feed.
+- Reference CORR-FLOOD-DEMO for closure verification before allocation release.
+
+Verification:
+- Fleet logistics approves allocation draft only — handoff write-back remains separate pilot path.
+- Audit trail must cite FLEET-01 when fleet allocation brief is staged for HITL.

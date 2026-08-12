@@ -12,6 +12,7 @@ import { buildPublicSafetyCorridorCrossRef } from "../public-safety/index.js";
 import { buildEsriCorridorSummary } from "../geo/esri.js";
 import { buildShelterFleetCrossRef } from "../shelter-fleet/index.js";
 import { buildMultiFeedCrossRef } from "../signals/multi-feed.js";
+import { buildSopCorpusCrossRef } from "../sops/corpus.js";
 
 /**
  * Monitor → Triage → Action with triple HITL gate staged at end.
@@ -34,6 +35,7 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
   const esriCorridorSync = buildEsriCorridorSummary(threshold);
   const shelterFleetCrossRef = buildShelterFleetCrossRef(threshold);
   const signalMultiFeedSync = buildMultiFeedCrossRef(threshold);
+  const sopCorpusSync = buildSopCorpusCrossRef(threshold);
   const audit = recordPipelineRun({
     signals,
     monitor,
@@ -49,6 +51,7 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     esriCorridorSync,
     shelterFleetCrossRef,
     signalMultiFeedSync,
+    sopCorpusSync,
   });
   const auditPersist = {
     ...getAuditPersistStatus(),
@@ -83,10 +86,10 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-9",
+    phase: "phase-2-day-10",
     pipelineId: audit.id,
     threshold,
-    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "audit_persist"],
+    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "sop_corpus_sync", "audit_persist"],
     signals,
     monitor,
     triage,
@@ -99,12 +102,13 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     esriCorridorSync,
     shelterFleetCrossRef,
     signalMultiFeedSync,
+    sopCorpusSync,
     auditPersist,
     hitl,
     audit,
     efficiency,
     hitlGate: hitl.active ? hitl.state : "idle",
     message:
-      "Pipeline complete — multi-feed signals, ESRI corridors, shelter/fleet coordination, extended HITL, and persisted audit trail.",
+      "Pipeline complete — expanded SOP corpus, multi-feed signals, ESRI corridors, extended HITL, and persisted audit trail.",
   };
 }

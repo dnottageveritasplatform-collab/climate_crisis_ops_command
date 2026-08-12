@@ -33,14 +33,20 @@ export async function runMonitorBrief() {
 
   if (llm.enabled && !config.demoMode) {
     mode = llm.provider;
-    const { json } = await callLlmJson({
-      llm,
-      agent,
-      system:
-        "You are the Monitor agent for Climate & Crisis Ops Command. Produce a concise situation brief JSON with keys: severity, level, event, geography, summary, sopCitations (array of {sopId, section, ref, text}), recommendedActions (array), institutionalSignals (array), affectedCorridors (object), confidence ({score, basis}).",
-      user: `Tool results:\n${JSON.stringify(toolResults, null, 2)}`,
-    });
-    brief = normalizeLlmBrief(json, signalResult);
+    try {
+      const { json } = await callLlmJson({
+        llm,
+        agent,
+        system:
+          "You are the Monitor agent for Climate & Crisis Ops Command. Produce a concise situation brief JSON with keys: severity, level, event, geography, summary, sopCitations (array of {sopId, section, ref, text}), recommendedActions (array), institutionalSignals (array), affectedCorridors (object), confidence ({score, basis}).",
+        user: `Tool results:\n${JSON.stringify(toolResults, null, 2)}`,
+      });
+      brief = normalizeLlmBrief(json, signalResult);
+    } catch (err) {
+      console.warn("[monitor] LLM brief failed, using demo templates:", err.message);
+      brief = buildThresholdBrief(toolResults);
+      mode = "demo";
+    }
   } else {
     brief = buildThresholdBrief(toolResults);
   }

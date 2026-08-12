@@ -8,6 +8,7 @@ import { buildEsriCorridorSummary } from "../../geo/esri.js";
 import { buildEocAuditBriefing } from "../../audit/eoc-export.js";
 import { getAuditPersistStatus } from "../../audit/index.js";
 import { getMultiFeedStatus } from "../../signals/multi-feed.js";
+import { getSopCorpusStatus } from "../../sops/corpus.js";
 import { querySopCorpus } from "../../sops/index.js";
 
 const registry = {
@@ -17,15 +18,17 @@ const registry = {
     execute: async () => getSignalStatus(),
   },
   query_sop: {
-    description: "RAG search over crisis SOP corpus by keyword (Level 2, CORR, COMMS-03, etc.)",
+    description:
+      "RAG search over expanded operator SOP corpus — hybrid keyword + TF-IDF semantic (Level 2, CORR, COMMS-03, SHELTER, FLEET)",
     parameters: {
       type: "object",
       properties: {
-        query: { type: "string", description: "SOP section keyword" },
+        query: { type: "string", description: "SOP section keyword or phrase" },
+        mode: { type: "string", description: "keyword | semantic | hybrid (default hybrid when enabled)" },
       },
       required: ["query"],
     },
-    execute: async ({ query }) => querySopCorpus(query),
+    execute: async ({ query, mode }) => querySopCorpus(query, mode ? { mode } : {}),
   },
   summarize_dispatch: {
     description:
@@ -100,6 +103,12 @@ const registry = {
       "Multi-feed signal ingest status — NHC live + institutional overlays (OCHA/GFDRR) with corridor cross-ref (Phase 2 Day 9)",
     parameters: { type: "object", properties: {} },
     execute: async () => getMultiFeedStatus(),
+  },
+  get_sop_corpus_status: {
+    description:
+      "Expanded operator SOP corpus status — file count, hybrid semantic RAG mode, scenario-matched SOPs (Phase 2 Day 10)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getSopCorpusStatus(),
   },
 };
 

@@ -136,6 +136,31 @@
     }
     .signal-feed-text { flex: 1; min-width: 220px; color: #bfdbfe; line-height: 1.35; }
 
+    .sop-corpus-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 1.5rem;
+      background: rgba(167, 139, 250, 0.06);
+      border-bottom: 1px solid rgba(167, 139, 250, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .sop-corpus-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #c4b5fd;
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      background: rgba(167, 139, 250, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .sop-corpus-text { flex: 1; min-width: 220px; color: #ddd6fe; line-height: 1.35; }
+
     .scenario-strip {
       display: flex;
       align-items: center;
@@ -858,7 +883,7 @@
     </div>
     <div class="topbar-meta">
       <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Phase 2 · Day 9 · Multi-feed signals</span>
+      <span class="pill gold" id="phasePill">Phase 2 · Day 10 · SOP corpus RAG</span>
       <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
@@ -883,6 +908,14 @@
     <span class="desk-chip" id="signalFeedSources" title="Active weather + institutional feed adapters">— sources</span>
     <span class="desk-chip" id="signalFeedCorridorLinked" title="Institutional signals linked to restricted corridors">— corridor-linked</span>
     <a class="eoc-cop-link" id="signalFeedSourcesLink" href="/api/signals/sources" target="_blank" rel="noopener">Feed sources</a>
+  </div>
+
+  <div class="sop-corpus-strip" id="sopCorpusStrip">
+    <span class="sop-corpus-tag">Operator SOP corpus</span>
+    <span class="sop-corpus-text" id="sopCorpusText">Loading expanded corpus + hybrid semantic RAG…</span>
+    <span class="desk-chip" id="sopCorpusFiles" title="Operator SOP files in crisis corpus">— files</span>
+    <span class="desk-chip" id="sopCorpusMatched" title="Scenario-matched SOPs at current level">— matched</span>
+    <a class="eoc-cop-link" id="sopCorpusLink" href="/api/sops/corpus" target="_blank" rel="noopener">Corpus JSON</a>
   </div>
 
   <div class="scenario-strip" id="scenarioStrip">
@@ -1639,6 +1672,10 @@
         const r = entry.result;
         return `institutional: ${r.institutionalCount} · sources: ${r.feedSourceCount} · corridor-linked: ${r.corridorLinkedSignalCount}`;
       }
+      if (entry.tool === "get_sop_corpus_status" && entry.result) {
+        const r = entry.result;
+        return `files: ${r.fileCount} · mode: ${r.searchMode} · scenario-matched: ${r.scenarioMatchedSops}`;
+      }
       if (entry.tool === "query_sop" && entry.result) {
         const r = entry.result;
         const n = r.citations?.length ?? r.matches?.length ?? 0;
@@ -1920,6 +1957,7 @@
         await loadPublicSafety(data.threshold ?? 2);
         await loadShelterFleet(data.threshold ?? 2);
         await loadMultiFeed(data.threshold ?? 2);
+        await loadSopCorpus(data.threshold ?? 2);
         document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
         if (data.efficiency) {
           const e = data.efficiency;
@@ -2256,6 +2294,31 @@
       return { summary, crossRef };
     }
 
+    function renderSopCorpus(summary, crossRef) {
+      if (!summary?.ok) return;
+      const ids = (summary.sopIds || []).slice(0, 4).join(", ");
+      document.getElementById("sopCorpusText").innerHTML =
+        `Hybrid ${summary.searchMode} RAG · ${summary.fileCount} file(s) · ${summary.chunkCount} chunks · <em>${ids}</em>`;
+      const filesEl = document.getElementById("sopCorpusFiles");
+      filesEl.textContent = `${summary.fileCount} SOP files`;
+      filesEl.className = summary.fileCount >= 5 ? "desk-chip ok" : "desk-chip";
+      const matchedEl = document.getElementById("sopCorpusMatched");
+      const matched = crossRef?.matchedSopCount ?? 0;
+      matchedEl.textContent = matched ? `${matched} scenario-matched` : "none matched";
+      matchedEl.className = matched ? "desk-chip ok" : "desk-chip";
+    }
+
+    async function loadSopCorpus(level = 2) {
+      const [summaryRes, crossRes] = await Promise.all([
+        fetch("/api/sops/corpus"),
+        fetch(`/api/sops/cross-ref?level=${level}`),
+      ]);
+      const summary = await summaryRes.json();
+      const crossRef = await crossRes.json();
+      renderSopCorpus(summary, crossRef);
+      return { summary, crossRef };
+    }
+
     async function loadStatus() {
       const [statusRes, healthRes] = await Promise.all([
         fetch("/api/status"),
@@ -2376,6 +2439,7 @@
         await loadPublicSafety();
         await loadShelterFleet();
         await loadMultiFeed();
+        await loadSopCorpus();
         await loadLogs();
         await loadAudit();
         await loadHitl();

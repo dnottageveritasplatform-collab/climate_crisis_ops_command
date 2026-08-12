@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { isSemanticSearchEnabled, semanticSearchSopCorpus } from "./semantic.js";
 
 const corpusDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/sops");
 
@@ -15,13 +16,8 @@ export function loadSopCorpus() {
   });
 }
 
-/**
- * RAG-style keyword search across the full SOP corpus.
- * Returns structured citations ranked by match quality.
- */
-export function querySopCorpus(query) {
+function keywordSearch(query, corpus, { limit = 8 } = {}) {
   const q = query.toLowerCase();
-  const corpus = loadSopCorpus();
   const citations = [];
 
   for (const doc of corpus) {
@@ -51,6 +47,7 @@ export function querySopCorpus(query) {
           text: trimmed.slice(1).trim(),
           ref: `${doc.sopId} §${section}`,
           score,
+          matchType: "keyword",
         });
       } else if (section.toLowerCase().includes(q) || trimmed.toLowerCase().includes(q)) {
         citations.push({
@@ -61,18 +58,80 @@ export function querySopCorpus(query) {
           text: trimmed,
           ref: `${doc.sopId} §${section || trimmed}`,
           score,
+          matchType: "keyword",
         });
       }
     }
   }
 
   citations.sort((a, b) => b.score - a.score);
+  return citations.slice(0, limit);
+}
+
+function mergeHybridCitations(keywordHits, semanticHits, { limit = 8 } = {}) {
+  const byRef = new Map();
+
+  for (const hit of keywordHits) {
+    byRef.set(hit.ref, { ...hit, score: hit.score * 0.6, matchType: "hybrid" });
+  }
+
+  for (const hit of semanticHits) {
+    const existing = byRef.get(hit.ref);
+    const semanticScore = hit.score * 100 * 0.4;
+    if (existing) {
+      existing.score = Math.round((existing.score + semanticScore) * 100) / 100;
+    } else {
+      byRef.set(hit.ref, { ...hit, score: semanticScore, matchType: "hybrid" });
+    }
+  }
+
+  return [...byRef.values()].sort((a, b) => b.score - a.score).slice(0, limit);
+}
+
+/**
+ * RAG-style search across the operator SOP corpus.
+ * Phase 2 Day 10: optional hybrid semantic (TF-IDF) + keyword merge.
+ */
+export function querySopCorpus(query, options = {}) {
+  const corpus = loadSopCorpus();
+  const limit = options.limit ?? 8;
+  const mode =
+    options.mode ||
+    (isSemanticSearchEnabled() ? "hybrid" : "keyword");
+
+  if (mode === "keyword") {
+    const citations = keywordSearch(query, corpus, { limit });
+    return {
+      query,
+      mode: "keyword",
+      corpusFiles: corpus.length,
+      semanticEnabled: false,
+      citations,
+      matches: citations.length ? citations.map((c) => c.text) : [`No SOP lines matched for "${query}"`],
+    };
+  }
+
+  if (mode === "semantic") {
+    const result = semanticSearchSopCorpus(query, corpus, { limit });
+    return {
+      ...result,
+      corpusFiles: corpus.length,
+      semanticEnabled: true,
+    };
+  }
+
+  const keywordHits = keywordSearch(query, corpus, { limit: limit * 2 });
+  const semanticResult = semanticSearchSopCorpus(query, corpus, { limit: limit * 2 });
+  const citations = mergeHybridCitations(keywordHits, semanticResult.citations, { limit });
 
   return {
     query,
+    mode: "hybrid",
     corpusFiles: corpus.length,
+    semanticEnabled: true,
+    chunkCount: semanticResult.chunkCount,
     citations,
-    matches: citations.length ? citations.map((c) => c.text) : [`No SOP lines matched for "${query}"`],
+    matches: citations.length ? citations.map((c) => c.text) : [`No SOP matches for "${query}"`],
   };
 }
 

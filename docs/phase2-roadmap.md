@@ -79,6 +79,8 @@ curl.exe http://127.0.0.1:8787/api/geo/corridors/esri?level=2
 curl.exe http://127.0.0.1:8787/api/geo/corridors/source
 curl.exe http://127.0.0.1:8787/api/signals/multi-feed?level=2
 curl.exe http://127.0.0.1:8787/api/signals/cross-ref?level=2
+curl.exe http://127.0.0.1:8787/api/sops/corpus
+curl.exe http://127.0.0.1:8787/api/sops/cross-ref?level=2
 curl.exe -X POST http://127.0.0.1:8787/api/transport-desk/handoff-accept -H "Content-Type: application/json" -d "{\"handoffs\":[{\"handoffId\":\"HO-2201\",\"status\":\"nemt_assigned\",\"nemtRunId\":\"RUN-8845\",\"linkedTripId\":\"T-1004\"}]}"
 ```
 
@@ -210,6 +212,25 @@ npm run eval:run
 curl.exe http://127.0.0.1:8787/api/signals/multi-feed?level=2
 curl.exe http://127.0.0.1:8787/api/signals/cross-ref?level=2
 curl.exe http://127.0.0.1:8787/api/signals/sources
+npm run pipeline:run
+npm run eval:run
+```
+
+### Phase 2 Day 10 (Operator corpus + hybrid semantic RAG) ✅
+
+- **`src/sops/semantic.js`** — local TF-IDF cosine similarity (no vector DB / no embedding API)
+- **`src/sops/corpus.js`** — corpus summary + scenario cross-ref at escalation level
+- **`data/sops/shelter-coordination.txt`** · **`data/sops/fleet-logistics.txt`** — expanded 5-file operator corpus
+- **`GET /api/sops/corpus`** · **`GET /api/sops/cross-ref`** · **`GET /api/sops/search?mode=hybrid`**
+- Monitor tool **`get_sop_corpus_status`** · pipeline **`sop_corpus_sync`** · **`query_sop`** hybrid mode
+- Set **`SOP_SEMANTIC=false`** to fall back to keyword-only RAG
+
+**Scope guard:** Semantic RAG improves citation retrieval — agents still require HITL before outbound COMMS; not auto-dispatch.
+
+```bash
+curl.exe http://127.0.0.1:8787/api/sops/corpus
+curl.exe "http://127.0.0.1:8787/api/sops/search?q=shelter%20coordinator&mode=hybrid"
+curl.exe http://127.0.0.1:8787/api/sops/cross-ref?level=2
 npm run pipeline:run
 npm run eval:run
 ```

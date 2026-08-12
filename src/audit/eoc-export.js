@@ -3,6 +3,7 @@ import { getAuditPersistStatus } from "./store.js";
 import { buildCopExport } from "../public-safety/index.js";
 import { buildShelterFleetCrossRef } from "../shelter-fleet/index.js";
 import { buildMultiFeedCrossRef } from "../signals/multi-feed.js";
+import { buildSopCorpusCrossRef } from "../sops/corpus.js";
 
 const EOC_AUDIT_SCOPE_GUARD =
   "EOC audit briefing export — append-only persisted trail + read-only situational feeds. Not dispatch authority.";
@@ -15,6 +16,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
   const cop = await buildCopExport(level);
   const shelterFleet = buildShelterFleetCrossRef(level);
   const signalMultiFeed = buildMultiFeedCrossRef(level);
+  const sopCorpus = buildSopCorpusCrossRef(level);
   const persist = getAuditPersistStatus(trail.count);
 
   const pipelineRuns = trail.entries.filter((e) => e.type === "pipeline_run");
@@ -23,7 +25,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-9",
+    phase: "phase-2-day-10",
     exportType: "eoc_audit_briefing",
     generatedAt: new Date().toISOString(),
     level,
@@ -38,6 +40,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
       handoffWriteBackCount: writeBacks.length,
       shelterFleetMatches: shelterFleet.matchedCount,
       corridorLinkedSignals: signalMultiFeed.corridorLinkedSignalCount,
+      matchedSops: sopCorpus.matchedSopCount,
     },
     situation: cop.situation,
     operatingPicture: {
@@ -56,6 +59,12 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
         institutionalCount: signalMultiFeed.institutionalCount,
         corridorLinkedSignalCount: signalMultiFeed.corridorLinkedSignalCount,
         matches: signalMultiFeed.matches?.slice(0, 4),
+      },
+      sopCorpus: {
+        matchedSopCount: sopCorpus.matchedSopCount,
+        totalCitations: sopCorpus.totalCitations,
+        mode: sopCorpus.mode,
+        matchedSopIds: sopCorpus.matchedSopIds,
       },
     },
     auditTrail: {

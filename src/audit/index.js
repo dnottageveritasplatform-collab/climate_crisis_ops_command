@@ -92,6 +92,7 @@ export function buildAuditTrail(limit = 15) {
       esriCorridorSync: e.esriCorridorSync,
       shelterFleetCrossRef: e.shelterFleetCrossRef,
       signalMultiFeedSync: e.signalMultiFeedSync,
+      sopCorpusSync: e.sopCorpusSync,
       approvers: e.approvers || normalizeApprovers(e.hitl?.approvers),
       hitl: e.hitl,
       mode: e.mode,
@@ -199,6 +200,7 @@ export function recordPipelineRun({
   esriCorridorSync,
   shelterFleetCrossRef,
   signalMultiFeedSync,
+  sopCorpusSync,
 }) {
   const ts = new Date().toISOString();
   const cadNote = cadCrossRef?.matchedCount
@@ -222,10 +224,13 @@ export function recordPipelineRun({
   const signalFeedNote = signalMultiFeedSync?.corridorLinkedSignalCount
     ? ` · signals ${signalMultiFeedSync.corridorLinkedSignalCount} corridor-linked`
     : "";
+  const sopNote = sopCorpusSync?.matchedSopCount
+    ? ` · SOP ${sopCorpusSync.matchedSopCount} matched (${sopCorpusSync.mode})`
+    : "";
   const hitlModeNote = hitl?.extendedHitl ? " · extended HITL (5)" : "";
   return appendAuditEntry({
     type: "pipeline_run",
-    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}`,
+    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}${sopNote}`,
     signal: {
       level: threshold,
       label: signals?.label,
@@ -295,6 +300,14 @@ export function recordPipelineRun({
             matches: signalMultiFeedSync.matches?.slice(0, 4),
           }
         : undefined,
+      sopCorpusSync: sopCorpusSync
+        ? {
+            matchedSopCount: sopCorpusSync.matchedSopCount,
+            totalCitations: sopCorpusSync.totalCitations,
+            mode: sopCorpusSync.mode,
+            matchedSopIds: sopCorpusSync.matchedSopIds,
+          }
+        : undefined,
     },
     cadCrossRef: cadCrossRef?.matches?.map((m) => ({
       tripId: m.tripId,
@@ -350,6 +363,7 @@ export function recordPipelineRun({
       source: m.source,
       linkedCorridors: m.linkedCorridors,
     })),
+    sopCorpusSync: sopCorpusSync?.matchedSopIds?.map((id) => ({ sopId: id, mode: sopCorpusSync.mode })),
     steps: [
       { id: "monitor", label: "Monitor brief", agent: "monitor", auditId: monitor.audit?.id, ts: monitor.audit?.ts },
       { id: "triage", label: "Triage rank", agent: "triage", auditId: triage.audit?.id, ts: triage.audit?.ts },

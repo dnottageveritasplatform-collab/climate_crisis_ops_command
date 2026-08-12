@@ -44,7 +44,10 @@
     "audit:eoc-briefing": "node -e \"import('./src/audit/eoc-export.js').then(m=>m.buildEocAuditBriefing({level:2})).then(r=>console.log(JSON.stringify({ok:r.ok,exportType:r.exportType,persist:r.persist,summary:r.summary},null,2)))\"",
     "signals:multi-feed": "node -e \"import('./src/signals/multi-feed.js').then(m=>console.log(JSON.stringify(m.buildMultiFeedSummary(2),null,2)))\"",
     "signals:cross-ref": "node -e \"import('./src/signals/multi-feed.js').then(m=>console.log(JSON.stringify(m.buildMultiFeedCrossRef(2),null,2)))\"",
-    "signals:sources": "node -e \"import('./src/signals/multi-feed.js').then(m=>m.getMultiFeedSources()).then(r=>console.log(JSON.stringify(r,null,2)))\""
+    "signals:sources": "node -e \"import('./src/signals/multi-feed.js').then(m=>m.getMultiFeedSources()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
+    "sops:corpus": "node -e \"import('./src/sops/corpus.js').then(m=>console.log(JSON.stringify(m.buildSopCorpusSummary(),null,2)))\"",
+    "sops:cross-ref": "node -e \"import('./src/sops/corpus.js').then(m=>console.log(JSON.stringify(m.buildSopCorpusCrossRef(2),null,2)))\"",
+    "sops:search": "node -e \"import('./src/sops/index.js').then(m=>console.log(JSON.stringify(m.querySopCorpus('shelter coordinator',{mode:'hybrid'}),null,2)))\""
   },
   "engines": {
     "node": ">=18"
