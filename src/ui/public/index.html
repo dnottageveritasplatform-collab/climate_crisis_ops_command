@@ -18,7 +18,7 @@
       --warn: #ffb347;
       --danger: #ff6b6b;
       --purple: #a78bfa;
-      --command-row-height: 414px;
+      --command-row-height: 554px;
     }
     * { box-sizing: border-box; margin: 0; }
     body {
@@ -87,6 +87,79 @@
       background: rgba(95,212,164,.12);
       border-color: rgba(95,212,164,.4);
       color: var(--ok);
+    }
+    .strip-toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .strip-toggles .toggle {
+      font-size: 0.62rem;
+      padding: 0.32rem 0.55rem;
+    }
+    .strip-toggles .toggle.strip-toggle.active {
+      background: var(--panel-2);
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .strip-toggles .toggle.active[data-accent="weather"] {
+      background: rgba(255,179,71,.14);
+      border-color: rgba(255,199,44,.45);
+      color: var(--gold);
+    }
+    .strip-toggles .toggle.active[data-accent="signals"] {
+      background: rgba(59, 130, 246, 0.16);
+      border-color: rgba(59, 130, 246, 0.55);
+      color: #60a5fa;
+    }
+    .strip-toggles .toggle.active[data-accent="sop"] {
+      background: rgba(167,139,250,.12);
+      border-color: rgba(167,139,250,.4);
+      color: #c4b5fd;
+    }
+    .strip-toggles .toggle.active[data-accent="routing"] {
+      background: rgba(52,211,153,.12);
+      border-color: rgba(52,211,153,.4);
+      color: #6ee7b7;
+    }
+    .strip-toggles .toggle.active[data-accent="scenario"] {
+      background: rgba(0,171,201,.12);
+      border-color: rgba(0,171,201,.4);
+      color: var(--aqua);
+    }
+    .strip-toggles .toggle.active[data-accent="transport"] {
+      background: rgba(192,132,252,.12);
+      border-color: rgba(192,132,252,.4);
+      color: #d8b4fe;
+    }
+    .strip-toggles .toggle.active[data-accent="shelter"] {
+      background: rgba(251,191,36,.12);
+      border-color: rgba(251,191,36,.4);
+      color: #fcd34d;
+    }
+    .strip-toggles .toggle.active[data-accent="eoc"] {
+      background: rgba(251,146,60,.12);
+      border-color: rgba(251,146,60,.4);
+      color: #fdba74;
+    }
+
+    .feed-strip.collapsed { display: none; }
+
+    .strip-lead-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .weather-strip-tag {
+      color: var(--gold);
+      border: 1px solid rgba(255, 199, 44, 0.4);
+      background: rgba(255, 179, 71, 0.14);
     }
 
     .alert-strip {
@@ -907,80 +980,89 @@
       </div>
     </div>
     <div class="topbar-meta">
-      <span class="pill aqua">Climate Risk &amp; Disaster</span>
-      <span class="pill gold" id="phasePill">Phase 2 · Day 10 · SOP corpus RAG</span>
-      <span class="pill ok" id="demoPill">Demo Mode</span>
       <div class="toolbar">
+        <span class="pill gold" id="phasePill">Phase 2 · Day 11</span>
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
         <button id="runMonitor">Monitor</button>
         <button class="triage" id="runTriage">Triage</button>
         <button class="action" id="runAction">Action</button>
-        <button type="button" class="toggle active" id="toggleAuditTrail" aria-pressed="true" title="Show or hide audit trail panel">Audit Trail</button>
+        <div class="strip-toggles" id="stripToggles">
+          <button type="button" class="toggle strip-toggle active" id="toggleWeatherStrip" data-strip="alertStrip" data-accent="weather" aria-pressed="true" title="NHC weather alert strip">Weather</button>
+          <button type="button" class="toggle strip-toggle active" id="toggleTransportDeskStrip" data-strip="transportDeskStrip" data-accent="transport" aria-pressed="true" title="Transport desk write-back strip">Transport desk</button>
+          <button type="button" class="toggle strip-toggle" id="toggleSignalFeedStrip" data-strip="signalFeedStrip" data-accent="signals" aria-pressed="false" title="Multi-feed signal ingest strip">Multi-feed</button>
+          <button type="button" class="toggle strip-toggle" id="toggleSopCorpusStrip" data-strip="sopCorpusStrip" data-accent="sop" aria-pressed="false" title="Operator SOP corpus strip">SOP corpus</button>
+          <button type="button" class="toggle strip-toggle" id="toggleRoutingPreviewStrip" data-strip="routingPreviewStrip" data-accent="routing" aria-pressed="false" title="GIS routing preview strip">GIS routing</button>
+          <button type="button" class="toggle strip-toggle" id="toggleScenarioStrip" data-strip="scenarioStrip" data-accent="scenario" aria-pressed="false" title="Multi-agency scenario strip">Scenario</button>
+          <button type="button" class="toggle strip-toggle" id="toggleShelterFleetStrip" data-strip="shelterFleetStrip" data-accent="shelter" aria-pressed="false" title="Shelter and fleet coordination strip">Shelter/fleet</button>
+          <button type="button" class="toggle strip-toggle" id="toggleEocStrip" data-strip="eocStrip" data-accent="eoc" aria-pressed="false" title="EOC read-only overlay strip">EOC</button>
+        </div>
+        <button type="button" class="toggle" id="toggleAuditTrail" aria-pressed="false" title="Show or hide audit trail panel">Audit Trail (off)</button>
         <button class="secondary" id="refreshSignals">Refresh</button>
       </div>
     </div>
   </header>
 
-  <div class="alert-strip idle" id="alertStrip">
+  <div class="alert-strip feed-strip idle" id="alertStrip">
+    <span class="strip-lead-tag weather-strip-tag">Weather</span>
     <span class="alert-level" id="alertLevel">—</span>
     <p class="alert-text" id="alertText">Loading signal feed…</p>
     <span class="alert-meta" id="alertMeta"></span>
   </div>
 
-  <div class="signal-feed-strip" id="signalFeedStrip">
-    <span class="signal-feed-tag">Multi-feed signals</span>
-    <span class="signal-feed-text" id="signalFeedText">Loading NHC live + institutional overlays…</span>
-    <span class="desk-chip" id="signalFeedSources" title="Active weather + institutional feed adapters">— sources</span>
-    <span class="desk-chip" id="signalFeedCorridorLinked" title="Institutional signals linked to restricted corridors">— corridor-linked</span>
-    <a class="eoc-cop-link" id="signalFeedSourcesLink" href="/api/signals/sources" target="_blank" rel="noopener">Feed sources</a>
-  </div>
-
-  <div class="sop-corpus-strip" id="sopCorpusStrip">
-    <span class="sop-corpus-tag">Operator SOP corpus</span>
-    <span class="sop-corpus-text" id="sopCorpusText">Loading expanded corpus + hybrid semantic RAG…</span>
-    <span class="desk-chip" id="sopCorpusFiles" title="Operator SOP files in crisis corpus">— files</span>
-    <span class="desk-chip" id="sopCorpusMatched" title="Scenario-matched SOPs at current level">— matched</span>
-    <a class="eoc-cop-link" id="sopCorpusLink" href="/api/sops/corpus" target="_blank" rel="noopener">Corpus JSON</a>
-  </div>
-
-  <div class="routing-preview-strip" id="routingPreviewStrip">
-    <span class="routing-preview-tag">GIS routing preview</span>
-    <span class="routing-preview-text" id="routingPreviewText">Loading corridor-aware alternate route advisories…</span>
-    <span class="desk-chip" id="routingPreviewRules" title="Alternate route rules loaded from agency GIS demo">— rules</span>
-    <span class="desk-chip" id="routingPreviewAdvisories" title="At-risk trips with routing advisories on restricted corridors">— advisories</span>
-    <a class="eoc-cop-link" id="routingPreviewLink" href="/api/geo/routing/preview?level=2" target="_blank" rel="noopener">Preview JSON</a>
-  </div>
-
-  <div class="scenario-strip" id="scenarioStrip">
-    <span class="scenario-tag">Multi-agency scenario</span>
-    <span class="scenario-text" id="scenarioText">Tropical Storm Alma — Nassau Metro NEMT + PMH + Doctor's Hospital · CORR-01 / CORR-02 · CAD + transport desk + EOC units (Phase 2)</span>
-    <span class="scenario-demo" id="scenarioDemo">DEMO DATA</span>
-  </div>
-
-  <div class="transport-desk-strip" id="transportDeskStrip">
-    <span class="transport-desk-tag">Transport desk · write-back pilot</span>
+  <div class="transport-desk-strip feed-strip" id="transportDeskStrip">
+    <span class="strip-lead-tag transport-desk-tag">Transport desk · write-back pilot</span>
     <span class="transport-desk-text" id="transportDeskText">Loading hospital bed pressure + EMS→NEMT handoff queue…</span>
     <span class="desk-chip" id="transportDeskAssigned" title="Handoffs NEMT dispatch has accepted into their system">— assigned</span>
     <span class="desk-chip" id="transportDeskPending" title="Handoffs awaiting NEMT dispatch accept — separate from COMMS-03 approval">— awaiting accept</span>
     <button type="button" class="desk-chip action" id="demoHandoffAccept" title="Simulate NEMT dispatch accept for the next pending handoff (not Triple HITL)">Accept next handoff</button>
   </div>
 
-  <div class="shelter-fleet-strip" id="shelterFleetStrip">
-    <span class="shelter-fleet-tag">Shelter / fleet · extended HITL</span>
+  <div class="signal-feed-strip feed-strip collapsed" id="signalFeedStrip">
+    <span class="strip-lead-tag signal-feed-tag">Multi-feed signals</span>
+    <span class="signal-feed-text" id="signalFeedText">Loading NHC live + institutional overlays…</span>
+    <span class="desk-chip" id="signalFeedSources" title="Active weather + institutional feed adapters">— sources</span>
+    <span class="desk-chip" id="signalFeedCorridorLinked" title="Institutional signals linked to restricted corridors">— corridor-linked</span>
+    <a class="eoc-cop-link" id="signalFeedSourcesLink" href="/api/signals/sources" target="_blank" rel="noopener">Feed sources</a>
+  </div>
+
+  <div class="sop-corpus-strip feed-strip collapsed" id="sopCorpusStrip">
+    <span class="strip-lead-tag sop-corpus-tag">Operator SOP corpus</span>
+    <span class="sop-corpus-text" id="sopCorpusText">Loading expanded corpus + hybrid semantic RAG…</span>
+    <span class="desk-chip" id="sopCorpusFiles" title="Operator SOP files in crisis corpus">— files</span>
+    <span class="desk-chip" id="sopCorpusMatched" title="Scenario-matched SOPs at current level">— matched</span>
+    <a class="eoc-cop-link" id="sopCorpusLink" href="/api/sops/corpus" target="_blank" rel="noopener">Corpus JSON</a>
+  </div>
+
+  <div class="routing-preview-strip feed-strip collapsed" id="routingPreviewStrip">
+    <span class="strip-lead-tag routing-preview-tag">GIS routing preview</span>
+    <span class="routing-preview-text" id="routingPreviewText">Loading corridor-aware alternate route advisories…</span>
+    <span class="desk-chip" id="routingPreviewRules" title="Alternate route rules loaded from agency GIS demo">— rules</span>
+    <span class="desk-chip" id="routingPreviewAdvisories" title="At-risk trips with routing advisories on restricted corridors">— advisories</span>
+    <a class="eoc-cop-link" id="routingPreviewLink" href="/api/geo/routing/preview?level=2" target="_blank" rel="noopener">Preview JSON</a>
+  </div>
+
+  <div class="scenario-strip feed-strip collapsed" id="scenarioStrip">
+    <span class="strip-lead-tag scenario-tag">Multi-agency scenario</span>
+    <span class="scenario-text" id="scenarioText">Tropical Storm Alma — Nassau Metro NEMT + PMH + Doctor's Hospital · CORR-01 / CORR-02 · CAD + transport desk + EOC units (Phase 2)</span>
+    <span class="scenario-demo" id="scenarioDemo">DEMO DATA</span>
+  </div>
+
+  <div class="shelter-fleet-strip feed-strip collapsed" id="shelterFleetStrip">
+    <span class="strip-lead-tag shelter-fleet-tag">Shelter / fleet · extended HITL</span>
     <span class="shelter-fleet-text" id="shelterFleetText">Loading shelter capacity + fleet logistics coordination…</span>
     <span class="desk-chip" id="shelterFleetBeds" title="Shelters accepting evacuees">— beds</span>
     <span class="desk-chip" id="shelterFleetAssets" title="Fleet assets available for corridor restrictions">— fleet</span>
   </div>
 
-  <div class="eoc-strip" id="eocStrip">
-    <span class="eoc-tag">EOC · read-only</span>
+  <div class="eoc-strip feed-strip collapsed" id="eocStrip">
+    <span class="strip-lead-tag eoc-tag">EOC · read-only</span>
     <span class="eoc-text" id="eocText">Loading fire / police unit overlay from EOC feed…</span>
     <span class="desk-chip" id="eocCorridorUnits" title="Public-safety units assigned to restricted or closed corridors">— on corridors</span>
     <a class="eoc-cop-link" id="eocCopLink" href="/api/public-safety/cop-export?level=2" target="_blank" rel="noopener">COP JSON export</a>
     <a class="eoc-cop-link" id="eocAuditExportLink" href="/api/audit/eoc-briefing?level=2" target="_blank" rel="noopener">EOC audit export</a>
   </div>
 
-  <div class="workspace" id="workspace">
+  <div class="workspace audit-hidden" id="workspace">
 
     <aside class="panel">
       <div class="panel-head">
@@ -1125,7 +1207,7 @@
         <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Extended approval complete — demo send blocked</div>
       </div>
     </footer>
-    <div class="audit-strip" id="auditStrip">
+    <div class="audit-strip collapsed" id="auditStrip">
       <div class="audit-head">
         <strong>Audit Trail</strong>
         <span id="auditLatest" class="audit-latest">No entries yet — click Run Pipeline</span>
@@ -1186,7 +1268,18 @@
       return `${llmProviderLabel} LLM${seconds ? ` (${seconds})` : ""}`;
     }
 
-    let auditTrailVisible = true;
+    let auditTrailVisible = false;
+    const stripVisibility = {};
+    const STRIP_TOGGLES = [
+      { btnId: "toggleWeatherStrip", stripId: "alertStrip", label: "Weather", defaultOn: true },
+      { btnId: "toggleTransportDeskStrip", stripId: "transportDeskStrip", label: "Transport desk", defaultOn: true },
+      { btnId: "toggleSignalFeedStrip", stripId: "signalFeedStrip", label: "Multi-feed", defaultOn: false },
+      { btnId: "toggleSopCorpusStrip", stripId: "sopCorpusStrip", label: "SOP corpus", defaultOn: false },
+      { btnId: "toggleRoutingPreviewStrip", stripId: "routingPreviewStrip", label: "GIS routing", defaultOn: false },
+      { btnId: "toggleScenarioStrip", stripId: "scenarioStrip", label: "Scenario", defaultOn: false },
+      { btnId: "toggleShelterFleetStrip", stripId: "shelterFleetStrip", label: "Shelter/fleet", defaultOn: false },
+      { btnId: "toggleEocStrip", stripId: "eocStrip", label: "EOC", defaultOn: false },
+    ];
 
     const HITL_ROLES = {
       nemt: "nemt_supervisor",
@@ -1446,6 +1539,28 @@
       btn.classList.toggle("active", visible);
       btn.setAttribute("aria-pressed", String(visible));
       btn.textContent = visible ? "Audit Trail" : "Audit Trail (off)";
+    }
+
+    function setFeedStripVisible(stripId, visible) {
+      stripVisibility[stripId] = visible;
+      const strip = document.getElementById(stripId);
+      if (strip) strip.classList.toggle("collapsed", !visible);
+      const cfg = STRIP_TOGGLES.find((s) => s.stripId === stripId);
+      if (!cfg) return;
+      const btn = document.getElementById(cfg.btnId);
+      if (!btn) return;
+      btn.classList.toggle("active", visible);
+      btn.setAttribute("aria-pressed", String(visible));
+      btn.textContent = visible ? cfg.label : `${cfg.label} (off)`;
+    }
+
+    function initFeedStripToggles() {
+      STRIP_TOGGLES.forEach((cfg) => {
+        setFeedStripVisible(cfg.stripId, cfg.defaultOn);
+        document.getElementById(cfg.btnId).addEventListener("click", () => {
+          setFeedStripVisible(cfg.stripId, !stripVisibility[cfg.stripId]);
+        });
+      });
     }
 
     function switchOpsTab(tab) {
@@ -2399,18 +2514,12 @@
         .replace(/week (\d)/i, "Week $1 ·")
         .replace(/day (\d)/i, "Day $1");
       renderScenario(data.scenario);
-      const demoPill = document.getElementById("demoPill");
       if (health.demoMode) {
-        demoPill.textContent = "Demo Mode";
-        demoPill.className = "pill ok";
+        llmProviderLabel = "Demo";
       } else if (health.llmKeyConfigured === false) {
         llmProviderLabel = formatLlmProvider(health.llmProvider);
-        demoPill.textContent = `LLM · ${llmProviderLabel} · no key`;
-        demoPill.className = "pill warn";
       } else {
         llmProviderLabel = formatLlmProvider(health.llmProvider);
-        demoPill.textContent = `LLM · ${llmProviderLabel}`;
-        demoPill.className = "pill aqua";
       }
       renderModules(data.modules);
     }
@@ -2497,6 +2606,7 @@
     });
 
     initMapZoom();
+    initFeedStripToggles();
 
     (async () => {
       try {
