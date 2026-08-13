@@ -40,14 +40,14 @@
       "status": "pending_nemt_accept",
       "origin": "Princess Margaret Hospital",
       "originFacilityId": "FAC-01",
-      "destination": "Princess Margaret Hospital",
-      "destinationFacilityId": "FAC-01",
+      "destination": "Carmichael Rd",
+      "destinationFacilityId": null,
       "patientClass": "return_transfer",
       "priority": "P1",
       "linkedTripId": "T-1003",
       "emsRunId": "EMS-9918",
       "scheduledAt": "2026-08-04T10:00:00",
-      "notes": "Return leg oncology — corridor CORR-02 restricted"
+      "notes": "Return leg oncology — PMH discharge to residence · corridor CORR-02 restricted"
     }
   ]
 }

@@ -294,14 +294,20 @@
 
     .transport-desk-strip {
       display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      background: rgba(167, 139, 250, 0.06);
+      border-bottom: 1px solid rgba(167, 139, 250, 0.18);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .transport-desk-main {
+      display: flex;
       align-items: center;
       gap: 0.65rem;
       padding: 0.4rem 1.5rem;
-      background: rgba(167, 139, 250, 0.06);
-      border-bottom: 1px solid rgba(167, 139, 250, 0.18);
       flex-wrap: wrap;
-      font-size: 0.68rem;
-      color: var(--muted);
     }
     .transport-desk-tag {
       font-size: 0.62rem;
@@ -335,6 +341,58 @@
     }
     .desk-chip.action:hover { background: rgba(167, 139, 250, 0.18); }
     .desk-chip.action:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .handoff-queue-panel {
+      border-top: 1px solid rgba(167, 139, 250, 0.18);
+      background: rgba(14, 20, 25, 0.55);
+      padding: 0.45rem 1.5rem 0.55rem;
+    }
+    .handoff-queue-panel.collapsed { display: none; }
+    .handoff-queue-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0;
+    }
+    .handoff-queue-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      line-height: 1.35;
+    }
+    .handoff-queue-id {
+      font-family: monospace;
+      font-size: 0.62rem;
+      color: var(--purple);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .handoff-queue-route {
+      flex: 1;
+      min-width: 180px;
+      color: #ddd6fe;
+      font-size: 0.64rem;
+    }
+    .handoff-queue-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      width: 100%;
+      margin-top: 0.1rem;
+    }
+    .handoff-queue-note {
+      width: 100%;
+      font-size: 0.6rem;
+      color: var(--muted);
+      font-style: italic;
+    }
 
     .eoc-strip {
       display: flex;
@@ -1010,11 +1068,19 @@
   </div>
 
   <div class="transport-desk-strip feed-strip" id="transportDeskStrip">
-    <span class="strip-lead-tag transport-desk-tag">Transport desk · write-back pilot</span>
-    <span class="transport-desk-text" id="transportDeskText">Loading hospital bed pressure + EMS→NEMT handoff queue…</span>
-    <span class="desk-chip" id="transportDeskAssigned" title="Handoffs NEMT dispatch has accepted into their system">— assigned</span>
-    <span class="desk-chip" id="transportDeskPending" title="Handoffs awaiting NEMT dispatch accept — separate from COMMS-03 approval">— awaiting accept</span>
-    <button type="button" class="desk-chip action" id="demoHandoffAccept" title="Simulate NEMT dispatch accept for the next pending handoff (not Triple HITL)">Accept next handoff</button>
+    <div class="transport-desk-main">
+      <span class="strip-lead-tag transport-desk-tag">Transport desk · write-back pilot</span>
+      <span class="transport-desk-text" id="transportDeskText">Loading hospital bed pressure + EMS→NEMT handoff queue…</span>
+      <span class="desk-chip" id="transportDeskAssigned" title="Handoffs NEMT dispatch has accepted into their system">— assigned</span>
+      <span class="desk-chip" id="transportDeskPending" title="Handoffs awaiting NEMT dispatch accept — separate from COMMS-03 approval">— awaiting accept</span>
+      <button type="button" class="desk-chip action" id="toggleHandoffQueue" aria-expanded="false" title="Expand EMS→NEMT handoff queue">Handoff queue ▾</button>
+      <button type="button" class="desk-chip action" id="demoHandoffAccept" title="Simulate NEMT dispatch accept for the next pending handoff (not Triple HITL)">Accept next handoff</button>
+    </div>
+    <div class="handoff-queue-panel collapsed" id="handoffQueuePanel">
+      <ul class="handoff-queue-list" id="handoffQueueList">
+        <li class="handoff-queue-item">Loading handoff queue…</li>
+      </ul>
+    </div>
   </div>
 
   <div class="signal-feed-strip feed-strip collapsed" id="signalFeedStrip">
@@ -2266,8 +2332,66 @@
     }
 
     let nextHandoffAccept = null;
+    let handoffQueueExpanded = false;
+    let handoffQueueCount = 0;
 
-    function renderTransportDesk(summary) {
+    function handoffStatusLabel(status) {
+      if (status === "nemt_assigned") return { text: "Dispatch accepted", cls: "ok" };
+      if (status === "pending_nemt_accept") return { text: "Awaiting dispatch accept", cls: "warn" };
+      if (status === "pending_ems_release") return { text: "Awaiting EMS release", cls: "warn" };
+      return { text: status || "unknown", cls: "" };
+    }
+
+    function renderHandoffQueue(queue = []) {
+      const listEl = document.getElementById("handoffQueueList");
+      const toggleBtn = document.getElementById("toggleHandoffQueue");
+      handoffQueueCount = queue.length;
+      toggleBtn.textContent = handoffQueueExpanded
+        ? `Handoff queue (${handoffQueueCount}) ▴`
+        : `Handoff queue (${handoffQueueCount}) ▾`;
+
+      if (!handoffQueueCount) {
+        listEl.innerHTML = `<li class="handoff-queue-item"><span class="handoff-queue-route">No handoffs in queue.</span></li>`;
+        return;
+      }
+
+      const sorted = [...queue].sort((a, b) => {
+        const rank = (s) => (s === "nemt_assigned" ? 1 : 0);
+        return rank(a.status) - rank(b.status) || String(a.handoffId).localeCompare(String(b.handoffId));
+      });
+
+      listEl.innerHTML = sorted.map((h) => {
+        const st = handoffStatusLabel(h.status);
+        const route = `${h.origin || "—"} → ${h.destination || "—"}`;
+        const meta = [
+          h.priority ? `<span class="desk-chip">${h.priority}</span>` : "",
+          h.linkedTripId ? `<span class="desk-chip">trip ${h.linkedTripId}</span>` : "",
+          h.emsRunId ? `<span class="desk-chip">EMS ${h.emsRunId}</span>` : "",
+          h.nemtRunId ? `<span class="desk-chip ok">NEMT ${h.nemtRunId}</span>` : "",
+          h.patientClass ? `<span class="desk-chip">${h.patientClass.replace(/_/g, " ")}</span>` : "",
+        ].filter(Boolean).join("");
+        const note = h.notes ? `<div class="handoff-queue-note">${h.notes}</div>` : "";
+        return `
+          <li class="handoff-queue-item">
+            <span class="handoff-queue-id">${h.handoffId}</span>
+            <span class="desk-chip ${st.cls}">${st.text}</span>
+            <span class="handoff-queue-route">${route}</span>
+            <div class="handoff-queue-meta">${meta}${note}</div>
+          </li>`;
+      }).join("");
+    }
+
+    function setHandoffQueueExpanded(expanded) {
+      handoffQueueExpanded = expanded;
+      document.getElementById("handoffQueuePanel").classList.toggle("collapsed", !expanded);
+      const btn = document.getElementById("toggleHandoffQueue");
+      btn.setAttribute("aria-expanded", String(expanded));
+      btn.textContent = expanded
+        ? `Handoff queue (${handoffQueueCount}) ▴`
+        : `Handoff queue (${handoffQueueCount}) ▾`;
+    }
+
+    function renderTransportDesk(summary, queueRes) {
       if (!summary?.ok) return;
       const parts = (summary.bedPressureSummary || []).map((h) => {
         const cls = h.bedPressureLevel === "high" ? "danger" : h.bedPressureLevel === "elevated" ? "warn" : "";
@@ -2315,6 +2439,10 @@
           demoBtn.title = "No handoffs awaiting NEMT dispatch accept";
         }
       }
+
+      if (queueRes?.queue) {
+        renderHandoffQueue(queueRes.queue);
+      }
     }
 
     async function demoAcceptHandoff() {
@@ -2359,10 +2487,14 @@
     }
 
     async function loadTransportDesk(level = 2) {
-      const res = await fetch(`/api/transport-desk/summary?level=${level}`);
-      const data = await res.json();
-      renderTransportDesk(data);
-      return data;
+      const [summaryRes, queueRes] = await Promise.all([
+        fetch(`/api/transport-desk/summary?level=${level}`),
+        fetch("/api/transport-desk/handoff-queue"),
+      ]);
+      const data = await summaryRes.json();
+      const queue = await queueRes.json();
+      renderTransportDesk(data, queue);
+      return { summary: data, queue };
     }
 
     function renderPublicSafety(summary, crossRef) {
@@ -2586,6 +2718,9 @@
     document.getElementById("runAction").addEventListener("click", runAction);
     document.getElementById("toggleAuditTrail").addEventListener("click", () => {
       setAuditTrailVisible(!auditTrailVisible);
+    });
+    document.getElementById("toggleHandoffQueue").addEventListener("click", () => {
+      setHandoffQueueExpanded(!handoffQueueExpanded);
     });
     document.getElementById("refreshSignals").addEventListener("click", async () => {
       await loadSignals(true);
