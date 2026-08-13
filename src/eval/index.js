@@ -7,6 +7,7 @@ import { runActionPack } from "../agents/action/pack.js";
 import { runPipeline } from "../orchestrator/index.js";
 import { resetHitl } from "../hitl/index.js";
 import { summarizeDispatch } from "../dispatch/index.js";
+import { clearSignalCache, setEvalSignalMode } from "../signals/index.js";
 
 const evalRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/eval");
 const scenariosPath = path.join(evalRoot, "scenarios.json");
@@ -234,6 +235,9 @@ export async function runEvalSuite({ ids, skipLlm } = {}) {
     process.env.DEMO_MODE = "true";
   }
 
+  setEvalSignalMode(true);
+  clearSignalCache();
+
   const scenarios = loadScenarios().filter((s) => !ids?.length || ids.includes(s.id));
   const startedAt = new Date().toISOString();
   const t0 = Date.now();
@@ -257,6 +261,9 @@ export async function runEvalSuite({ ids, skipLlm } = {}) {
     demoMode: process.env.DEMO_MODE !== "false",
     results,
   };
+
+  setEvalSignalMode(false);
+  clearSignalCache();
 
   return lastRun;
 }

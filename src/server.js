@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { config } from "./config.js";
+import { prefetchLiveWeather, clearSignalCache, fetchSignals } from "./signals/index.js";
 import { getLlmConfig } from "./agents/runtime/llm.js";
 import { SCENARIO, scenarioStripText } from "./scenario/index.js";
 import agentsRouter from "./routes/agents.js";
@@ -168,4 +169,19 @@ app.listen(config.port, "0.0.0.0", () => {
   console.log(
     `Climate & Crisis Ops Command listening on http://127.0.0.1:${config.port} (demoMode=${config.demoMode})`
   );
+  if (process.env.NHC_FEED_URL?.trim() && process.env.NHC_LIVE !== "false") {
+    console.log("[nhc] prefetching live Atlantic outlook on startup…");
+    prefetchLiveWeather()
+      .then(async (r) => {
+        if (r.ok) {
+          console.log(`[nhc] ready — ${r.stale ? "stale cache" : "live"} · ${r.event} · ${r.issuedAt}`);
+          clearSignalCache();
+          await fetchSignals({ refresh: true });
+          console.log("[nhc] signal cache warmed for UI");
+        } else {
+          console.warn("[nhc] prefetch failed — will retry on each /api/signals request");
+        }
+      })
+      .catch((err) => console.warn("[nhc] prefetch error:", err.message));
+  }
 });

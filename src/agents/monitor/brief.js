@@ -138,6 +138,26 @@ function buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLay
   const atRisk = dispatch.atRiskTrips ?? dispatch.p1Trips ?? 0;
   const corridors = (dispatch.corridors || []).join(", ");
   const geo = signal.serviceArea || "service area";
+
+  if (signal.liveWeather) {
+    const outlook =
+      signal.outlookExcerpt ||
+      (signal.weatherSummary ? signal.weatherSummary.slice(0, 360) : signal.event);
+    let deskHint = "";
+    if (transportDesk?.pendingHandoffs) {
+      deskHint += ` ${transportDesk.pendingHandoffs} EMS→NEMT handoff(s) awaiting dispatch accept.`;
+    }
+    if (dispatch?.enriched && dispatch.cadLinkedAtRisk != null) {
+      deskHint += ` Live CAD: ${dispatch.cadLinkedAtRisk}/${atRisk} at-risk trips with run status.`;
+    }
+    return (
+      `NHC live outlook drives Level ${signal.level} ${signal.label} (${signal.escalationRationale || "Atlantic basin activity"}). ` +
+      `${outlook} ` +
+      `${atRisk} of ${dispatch.totalTrips} NEMT trips at risk under current corridor rules; ` +
+      `corridors: ${corridors || "none restricted"}.${deskHint}`
+    );
+  }
+
   let deskHint = "";
   if (transportDesk?.highPressureHospitals?.length) {
     const names = transportDesk.highPressureHospitals.map((h) => `${h.name} ${h.bedPressurePct}%`).join(", ");
@@ -227,13 +247,16 @@ function computeConfidence(signal) {
   const basis = [];
   let score = 0.65;
 
-  if (signal.mode?.includes("demo")) {
+  if (signal.liveWeather && signal.escalationSource === "nhc_live") {
+    basis.push("live NHC outlook drives escalation level");
+    score = 0.82;
+  } else if (signal.mode?.includes("demo")) {
     basis.push("demo signal feed");
     score = 0.72;
   }
   if (signal.liveWeather) {
-    basis.push("live weather overlay");
-    score += 0.08;
+    basis.push("NHC RSS feed active");
+    score += 0.06;
   }
   if ((signal.institutionalCount || 0) >= 2) {
     basis.push("multiple institutional sources");

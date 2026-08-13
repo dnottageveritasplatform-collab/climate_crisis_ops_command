@@ -5,7 +5,7 @@ import { fetchLiveWeather } from "./adapters/weather.js";
 import { fetchLiveInstitutionalFeed, loadInstitutionalFeedFile } from "./adapters/institutional.js";
 
 export const MULTI_FEED_SCOPE_GUARD =
-  "Multi-feed signal ingest — weather + institutional overlays; escalation level stays on demo SOP thresholds.";
+  "Multi-feed signal ingest — live NHC drives escalation level when enabled; institutional overlays add corridor context.";
 
 let cachedInstitutional = null;
 let webhookInstitutional = null;
@@ -104,9 +104,9 @@ function extractCorridors(text = "") {
 }
 
 function buildSourceList({ liveInstitutional, overlay, demoCount }) {
-  const sources = [{ id: "demo_weather", label: "Demo weather (SOP thresholds)", active: true }];
+  const sources = [{ id: "demo_weather", label: "Demo weather fallback", active: !process.env.NHC_FEED_URL }];
   if (process.env.NHC_FEED_URL) {
-    sources.push({ id: "nhc_live", label: "NHC live RSS overlay", active: true, url: process.env.NHC_FEED_URL });
+    sources.unshift({ id: "nhc_live", label: "NHC live RSS (escalation driver)", active: true, url: process.env.NHC_FEED_URL });
   }
   if (liveInstitutional) {
     sources.push({

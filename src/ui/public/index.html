@@ -168,7 +168,7 @@
     }
 
     .alert-strip {
-      display: flex; align-items: center; gap: 1rem;
+      display: flex; align-items: flex-start; gap: 1rem;
       padding: 0.65rem 1.5rem;
       background: linear-gradient(90deg, rgba(255,179,71,.12), rgba(255,107,107,.08));
       border-bottom: 1px solid rgba(255,179,71,.25);
@@ -185,9 +185,32 @@
       border: 1px solid rgba(255,199,44,.4);
       white-space: nowrap;
     }
-    .alert-text { font-size: 0.82rem; flex: 1; min-width: 200px; }
-    .alert-text strong { color: var(--text); }
-    .alert-meta { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+    .alert-text { font-size: 0.82rem; flex: 1 1 100%; width: 100%; min-width: 0; line-height: 1.5; order: 10; }
+    .alert-text strong { color: var(--text); display: block; margin-bottom: 0.25rem; }
+    .alert-outlook {
+      display: block;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow: visible;
+    }
+    .alert-outlook-toggle {
+      display: inline;
+      margin-left: 0.35rem;
+      padding: 0;
+      border: none;
+      background: none;
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      font-family: inherit;
+    }
+    .alert-outlook-toggle:hover { color: #ffe08a; }
+    .alert-feed-meta { display: block; font-size: 0.68rem; color: var(--muted); line-height: 1.35; }
+    .alert-meta { font-size: 0.68rem; color: var(--muted); white-space: nowrap; align-self: flex-start; padding-top: 0.15rem; margin-left: auto; order: 5; }
 
     .signal-feed-strip {
       display: flex;
@@ -487,13 +510,13 @@
     .workspace {
       display: grid;
       grid-template-columns: 280px 1fr 360px;
-      grid-template-rows: var(--command-row-height) auto auto;
+      grid-template-rows: var(--command-row-height) auto;
       gap: 0;
       flex: 0 0 auto;
       height: auto;
     }
     .workspace.audit-hidden {
-      grid-template-rows: var(--command-row-height) auto;
+      grid-template-rows: var(--command-row-height);
     }
     .workspace > .panel {
       max-height: var(--command-row-height);
@@ -523,39 +546,19 @@
       color: var(--gold);
     }
     .panel-head span { font-size: 0.65rem; color: var(--muted); }
+    .panel-head.hitl-panel-head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.35rem;
+    }
+    .panel-head.hitl-panel-head #hitlMeta {
+      line-height: 1.35;
+      word-break: break-word;
+      max-width: 100%;
+    }
     .panel-body { padding: 0.85rem 1rem; overflow-y: auto; flex: 1; }
 
-    .timeline { list-style: none; }
-    .timeline li {
-      position: relative;
-      padding-left: 1.1rem;
-      padding-bottom: 0.85rem;
-      border-left: 2px solid var(--border);
-      margin-left: 0.35rem;
-    }
-    .timeline li:last-child { border-left-color: transparent; padding-bottom: 0; }
-    .timeline li::before {
-      content: "";
-      position: absolute; left: -5px; top: 4px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--border);
-    }
-    .timeline li.start::before { background: var(--aqua); box-shadow: 0 0 8px rgba(0,171,201,.5); }
-    .timeline li.tool::before { background: var(--purple); }
-    .timeline li.done::before { background: var(--ok); }
-    .timeline li.empty::before { background: var(--muted); }
-    .tl-time { font-size: 0.62rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-    .tl-event { font-size: 0.78rem; font-weight: 600; margin: 0.15rem 0; }
-    .tl-detail {
-      font-size: 0.68rem; color: var(--muted);
-      font-family: "Cascadia Code", "Consolas", monospace;
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 0.35rem 0.5rem;
-      margin-top: 0.3rem;
-    }
-    .tl-detail em { color: var(--aqua); font-style: normal; }
+    .hitl-panel-body { padding: 0.65rem 0.75rem; }
 
     .map-wrap {
       position: relative;
@@ -918,43 +921,9 @@
     .stat b { display: block; font-size: 1.25rem; color: var(--aqua); }
     .stat span { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; }
 
-    .status-bar {
-      grid-column: 1 / -1;
-      border-top: 1px solid var(--border);
-      background: var(--panel);
-      padding: 0.65rem 1.5rem;
-      display: grid;
-      grid-template-columns: 1fr minmax(520px, 580px);
-      gap: 1.5rem;
-      align-items: start;
-    }
-    .modules { display: flex; flex-wrap: wrap; gap: 0.45rem; }
-    .mod {
-      font-size: 0.62rem;
-      padding: 0.3rem 0.55rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-    }
-    .mod .name { color: var(--muted); margin-right: 0.35rem; }
-    .mod .val { font-weight: 700; }
-    .mod.ready .val { color: var(--ok); }
-    .mod.pending .val { color: var(--muted); }
-    .mod.stub .val { color: var(--warn); }
 
-    .hitl-panel {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.65rem 0.85rem;
-      background: rgba(255,255,255,.02);
-    }
-    .hitl-panel h3 {
-      font-size: 0.62rem; text-transform: uppercase;
-      letter-spacing: 0.07em; color: var(--gold);
-      margin-bottom: 0.5rem;
-    }
-    .hitl-roles { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .hitl-roles .role { min-width: 0; flex: 1 1 150px; }
+    .hitl-roles { display: flex; flex-direction: column; gap: 0.5rem; }
+    .hitl-roles .role { min-width: 0; flex: 0 0 auto; }
     .role {
       flex: 1; font-size: 0.65rem;
       padding: 0.55rem;
@@ -1051,9 +1020,8 @@
     .hitl-modal-actions button:hover { filter: brightness(1.08); }
 
     @media (max-width: 1100px) {
-      .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; height: auto; }
+      .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto; height: auto; }
       .panel { border-right: none; border-bottom: 1px solid var(--border); }
-      .status-bar { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1170,17 +1138,69 @@
   <div class="workspace audit-hidden" id="workspace">
 
     <aside class="panel">
-      <div class="panel-head">
-        <h2>Agent Timeline</h2>
-        <span id="timelineMeta">Monitor · Triage · Action</span>
+      <div class="panel-head hitl-panel-head">
+        <h2 id="hitlPanelTitle">Extended HITL · Multi-agency approval gate</h2>
+        <span id="hitlMeta">5 roles · COMMS-03</span>
       </div>
-      <div class="panel-body">
-        <ul class="timeline" id="timeline">
-          <li class="empty">
-            <div class="tl-event">No agent runs yet</div>
-            <div class="tl-detail">Click <em>Run Monitor</em> to start</div>
-          </li>
-        </ul>
+      <div class="panel-body hitl-panel-body">
+        <div class="hitl-roles">
+          <div class="role" id="roleNemt">
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🚌</span><strong>NEMT Supervisor</strong></div>
+              <span class="role-sub">Maria Clarke · Nassau Metro NEMT</span>
+            </div>
+            <span class="role-status idle" id="hitlNemt">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnNemtReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnNemtApprove" disabled>Approve</button>
+            </div>
+          </div>
+          <div class="role" id="rolePmh">
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🏥</span><strong>PMH Liaison</strong></div>
+              <span class="role-sub">James Rolle · Princess Margaret (public)</span>
+            </div>
+            <span class="role-status idle" id="hitlPmh">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnPmhReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnPmhApprove" disabled>Approve</button>
+            </div>
+          </div>
+          <div class="role" id="roleDoctors">
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🏨</span><strong>Doctor's Liaison</strong></div>
+              <span class="role-sub">Dr. Elaine Moss · Doctor's Hospital (private)</span>
+            </div>
+            <span class="role-status idle" id="hitlDoctors">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnDoctorsReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnDoctorsApprove" disabled>Approve</button>
+            </div>
+          </div>
+          <div class="role" id="roleShelter">
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🏠</span><strong>Shelter Coordinator</strong></div>
+              <span class="role-sub">Keisha Bain · National Gymnasium</span>
+            </div>
+            <span class="role-status idle" id="hitlShelter">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnShelterReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnShelterApprove" disabled>Approve</button>
+            </div>
+          </div>
+          <div class="role" id="roleFleet">
+            <div class="role-head">
+              <div class="role-head-row"><span class="icon">🚐</span><strong>Fleet Logistics</strong></div>
+              <span class="role-sub">Marcus Edgecombe · Evacuation assets</span>
+            </div>
+            <span class="role-status idle" id="hitlFleet">Awaiting action pack</span>
+            <div class="role-actions">
+              <button type="button" id="btnFleetReview" disabled>Review</button>
+              <button type="button" class="approve-btn" id="btnFleetApprove" disabled>Approve</button>
+            </div>
+          </div>
+        </div>
+        <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Extended approval complete — demo send blocked</div>
       </div>
     </aside>
 
@@ -1247,73 +1267,6 @@
       </div>
     </aside>
 
-    <footer class="status-bar">
-      <div>
-        <p class="section-label" style="margin-top:0;margin-bottom:0.45rem">Module status</p>
-        <div class="modules" id="modules"></div>
-      </div>
-      <div class="hitl-panel">
-        <h3 id="hitlPanelTitle">Extended HITL · Multi-agency approval gate</h3>
-        <div class="hitl-roles">
-          <div class="role" id="roleNemt">
-            <div class="role-head">
-              <div class="role-head-row"><span class="icon">🚌</span><strong>NEMT Supervisor</strong></div>
-              <span class="role-sub">Maria Clarke · Nassau Metro NEMT</span>
-            </div>
-            <span class="role-status idle" id="hitlNemt">Awaiting action pack</span>
-            <div class="role-actions">
-              <button type="button" id="btnNemtReview" disabled>Review</button>
-              <button type="button" class="approve-btn" id="btnNemtApprove" disabled>Approve</button>
-            </div>
-          </div>
-          <div class="role" id="rolePmh">
-            <div class="role-head">
-              <div class="role-head-row"><span class="icon">🏥</span><strong>PMH Liaison</strong></div>
-              <span class="role-sub">James Rolle · Princess Margaret (public)</span>
-            </div>
-            <span class="role-status idle" id="hitlPmh">Awaiting action pack</span>
-            <div class="role-actions">
-              <button type="button" id="btnPmhReview" disabled>Review</button>
-              <button type="button" class="approve-btn" id="btnPmhApprove" disabled>Approve</button>
-            </div>
-          </div>
-          <div class="role" id="roleDoctors">
-            <div class="role-head">
-              <div class="role-head-row"><span class="icon">🏨</span><strong>Doctor's Liaison</strong></div>
-              <span class="role-sub">Dr. Elaine Moss · Doctor's Hospital (private)</span>
-            </div>
-            <span class="role-status idle" id="hitlDoctors">Awaiting action pack</span>
-            <div class="role-actions">
-              <button type="button" id="btnDoctorsReview" disabled>Review</button>
-              <button type="button" class="approve-btn" id="btnDoctorsApprove" disabled>Approve</button>
-            </div>
-          </div>
-          <div class="role" id="roleShelter">
-            <div class="role-head">
-              <div class="role-head-row"><span class="icon">🏠</span><strong>Shelter Coordinator</strong></div>
-              <span class="role-sub">Keisha Bain · National Gymnasium</span>
-            </div>
-            <span class="role-status idle" id="hitlShelter">Awaiting action pack</span>
-            <div class="role-actions">
-              <button type="button" id="btnShelterReview" disabled>Review</button>
-              <button type="button" class="approve-btn" id="btnShelterApprove" disabled>Approve</button>
-            </div>
-          </div>
-          <div class="role" id="roleFleet">
-            <div class="role-head">
-              <div class="role-head-row"><span class="icon">🚐</span><strong>Fleet Logistics</strong></div>
-              <span class="role-sub">Marcus Edgecombe · Evacuation assets</span>
-            </div>
-            <span class="role-status idle" id="hitlFleet">Awaiting action pack</span>
-            <div class="role-actions">
-              <button type="button" id="btnFleetReview" disabled>Review</button>
-              <button type="button" class="approve-btn" id="btnFleetApprove" disabled>Approve</button>
-            </div>
-          </div>
-        </div>
-        <div class="hitl-released-banner" id="hitlReleasedBanner" hidden>✓ Extended approval complete — demo send blocked</div>
-      </div>
-    </footer>
     <div class="audit-strip collapsed" id="auditStrip">
       <div class="audit-head">
         <strong>Audit Trail</strong>
@@ -1679,6 +1632,36 @@
       });
     }
 
+    const opsTabModes = { monitor: null, triage: null, action: null };
+
+    function isDemoAgentMode(mode) {
+      return !mode || mode === "demo";
+    }
+
+    function opsTabLabel(name, mode) {
+      return isDemoAgentMode(mode) ? `${name} (DEMO)` : name;
+    }
+
+    function updateOpsTabLabels() {
+      document.getElementById("tabMonitor").textContent = opsTabLabel("Monitor", opsTabModes.monitor);
+      document.getElementById("tabTriage").textContent = opsTabLabel("Triage", opsTabModes.triage);
+      document.getElementById("tabAction").textContent = opsTabLabel("Action", opsTabModes.action);
+    }
+
+    function setOpsTabMode(tab, mode) {
+      opsTabModes[tab] = mode;
+      updateOpsTabLabels();
+    }
+
+    function setOpsTabModesFromHealth(health) {
+      const demo = health.demoMode || health.llmKeyConfigured === false;
+      if (!demo) return;
+      opsTabModes.monitor = "demo";
+      opsTabModes.triage = "demo";
+      opsTabModes.action = "demo";
+      updateOpsTabLabels();
+    }
+
     function renderMap(layers, ranks = tripRanks) {
       mapLoadGen++;
       paintMap(layers, ranks);
@@ -1884,6 +1867,48 @@
       return data;
     }
 
+    const OUTLOOK_PREVIEW_LEN = 320;
+    let alertOutlookExpanded = false;
+    let alertOutlookFull = "";
+
+    function truncateOutlook(text, maxLen = OUTLOOK_PREVIEW_LEN) {
+      if (!text || text.length <= maxLen) return { preview: text, truncated: false };
+      const slice = text.slice(0, maxLen);
+      const lastSpace = slice.lastIndexOf(" ");
+      const preview = `${(lastSpace > maxLen * 0.55 ? slice.slice(0, lastSpace) : slice).trim()}…`;
+      return { preview, truncated: true };
+    }
+
+    function cleanNhcOutlook(summary) {
+      if (!summary) return "";
+      let text = summary.replace(/\s+/g, " ").trim();
+      text = text.replace(/^\d+\s+[A-Z]{4}\d+\s+[A-Z]{4}\s+\d+\s+TWOAT\s+/i, "");
+      text = text.replace(
+        /Tropical Weather Outlook NWS National Hurricane Center Miami FL [^.]+\.\s*/i,
+        ""
+      );
+      text = text.replace(/^For the North Atlantic[^:]*:\s*/i, "");
+      const activeIdx = text.search(/Active Systems:/i);
+      if (activeIdx >= 0) {
+        text = text.slice(activeIdx).replace(/^Active Systems:\s*/i, "Active systems — ");
+      }
+      return text.replace(/\$\$.*$/, "").trim();
+    }
+
+    function outlookPreviewHtml(fullText) {
+      if (fullText !== alertOutlookFull) {
+        alertOutlookFull = fullText;
+        alertOutlookExpanded = false;
+      }
+      const { preview, truncated } = truncateOutlook(fullText);
+      const showFull = alertOutlookExpanded || !truncated;
+      const body = showFull ? fullText : preview;
+      const toggle = truncated
+        ? `<button type="button" class="alert-outlook-toggle" id="toggleAlertOutlook" aria-expanded="${alertOutlookExpanded}">${alertOutlookExpanded ? "See less" : "See more"}</button>`
+        : "";
+      return `<span class="alert-outlook-body" id="alertOutlookBody">${body}</span>${toggle}`;
+    }
+
     function renderAlert(signals, { skipMap = false } = {}) {
       const strip = document.getElementById("alertStrip");
       const level = document.getElementById("alertLevel");
@@ -1898,135 +1923,50 @@
       }
 
       strip.classList.remove("idle");
-      level.textContent = `LEVEL ${signals.level} · ${signals.label.toUpperCase()}`;
-      const summary = signals.weather?.summary || "";
+      const isLive = signals.liveWeather;
+      const isStale = signals.weather?.nhcStale || signals.mode === "live_weather_stale";
+      const isDemoFallback = signals.nhcFetchFailed || signals.weather?.nhcFetchFailed;
+      level.textContent = isLive
+        ? `LEVEL ${signals.level} · ${signals.label.toUpperCase()} · ${isStale ? "NHC CACHED" : "NHC LIVE"}`
+        : isDemoFallback
+          ? `LEVEL ${signals.level} · ${signals.label.toUpperCase()} · DEMO FALLBACK`
+          : `LEVEL ${signals.level} · ${signals.label.toUpperCase()} · DEMO`;
+      const excerpt = isLive && signals.weather?.summary
+        ? cleanNhcOutlook(signals.weather.summary)
+        : signals.weather?.outlookExcerpt || signals.weather?.summary || signals.event || "";
       const instCount = signals.institutional?.length || 0;
       const feedCount = signals.multiFeed?.feedSourceCount || 0;
       const linked = signals.multiFeed?.corridorLinkedSignalCount ?? 0;
-      const liveHint = signals.liveWeather ? " · NHC live overlay" : "";
-      const instHint = instCount
-        ? ` · ${feedCount} feed source(s) · OCHA + GFDRR + Red Cross demo`
-        : "";
-      text.innerHTML = `<strong>${signals.event}</strong> · ${summary.split(".")[0] || signals.serviceArea}${liveHint}${instHint} · ${instCount} institutional signal${instCount === 1 ? "" : "s"}${linked ? ` · <em>${linked} corridor-linked</em>` : ""}`;
-      meta.textContent = fmtIssued(signals.weather?.issuedAt || signals.fetchedAt);
+      const levelHint =
+        isLive && signals.weather?.escalationRationale
+          ? `<span title="${signals.weather.escalationRationale.replace(/"/g, "&quot;")}">Level derived from NHC outlook</span>`
+          : isDemoFallback
+            ? `<strong style="color:#f87171">NHC unreachable — Alma is fictional demo data</strong>`
+            : !isLive
+              ? "Demo scenario"
+              : "";
+      const instHint = instCount ? `${feedCount} feed source(s) · OCHA + GFDRR demo` : "";
+      const metaParts = [
+        levelHint,
+        instHint,
+        instCount ? `${instCount} institutional signal${instCount === 1 ? "" : "s"}` : "",
+        linked ? `${linked} corridor-linked` : "",
+      ].filter(Boolean);
+      text.innerHTML = `
+        <strong>${signals.event}</strong>
+        <span class="alert-outlook">${outlookPreviewHtml(excerpt)}</span>
+        <span class="alert-feed-meta">${metaParts.join(" · ")}</span>`;
+      meta.textContent = fmtIssued(
+        signals.liveWeather
+          ? signals.weather?.issuedAt || signals.fetchedAt
+          : signals.fetchedAt || signals.weather?.issuedAt
+      );
       if (!skipMap) loadMap(signals.level ?? 2);
     }
 
-    function renderModules(modules) {
-      const el = document.getElementById("modules");
-      el.innerHTML = "";
-      for (const [name, status] of Object.entries(modules)) {
-        const mod = document.createElement("span");
-        const cls = status.includes("ready") || status.includes("OK") || status.includes("logging") || status.includes("role_ready") || status.includes("overlay") || status.includes("readonly")
-          ? "ready"
-          : status.includes("shell") || status.includes("ingest") || status.includes("spike")
-            ? "stub"
-            : status.includes("layers") || status.includes("manifest") || status.includes("rag") || status.includes("map")
-              ? "ready"
-              : "pending";
-        mod.className = `mod ${cls}`;
-        mod.innerHTML = `<span class="name">${name}</span><span class="val">${status}</span>`;
-        el.appendChild(mod);
-      }
-    }
-
-    function toolDetail(entry) {
-      if (entry.tool === "get_signal_status" && entry.result) {
-        const r = entry.result;
-        return `level: <em>${r.level}</em> · label: ${r.label} · signals: ${r.institutionalCount || 0} · feeds: ${r.feedSourceCount || 0}`;
-      }
-      if (entry.tool === "get_multi_feed_status" && entry.result) {
-        const r = entry.result;
-        return `institutional: ${r.institutionalCount} · sources: ${r.feedSourceCount} · corridor-linked: ${r.corridorLinkedSignalCount}`;
-      }
-      if (entry.tool === "get_sop_corpus_status" && entry.result) {
-        const r = entry.result;
-        return `files: ${r.fileCount} · mode: ${r.searchMode} · scenario-matched: ${r.scenarioMatchedSops}`;
-      }
-      if (entry.tool === "get_routing_preview_status" && entry.result) {
-        const r = entry.result;
-        return `rules: ${r.alternateRuleCount} · trip advisories: ${r.tripAdvisoryCount} · restricted corridors: ${r.restrictedCorridorCount}`;
-      }
-      if (entry.tool === "get_flood_hazard_status" && entry.result) {
-        const r = entry.result;
-        return `zones: ${r.activeZoneCount} · corridor-linked: ${r.corridorLinkedZoneCount} · trip exposures: ${r.tripExposureCount}`;
-      }
-      if (entry.tool === "query_sop" && entry.result) {
-        const r = entry.result;
-        const n = r.citations?.length ?? r.matches?.length ?? 0;
-        return `query: <em>"${r.query}"</em> · ${n} citation${n === 1 ? "" : "s"}`;
-      }
-      if (entry.tool === "summarize_dispatch" && entry.result) {
-        const r = entry.result;
-        const atRisk = r.atRiskTrips ?? r.p1Trips;
-        const cadHint = r.enriched && r.cadLinkedAtRisk != null
-          ? ` · <em>${r.cadLinkedAtRisk}/${atRisk} CAD live</em>`
-          : "";
-        return `L${r.level} · ${r.totalTrips} trips · <em>${atRisk} at risk</em>${cadHint} · ${(r.corridors || []).join(", ")}`;
-      }
-      if (entry.tool === "get_cad_cross_ref" && entry.result) {
-        const r = entry.result;
-        return `L${r.level} · <em>${r.matchedCount}/${r.atRiskCount}</em> CAD cross-ref · ${r.matches?.slice(0, 2).map((m) => m.runId).join(", ") || "none"}`;
-      }
-      if (entry.tool === "get_transport_desk_status" && entry.result) {
-        const r = entry.result;
-        const pressure = r.highPressureHospitals?.map((h) => `${h.name.split(" ")[0]} ${h.bedPressurePct}%`).join(", ") || "—";
-        return `${r.pendingHandoffs} awaiting dispatch accept (read-only) · bed pressure: <em>${pressure}</em>`;
-      }
-      if (entry.tool === "get_public_safety_status" && entry.result) {
-        const r = entry.result;
-        const corridors = r.corridorAssignments?.map((u) => `${u.unitId}→${u.corridor}`).slice(0, 2).join(", ") || "none";
-        return `${r.fireCount} fire + ${r.policeCount} police · corridor units: <em>${corridors}</em> (read-only EOC)`;
-      }
-      if (entry.message) return entry.message;
-      if (entry.tool) return entry.tool;
-      return "";
-    }
-
-    function toolKey(entry) {
-      const q = entry.args?.query;
-      return q ? `${entry.tool}:${q}` : entry.tool;
-    }
-
-    function renderTimeline(logs) {
-      const ul = document.getElementById("timeline");
-      const resultsByKey = {};
-      for (const entry of logs) {
-        if (entry.event === "tool_result" && entry.tool) {
-          const key = toolKey(entry);
-          if (!resultsByKey[key]) resultsByKey[key] = [];
-          resultsByKey[key].push(entry.result);
-        }
-      }
-      const consumed = {};
-
-      const visible = logs.filter((e) => e.event !== "tool_result");
-      if (!visible.length) {
-        ul.innerHTML = `<li class="empty"><div class="tl-event">No agent runs yet</div><div class="tl-detail">Click <em>Run Pipeline</em> or <em>Monitor</em> to start</div></li>`;
-        return;
-      }
-
-      ul.innerHTML = visible.slice().reverse().map((entry) => {
-        const cls = entry.event === "agent_start" ? "start"
-          : entry.event === "agent_complete" ? "done"
-          : entry.event === "tool_call" ? "tool" : "";
-        const label = entry.event === "tool_call"
-          ? `tool_call → ${entry.tool}${entry.args?.query ? ` (${entry.args.query})` : ""}`
-          : entry.event;
-        let enriched = entry;
-        if (entry.event === "tool_call") {
-          const key = toolKey(entry);
-          consumed[key] = consumed[key] || 0;
-          const result = resultsByKey[key]?.[consumed[key]++];
-          enriched = { ...entry, result };
-        }
-        const detail = toolDetail(enriched);
-        return `<li class="${cls}">
-          <div class="tl-time">${fmtTime(entry.ts)}</div>
-          <div class="tl-event">${label}</div>
-          ${detail ? `<div class="tl-detail">${detail}</div>` : ""}
-        </li>`;
-      }).join("");
+    function setRunStatus(message) {
+      const el = document.getElementById("hitlMeta");
+      if (el) el.textContent = message || "5 roles · COMMS-03";
     }
 
     function formatCitation(c) {
@@ -2087,6 +2027,7 @@
 
       if (result.audit) renderAudit(result.audit);
 
+      setOpsTabMode("monitor", result.mode);
       switchOpsTab("monitor");
     }
 
@@ -2150,6 +2091,7 @@
         ${conflictsHtml || "<p class='brief-empty'>No conflicts</p>"}
       `;
 
+      setOpsTabMode("triage", result.mode);
       switchOpsTab("triage");
       document.getElementById("briefMode").textContent = `${result.mode || "demo"} mode · triage rank`;
       if (result.map) {
@@ -2203,6 +2145,7 @@
         ${smsHtml || "<p class='brief-empty'>No driver comms</p>"}
       `;
 
+      setOpsTabMode("action", result.mode);
       switchOpsTab("action");
       document.getElementById("briefMode").textContent = `${result.mode || "demo"} mode · action pack`;
       if (result.audit) renderAudit(result.audit);
@@ -2235,6 +2178,9 @@
         await loadSopCorpus(data.threshold ?? 2);
         await loadRoutingPreview(data.threshold ?? 2);
         await loadFloodHazard(data.threshold ?? 2);
+        setOpsTabMode("monitor", data.monitor?.mode);
+        setOpsTabMode("triage", data.triage?.mode);
+        setOpsTabMode("action", data.action?.mode);
         document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
         if (data.efficiency) {
           const e = data.efficiency;
@@ -2244,7 +2190,6 @@
         } else {
           setRunStatus("Pipeline complete");
         }
-        await loadLogs();
       } catch (err) {
         setRunStatus("Pipeline failed");
         alert(`Pipeline failed: ${err.message}`);
@@ -2266,7 +2211,6 @@
         renderAction(data);
         if (data.audit) renderAudit(data.audit);
         setRunStatus("Action complete");
-        await loadLogs();
       } catch (err) {
         setRunStatus("Action failed");
         alert(`Action failed: ${err.message}`);
@@ -2286,7 +2230,6 @@
         renderTriage(data);
         if (data.audit) renderAudit(data.audit);
         setRunStatus("Triage complete");
-        await loadLogs();
       } catch (err) {
         setRunStatus("Triage failed");
         alert(`Triage failed: ${err.message}`);
@@ -2744,11 +2687,7 @@
       } else {
         llmProviderLabel = formatLlmProvider(health.llmProvider);
       }
-      renderModules(data.modules);
-    }
-
-    function setRunStatus(message) {
-      document.getElementById("timelineMeta").textContent = message || "Monitor · Triage · Action";
+      setOpsTabModesFromHealth(health);
     }
 
     async function postAgent(url) {
@@ -2766,17 +2705,17 @@
     }
 
     async function loadSignals(refresh = false) {
+      const strip = document.getElementById("alertStrip");
+      const text = document.getElementById("alertText");
+      if (refresh) {
+        text.textContent = "Refreshing NHC live feed (NOAA can take 20–30s)…";
+        strip.classList.remove("idle");
+      }
       const url = refresh ? "/api/signals/refresh" : "/api/signals";
       const res = await fetch(url, refresh ? { method: "POST" } : undefined);
       const data = await res.json();
       renderAlert(data);
       return data;
-    }
-
-    async function loadLogs() {
-      const res = await fetch("/api/agents/logs?limit=30");
-      const data = await res.json();
-      renderTimeline(data.logs || []);
     }
 
     async function runMonitor() {
@@ -2790,7 +2729,6 @@
         if (data.audit) renderAudit(data.audit);
         document.getElementById("briefMode").textContent = `${data.mode || "demo"} mode`;
         setRunStatus("Monitor complete");
-        await loadLogs();
       } catch (err) {
         setRunStatus("Monitor failed");
         alert(`Monitor failed: ${err.message}`);
@@ -2816,6 +2754,20 @@
     document.getElementById("refreshSignals").addEventListener("click", async () => {
       await loadSignals(true);
       await loadMultiFeed();
+    });
+    document.getElementById("alertStrip").addEventListener("click", (e) => {
+      if (e.target.id === "toggleAlertOutlook") {
+        alertOutlookExpanded = !alertOutlookExpanded;
+        const bodyEl = document.getElementById("alertOutlookBody");
+        const btn = document.getElementById("toggleAlertOutlook");
+        if (!bodyEl || !alertOutlookFull) return;
+        const { preview, truncated } = truncateOutlook(alertOutlookFull);
+        bodyEl.textContent = alertOutlookExpanded || !truncated ? alertOutlookFull : preview;
+        if (btn) {
+          btn.textContent = alertOutlookExpanded ? "See less" : "See more";
+          btn.setAttribute("aria-expanded", String(alertOutlookExpanded));
+        }
+      }
     });
     document.getElementById("demoHandoffAccept").addEventListener("click", demoAcceptHandoff);
 
@@ -2845,7 +2797,6 @@
         await loadSopCorpus();
         await loadRoutingPreview();
         await loadFloodHazard();
-        await loadLogs();
         await loadAudit();
         await loadHitl();
       } catch (err) {
