@@ -252,3 +252,21 @@ npm run geo:routing-preview
 npm run pipeline:run
 npm run eval:run
 ```
+
+### Phase 2 Day 12 (Flood-depth hazard GIS overlay) ✅
+
+- **`src/geo/hazards.js`** — read-only flood-depth polygons cross-referenced with corridors + at-risk trips
+- **`data/geo/flood-depth-demo.json`** — Eastern Road, Bay Street, Paradise Island demo zones
+- **`GET /api/geo/hazards/flood`** · **`GET /api/geo/hazards/flood/cross-ref`** · **`POST /api/geo/hazards/flood/ingest`**
+- Monitor tool **`get_flood_hazard_status`** · pipeline **`flood_hazard_sync`** audit step
+- Command map flood polygon underlay · COP + EOC export include **`floodHazard`** block
+
+**Scope guard:** Flood overlay is situational awareness only — not hydrology authority, not automated road closure orders; HITL still required before outbound COMMS.
+
+```bash
+curl.exe http://127.0.0.1:8787/api/geo/hazards/flood?level=2
+curl.exe http://127.0.0.1:8787/api/geo/hazards/flood/cross-ref?level=2
+npm run geo:flood-hazard
+npm run pipeline:run
+npm run eval:run
+```

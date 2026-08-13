@@ -123,6 +123,11 @@
       border-color: rgba(52,211,153,.4);
       color: #6ee7b7;
     }
+    .strip-toggles .toggle.active[data-accent="flood"] {
+      background: rgba(56,189,248,.12);
+      border-color: rgba(56,189,248,.4);
+      color: #7dd3fc;
+    }
     .strip-toggles .toggle.active[data-accent="scenario"] {
       background: rgba(0,171,201,.12);
       border-color: rgba(0,171,201,.4);
@@ -258,6 +263,31 @@
       white-space: nowrap;
     }
     .routing-preview-text { flex: 1; min-width: 220px; color: #a7f3d0; line-height: 1.35; }
+
+    .flood-hazard-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 1.5rem;
+      background: rgba(56, 189, 248, 0.06);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .flood-hazard-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: rgba(56, 189, 248, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .flood-hazard-text { flex: 1; min-width: 220px; color: #bae6fd; line-height: 1.35; }
 
     .scenario-strip {
       display: flex;
@@ -1039,7 +1069,7 @@
     </div>
     <div class="topbar-meta">
       <div class="toolbar">
-        <span class="pill gold" id="phasePill">Phase 2 · Day 11</span>
+        <span class="pill gold" id="phasePill">Phase 2 · Day 12</span>
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
         <button id="runMonitor">Monitor</button>
         <button class="triage" id="runTriage">Triage</button>
@@ -1050,6 +1080,7 @@
           <button type="button" class="toggle strip-toggle" id="toggleSignalFeedStrip" data-strip="signalFeedStrip" data-accent="signals" aria-pressed="false" title="Multi-feed signal ingest strip">Multi-feed</button>
           <button type="button" class="toggle strip-toggle" id="toggleSopCorpusStrip" data-strip="sopCorpusStrip" data-accent="sop" aria-pressed="false" title="Operator SOP corpus strip">SOP corpus</button>
           <button type="button" class="toggle strip-toggle" id="toggleRoutingPreviewStrip" data-strip="routingPreviewStrip" data-accent="routing" aria-pressed="false" title="GIS routing preview strip">GIS routing</button>
+          <button type="button" class="toggle strip-toggle" id="toggleFloodHazardStrip" data-strip="floodHazardStrip" data-accent="flood" aria-pressed="false" title="Flood-depth hazard GIS overlay strip">Flood GIS</button>
           <button type="button" class="toggle strip-toggle" id="toggleScenarioStrip" data-strip="scenarioStrip" data-accent="scenario" aria-pressed="false" title="Multi-agency scenario strip">Scenario</button>
           <button type="button" class="toggle strip-toggle" id="toggleShelterFleetStrip" data-strip="shelterFleetStrip" data-accent="shelter" aria-pressed="false" title="Shelter and fleet coordination strip">Shelter/fleet</button>
           <button type="button" class="toggle strip-toggle" id="toggleEocStrip" data-strip="eocStrip" data-accent="eoc" aria-pressed="false" title="EOC read-only overlay strip">EOC</button>
@@ -1105,6 +1136,14 @@
     <span class="desk-chip" id="routingPreviewRules" title="Alternate route rules loaded from agency GIS demo">— rules</span>
     <span class="desk-chip" id="routingPreviewAdvisories" title="At-risk trips with routing advisories on restricted corridors">— advisories</span>
     <a class="eoc-cop-link" id="routingPreviewLink" href="/api/geo/routing/preview?level=2" target="_blank" rel="noopener">Preview JSON</a>
+  </div>
+
+  <div class="flood-hazard-strip feed-strip collapsed" id="floodHazardStrip">
+    <span class="strip-lead-tag flood-hazard-tag">Flood hazard overlay</span>
+    <span class="flood-hazard-text" id="floodHazardText">Loading flood-depth GIS exposure polygons…</span>
+    <span class="desk-chip" id="floodHazardZones" title="Active flood-depth zones at current escalation level">— zones</span>
+    <span class="desk-chip" id="floodHazardExposures" title="At-risk trips overlapping corridor-linked hazard zones">— exposures</span>
+    <a class="eoc-cop-link" id="floodHazardLink" href="/api/geo/hazards/flood?level=2" target="_blank" rel="noopener">Hazard JSON</a>
   </div>
 
   <div class="scenario-strip feed-strip collapsed" id="scenarioStrip">
@@ -1172,6 +1211,8 @@
           <div style="font-size:0.58rem;color:var(--muted)">Corridor lines = ESRI agency GIS when configured</div>
           <div><span class="dot" style="background:#ffb347"></span> Restricted corridor</div>
           <div><span class="dot" style="background:#ff6b6b"></span> Closed corridor</div>
+          <div><span style="display:inline-block;width:12px;height:8px;background:rgba(14,165,233,.35);border:1px solid #0ea5e9;margin-right:0.35rem"></span> Flood depth zone (GIS)</div>
+          <div style="font-size:0.58rem;color:var(--muted)">Toggle Flood GIS strip for hazard cross-ref</div>
           <div style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px solid var(--border);font-size:0.58rem;opacity:0.65">Streets © OpenStreetMap</div>
         </div>
       </div>
@@ -1342,6 +1383,7 @@
       { btnId: "toggleSignalFeedStrip", stripId: "signalFeedStrip", label: "Multi-feed", defaultOn: false },
       { btnId: "toggleSopCorpusStrip", stripId: "sopCorpusStrip", label: "SOP corpus", defaultOn: false },
       { btnId: "toggleRoutingPreviewStrip", stripId: "routingPreviewStrip", label: "GIS routing", defaultOn: false },
+      { btnId: "toggleFloodHazardStrip", stripId: "floodHazardStrip", label: "Flood GIS", defaultOn: false },
       { btnId: "toggleScenarioStrip", stripId: "scenarioStrip", label: "Scenario", defaultOn: false },
       { btnId: "toggleShelterFleetStrip", stripId: "shelterFleetStrip", label: "Shelter/fleet", defaultOn: false },
       { btnId: "toggleEocStrip", stripId: "eocStrip", label: "EOC", defaultOn: false },
@@ -1687,12 +1729,13 @@
       const eocLabel = layers.publicSafetyOverlay ? ` · ${layers.publicSafetyUnitCount || 0} EOC unit(s)` : "";
       const enrichLabel = layers.cadEnrichment ? " · live CAD" : "";
       const esriLabel = layers.esriCorridorOverlay ? " · ESRI corridors" : "";
+      const floodLabel = layers.floodHazardOverlay ? ` · ${layers.floodZoneCount || 0} flood zone(s)` : "";
       const conflictNote = layers.conflictCount ? ` · ${layers.conflictCount} corridor conflict(s)` : "";
-      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}${cadLabel}${eocLabel}${enrichLabel}${esriLabel}`;
+      badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}${cadLabel}${eocLabel}${enrichLabel}${esriLabel}${floodLabel}`;
       mapMeta.textContent = layers.syncSource === "triage"
-        ? `Thin GIS · synced to triage${layers.cadOverlay ? " · CAD overlay" : ""}${layers.publicSafetyOverlay ? " · EOC overlay" : ""}${layers.esriCorridorOverlay ? " · ESRI corridors" : ""}${conflictNote}`
-        : layers.cadOverlay || layers.publicSafetyOverlay || layers.esriCorridorOverlay
-          ? `Thin GIS · ${[layers.esriCorridorOverlay && "ESRI", layers.cadOverlay && "CAD", layers.publicSafetyOverlay && "EOC"].filter(Boolean).join(" + ")} read-only`
+        ? `Thin GIS · synced to triage${layers.cadOverlay ? " · CAD overlay" : ""}${layers.publicSafetyOverlay ? " · EOC overlay" : ""}${layers.esriCorridorOverlay ? " · ESRI corridors" : ""}${layers.floodHazardOverlay ? " · flood hazard" : ""}${conflictNote}`
+        : layers.cadOverlay || layers.publicSafetyOverlay || layers.esriCorridorOverlay || layers.floodHazardOverlay
+          ? `Thin GIS · ${[layers.esriCorridorOverlay && "ESRI", layers.floodHazardOverlay && "flood", layers.cadOverlay && "CAD", layers.publicSafetyOverlay && "EOC"].filter(Boolean).join(" + ")} read-only`
           : "Thin GIS · level-based layers";
 
       const z = layers.zone;
@@ -1720,6 +1763,15 @@
         )
         .join("");
 
+      const floodHtml = (layers.floodZones || [])
+        .map(
+          (f) => `
+        <path d="${f.path}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="1.5" opacity="${f.opacity}" stroke-linejoin="round"/>
+        <text x="${f.label.x}" y="${f.label.y}" text-anchor="middle" fill="${f.stroke}" font-size="8" font-weight="600" font-family="system-ui">${f.label.text}</text>
+      `
+        )
+        .join("");
+
       let html = `
         <defs>
           <linearGradient id="landGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -1735,6 +1787,7 @@
         ${islandHtml}
         ${streetsHtml}
         ${streetLabelsHtml}
+        ${floodHtml}
         <ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="rgba(255,179,71,.06)" stroke="rgba(255,179,71,.35)" stroke-width="1.5" stroke-dasharray="6 3"/>
         <text x="${z.cx}" y="${z.cy + 5}" text-anchor="middle" fill="#ffb347" font-size="10" font-family="system-ui" opacity="0.85">Affected zone · Level ${layers.level}</text>
       `;
@@ -1893,6 +1946,10 @@
       if (entry.tool === "get_routing_preview_status" && entry.result) {
         const r = entry.result;
         return `rules: ${r.alternateRuleCount} · trip advisories: ${r.tripAdvisoryCount} · restricted corridors: ${r.restrictedCorridorCount}`;
+      }
+      if (entry.tool === "get_flood_hazard_status" && entry.result) {
+        const r = entry.result;
+        return `zones: ${r.activeZoneCount} · corridor-linked: ${r.corridorLinkedZoneCount} · trip exposures: ${r.tripExposureCount}`;
       }
       if (entry.tool === "query_sop" && entry.result) {
         const r = entry.result;
@@ -2177,6 +2234,7 @@
         await loadMultiFeed(data.threshold ?? 2);
         await loadSopCorpus(data.threshold ?? 2);
         await loadRoutingPreview(data.threshold ?? 2);
+        await loadFloodHazard(data.threshold ?? 2);
         document.getElementById("briefMode").textContent = `pipeline · ${data.monitor?.mode || "demo"}/${data.triage?.mode || "demo"}/${data.action?.mode || "demo"} · HITL staged`;
         if (data.efficiency) {
           const e = data.efficiency;
@@ -2295,7 +2353,11 @@
           .slice(0, 4)
           .map((x) => `<span class="audit-chip cite" title="${x.kind}">${x.id}→${x.corridor}</span>`)
           .join("");
-        const meta = [stepsHtml, citesHtml, cadHtml, handoffHtml, writeBackHtml, enrichHtml, eocHtml, esriHtml, shelterFleetHtml, approversHtml].filter(Boolean).join("");
+        const floodHtml = (e.floodHazardSync || [])
+          .slice(0, 4)
+          .map((z) => `<span class="audit-chip cite" title="${z.depthLevel || ""}">${z.zoneId}→${z.corridorId || "—"}</span>`)
+          .join("");
+        const meta = [stepsHtml, citesHtml, cadHtml, handoffHtml, writeBackHtml, enrichHtml, eocHtml, esriHtml, shelterFleetHtml, floodHtml, approversHtml].filter(Boolean).join("");
         return `<div class="audit-entry${i === 0 ? " latest" : ""}">
           <div class="audit-entry-head">
             <span class="audit-id">${e.id}</span>
@@ -2633,6 +2695,35 @@
       return { summary, crossRef };
     }
 
+    function renderFloodHazard(summary, crossRef) {
+      if (!summary?.ok) return;
+      const sample = (crossRef?.zoneMatches || summary.zoneMatches || [])
+        .slice(0, 2)
+        .map((z) => `${z.zoneId} ${z.depthInches}" on ${(z.linkedCorridors || []).join("/")}`)
+        .join(" · ");
+      document.getElementById("floodHazardText").innerHTML =
+        `Flood-depth overlay · ${summary.featureCount ?? summary.activeZoneCount ?? 0} zone feature(s)${sample ? ` · <em>${sample}</em>` : ""}`;
+      const zonesEl = document.getElementById("floodHazardZones");
+      const zoneCount = crossRef?.activeZoneCount ?? summary.activeZoneCount ?? 0;
+      zonesEl.textContent = `${zoneCount} active zone${zoneCount === 1 ? "" : "s"}`;
+      zonesEl.className = zoneCount ? "desk-chip warn" : "desk-chip ok";
+      const expEl = document.getElementById("floodHazardExposures");
+      const exp = crossRef?.tripExposureCount ?? summary.tripExposureCount ?? 0;
+      expEl.textContent = exp ? `${exp} trip exposure(s)` : "none at risk";
+      expEl.className = exp ? "desk-chip warn" : "desk-chip ok";
+    }
+
+    async function loadFloodHazard(level = 2) {
+      const [summaryRes, crossRes] = await Promise.all([
+        fetch(`/api/geo/hazards/flood?level=${level}`),
+        fetch(`/api/geo/hazards/flood/cross-ref?level=${level}`),
+      ]);
+      const summary = await summaryRes.json();
+      const crossRef = await crossRes.json();
+      renderFloodHazard(summary, crossRef);
+      return { summary, crossRef };
+    }
+
     async function loadStatus() {
       const [statusRes, healthRes] = await Promise.all([
         fetch("/api/status"),
@@ -2753,6 +2844,7 @@
         await loadMultiFeed();
         await loadSopCorpus();
         await loadRoutingPreview();
+        await loadFloodHazard();
         await loadLogs();
         await loadAudit();
         await loadHitl();

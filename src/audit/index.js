@@ -94,6 +94,7 @@ export function buildAuditTrail(limit = 15) {
       signalMultiFeedSync: e.signalMultiFeedSync,
       sopCorpusSync: e.sopCorpusSync,
       routingPreviewSync: e.routingPreviewSync,
+      floodHazardSync: e.floodHazardSync,
       approvers: e.approvers || normalizeApprovers(e.hitl?.approvers),
       hitl: e.hitl,
       mode: e.mode,
@@ -203,6 +204,7 @@ export function recordPipelineRun({
   signalMultiFeedSync,
   sopCorpusSync,
   routingPreviewSync,
+  floodHazardSync,
 }) {
   const ts = new Date().toISOString();
   const cadNote = cadCrossRef?.matchedCount
@@ -232,10 +234,13 @@ export function recordPipelineRun({
   const routingNote = routingPreviewSync?.tripAdvisoryCount
     ? ` · routing ${routingPreviewSync.tripAdvisoryCount} trip advisory(ies)`
     : "";
+  const floodNote = floodHazardSync?.tripExposureCount
+    ? ` · flood ${floodHazardSync.tripExposureCount} trip(s) in hazard zones`
+    : "";
   const hitlModeNote = hitl?.extendedHitl ? " · extended HITL (5)" : "";
   return appendAuditEntry({
     type: "pipeline_run",
-    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}${sopNote}${routingNote}`,
+    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}${sopNote}${routingNote}${floodNote}`,
     signal: {
       level: threshold,
       label: signals?.label,
@@ -321,6 +326,14 @@ export function recordPipelineRun({
             matches: routingPreviewSync.tripAdvisories?.slice(0, 4),
           }
         : undefined,
+      floodHazardSync: floodHazardSync
+        ? {
+            activeZoneCount: floodHazardSync.activeZoneCount,
+            corridorLinkedZoneCount: floodHazardSync.corridorLinkedZoneCount,
+            tripExposureCount: floodHazardSync.tripExposureCount,
+            matches: floodHazardSync.zoneMatches?.slice(0, 4),
+          }
+        : undefined,
     },
     cadCrossRef: cadCrossRef?.matches?.map((m) => ({
       tripId: m.tripId,
@@ -382,6 +395,12 @@ export function recordPipelineRun({
       corridor: a.corridor,
       alternateName: a.alternateName,
       corridorStatus: a.corridorStatus,
+    })),
+    floodHazardSync: floodHazardSync?.zoneMatches?.slice(0, 4).map((z) => ({
+      zoneId: z.zoneId,
+      corridorId: (z.restrictedLinkedCorridors || z.linkedCorridors || [])[0],
+      depthLevel: z.depthBand || `${z.depthInches}"`,
+      exposureCount: z.exposureCount,
     })),
     steps: [
       { id: "monitor", label: "Monitor brief", agent: "monitor", auditId: monitor.audit?.id, ts: monitor.audit?.ts },

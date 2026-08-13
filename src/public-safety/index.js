@@ -2,6 +2,7 @@
 
 import { getActiveCorridorStatus, getCorridorLayerMeta } from "../geo/esri.js";
 import { buildRoutingPreviewCrossRef } from "../geo/routing.js";
+import { buildFloodHazardCrossRef } from "../geo/hazards.js";
 import { buildCadSummary } from "../cad/index.js";
 import { buildTransportDeskSummary, getHandoffWriteBackStatus } from "../transport-desk/index.js";
 import { buildEnrichedDispatchSummary } from "../cad/enrichment.js";
@@ -186,10 +187,11 @@ export async function buildCopExport(level = 2) {
   const corridorCrossRef = buildPublicSafetyCorridorCrossRef(level);
   const corridorMeta = getCorridorLayerMeta();
   const routingPreview = buildRoutingPreviewCrossRef(level);
+  const floodHazard = buildFloodHazardCrossRef(level);
 
   return {
     ok: true,
-    phase: "phase-2-day-11",
+    phase: "phase-2-day-12",
     exportType: "common_operating_picture",
     generatedAt: new Date().toISOString(),
     level,
@@ -233,6 +235,14 @@ export async function buildCopExport(level = 2) {
       tripAdvisories: routingPreview.tripAdvisories?.slice(0, 6),
       corridorAdvisories: routingPreview.corridorAdvisories,
       scopeGuard: routingPreview.scopeGuard,
+    },
+    floodHazard: {
+      activeZoneCount: floodHazard.activeZoneCount,
+      corridorLinkedZoneCount: floodHazard.corridorLinkedZoneCount,
+      tripExposureCount: floodHazard.tripExposureCount,
+      zoneMatches: floodHazard.zoneMatches?.slice(0, 6),
+      tripExposures: floodHazard.tripExposures,
+      scopeGuard: floodHazard.scopeGuard,
     },
     disclaimer: "Synthetic demo COP — read-only feeds; not authoritative for dispatch.",
   };

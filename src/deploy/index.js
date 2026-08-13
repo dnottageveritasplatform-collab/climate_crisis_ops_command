@@ -23,6 +23,7 @@ export function buildDeployChecklist(baseUrl = `http://127.0.0.1:${config.port}`
   fileOk("sop_corpus", "docs/sops");
   fileOk("eval_scenarios", "data/eval/scenarios.json");
   fileOk("routing_alternates", "data/geo/routing-alternates-demo.json");
+  fileOk("flood_depth_demo", "data/geo/flood-depth-demo.json");
   fileOk("backup_script", "docs/backup-demo-video.md");
   fileOk("staging_guide", "docs/staging-deploy.md");
 

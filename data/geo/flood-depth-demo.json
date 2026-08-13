@@ -1,0 +1,78 @@
+{
+  "scopeGuard": "Pilot flood-depth GIS overlay — read-only hazard polygons; not hydrology authority or road closure orders.",
+  "source": "demo_json",
+  "serviceName": "pilot-flood-depth-demo",
+  "updatedAt": "2026-08-08T18:00:00Z",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-01",
+        "name": "Eastern Road low segment",
+        "depthInches": 14,
+        "depthBand": "moderate",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.318, 25.044],
+            [-77.302, 25.044],
+            [-77.302, 25.053],
+            [-77.318, 25.053],
+            [-77.318, 25.044]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-02",
+        "name": "Bay Street storm drain backup",
+        "depthInches": 8,
+        "depthBand": "minor",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.332, 25.058],
+            [-77.318, 25.058],
+            [-77.318, 25.068],
+            [-77.332, 25.068],
+            [-77.332, 25.058]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-03",
+        "name": "Paradise Island approach",
+        "depthInches": 20,
+        "depthBand": "major",
+        "linkedCorridors": ["CORR-01"],
+        "activeAtLevel": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.296, 25.078],
+            [-77.284, 25.078],
+            [-77.284, 25.088],
+            [-77.296, 25.088],
+            [-77.296, 25.078]
+          ]
+        ]
+      }
+    }
+  ]
+}

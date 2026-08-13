@@ -7,6 +7,7 @@ import { attachLiveCadToTrips } from "../cad/enrichment.js";
 import { attachTransportDeskToFacilities } from "../transport-desk/index.js";
 import { buildPublicSafetyMapUnits } from "../public-safety/index.js";
 import { getActiveCorridorStatus, getCorridorLayerMeta, loadCorridorLayer } from "./esri.js";
+import { buildFloodMapOverlay } from "./hazards.js";
 
 const geoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/geo");
 
@@ -173,6 +174,7 @@ export function attachCadOverlay(layers) {
   const facilities = attachTransportDeskToFacilities(layers.facilities || []);
   const trips = attachLiveCadToTrips(layers.trips || []);
   const corridorMeta = getCorridorLayerMeta();
+  const floodZones = buildFloodMapOverlay(level);
   return {
     ...layers,
     facilities,
@@ -181,6 +183,9 @@ export function attachCadOverlay(layers) {
     transportDeskOverlay: true,
     publicSafetyOverlay: true,
     cadEnrichment: true,
+    floodHazardOverlay: floodZones.length > 0,
+    floodZones,
+    floodZoneCount: floodZones.length,
     esriCorridorOverlay: corridorMeta.source === "esri_feature_service",
     corridorLayerSource: corridorMeta.source,
     corridorLayerAdapter: corridorMeta.adapter,

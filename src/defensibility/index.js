@@ -202,6 +202,16 @@ export const PHASE2_ROADMAP = {
           "COP + EOC export include routingPreview block",
         ],
       },
+      day12: {
+        complete: true,
+        deliverables: [
+          "src/geo/hazards.js — flood-depth hazard GIS overlay (read-only polygons)",
+          "data/geo/flood-depth-demo.json — Eastern Road / Bay Street / Paradise Island zones",
+          "GET /api/geo/hazards/flood · /cross-ref · POST /hazards/flood/ingest",
+          "Pipeline step flood_hazard_sync · Monitor tool get_flood_hazard_status",
+          "Command map flood polygon underlay + COP/EOC export floodHazard block",
+        ],
+      },
     },
   ],
   notInScope: [
@@ -251,7 +261,7 @@ export function buildDefensibilityNarrative() {
 export function buildPhase2Roadmap() {
   return {
     ok: true,
-    phase: "phase-2-day-11",
+    phase: "phase-2-day-12",
     day1Complete: true,
     day2Complete: true,
     day3Complete: true,
@@ -263,6 +273,7 @@ export function buildPhase2Roadmap() {
     day9Complete: true,
     day10Complete: true,
     day11Complete: true,
+    day12Complete: true,
     ...PHASE2_ROADMAP,
   };
 }

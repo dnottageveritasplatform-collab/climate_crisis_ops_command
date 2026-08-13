@@ -16,6 +16,11 @@ import {
   buildRoutingPreviewSummary,
   ingestRoutingAlternatesWebhook,
 } from "../geo/routing.js";
+import {
+  buildFloodHazardCrossRef,
+  buildFloodHazardSummary,
+  ingestFloodDepthWebhook,
+} from "../geo/hazards.js";
 
 const router = Router();
 
@@ -92,6 +97,27 @@ router.get("/routing/cross-ref", (req, res) => {
 router.post("/routing/ingest", (req, res) => {
   try {
     res.json(ingestRoutingAlternatesWebhook(req.body));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+/** Flood-depth hazard overlay summary (Phase 2 Day 12). */
+router.get("/hazards/flood", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildFloodHazardSummary(level));
+});
+
+/** Cross-ref flood zones with restricted corridors + at-risk trips. */
+router.get("/hazards/flood/cross-ref", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildFloodHazardCrossRef(level));
+});
+
+/** Webhook ingest for pilot agency flood-depth GIS layer. */
+router.post("/hazards/flood/ingest", (req, res) => {
+  try {
+    res.json(ingestFloodDepthWebhook(req.body));
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message });
   }

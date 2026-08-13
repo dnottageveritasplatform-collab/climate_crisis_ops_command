@@ -14,6 +14,7 @@ import { buildShelterFleetCrossRef } from "../shelter-fleet/index.js";
 import { buildMultiFeedCrossRef } from "../signals/multi-feed.js";
 import { buildSopCorpusCrossRef } from "../sops/corpus.js";
 import { buildRoutingPreviewCrossRef } from "../geo/routing.js";
+import { buildFloodHazardCrossRef } from "../geo/hazards.js";
 
 /**
  * Monitor → Triage → Action with triple HITL gate staged at end.
@@ -38,6 +39,7 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
   const signalMultiFeedSync = buildMultiFeedCrossRef(threshold);
   const sopCorpusSync = buildSopCorpusCrossRef(threshold);
   const routingPreviewSync = buildRoutingPreviewCrossRef(threshold);
+  const floodHazardSync = buildFloodHazardCrossRef(threshold);
   const audit = recordPipelineRun({
     signals,
     monitor,
@@ -55,6 +57,7 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     signalMultiFeedSync,
     sopCorpusSync,
     routingPreviewSync,
+    floodHazardSync,
   });
   const auditPersist = {
     ...getAuditPersistStatus(),
@@ -89,10 +92,10 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-11",
+    phase: "phase-2-day-12",
     pipelineId: audit.id,
     threshold,
-    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "sop_corpus_sync", "routing_preview_sync", "audit_persist"],
+    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "sop_corpus_sync", "routing_preview_sync", "flood_hazard_sync", "audit_persist"],
     signals,
     monitor,
     triage,
@@ -107,12 +110,13 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     signalMultiFeedSync,
     sopCorpusSync,
     routingPreviewSync,
+    floodHazardSync,
     auditPersist,
     hitl,
     audit,
     efficiency,
     hitlGate: hitl.active ? hitl.state : "idle",
     message:
-      "Pipeline complete — corridor routing preview, expanded SOP corpus, multi-feed signals, ESRI corridors, extended HITL, and persisted audit trail.",
+      "Pipeline complete — flood hazard overlay, corridor routing preview, expanded SOP corpus, multi-feed signals, ESRI corridors, extended HITL, and persisted audit trail.",
   };
 }

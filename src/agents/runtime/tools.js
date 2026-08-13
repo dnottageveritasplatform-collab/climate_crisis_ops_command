@@ -10,6 +10,7 @@ import { getAuditPersistStatus } from "../../audit/index.js";
 import { getMultiFeedStatus } from "../../signals/multi-feed.js";
 import { getSopCorpusStatus } from "../../sops/corpus.js";
 import { getRoutingPreviewStatus } from "../../geo/routing.js";
+import { getFloodHazardStatus } from "../../geo/hazards.js";
 import { querySopCorpus } from "../../sops/index.js";
 
 const registry = {
@@ -116,6 +117,12 @@ const registry = {
       "Corridor-aware routing preview — alternate route advisories for at-risk trips on restricted corridors (Phase 2 Day 11)",
     parameters: { type: "object", properties: {} },
     execute: async () => getRoutingPreviewStatus(),
+  },
+  get_flood_hazard_status: {
+    description:
+      "Flood-depth hazard GIS overlay — active zones, corridor-linked exposure, and at-risk trip count (Phase 2 Day 12)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getFloodHazardStatus(),
   },
 };
 
