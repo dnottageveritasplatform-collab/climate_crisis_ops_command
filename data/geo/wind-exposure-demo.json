@@ -1,0 +1,78 @@
+{
+  "scopeGuard": "Pilot wind-exposure GIS overlay — read-only gust polygons; not meteorology authority or automated road closure orders.",
+  "source": "demo_json",
+  "serviceName": "pilot-wind-exposure-demo",
+  "updatedAt": "2026-08-13T18:00:00Z",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "WIND-01",
+        "name": "Paradise Island coastal fetch",
+        "gustMph": 74,
+        "windBand": "hurricane",
+        "linkedCorridors": ["CORR-01"],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.298, 25.076],
+            [-77.282, 25.076],
+            [-77.282, 25.090],
+            [-77.298, 25.090],
+            [-77.298, 25.076]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "WIND-02",
+        "name": "Eastern Road open fetch",
+        "gustMph": 52,
+        "windBand": "strong",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.320, 25.040],
+            [-77.304, 25.040],
+            [-77.304, 25.056],
+            [-77.320, 25.056],
+            [-77.320, 25.040]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "WIND-03",
+        "name": "Carmichael Rd elevated corridor",
+        "gustMph": 38,
+        "windBand": "tropical_storm",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.338, 25.048],
+            [-77.324, 25.048],
+            [-77.324, 25.062],
+            [-77.338, 25.062],
+            [-77.338, 25.048]
+          ]
+        ]
+      }
+    }
+  ]
+}

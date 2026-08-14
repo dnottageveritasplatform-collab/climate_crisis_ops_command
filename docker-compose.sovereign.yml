@@ -1,0 +1,19 @@
+# Phase 2 Day 15 — sovereign on-prem single-host stack (operator-controlled data residency)
+services:
+  ccoc:
+    build: .
+    image: ccoc:sovereign
+    ports:
+      - "8787:8787"
+    env_file:
+      - .env.sovereign.example
+    volumes:
+      - ./data:/app/data
+      - ./docs/sops:/app/docs/sops:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8787/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

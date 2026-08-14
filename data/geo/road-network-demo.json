@@ -1,0 +1,110 @@
+{
+  "scopeGuard": "Pilot road network graph — turn-by-turn corridor avoidance advisories only; not navigation dispatch or turn-by-turn authority.",
+  "nodes": [
+    { "id": "N-EAST-NA", "name": "East Nassau pickup zone" },
+    { "id": "N-EAST-MID", "name": "Eastern Road mid junction" },
+    { "id": "N-CARM", "name": "Carmichael Rd pickup zone" },
+    { "id": "N-SHIRLEY", "name": "Shirley St pickup zone" },
+    { "id": "N-BAY", "name": "Bay Street junction" },
+    { "id": "N-PMH", "name": "Princess Margaret Hospital" },
+    { "id": "N-DOCTORS", "name": "Doctor's Hospital" },
+    { "id": "N-PARADISE", "name": "Paradise Island pickup zone" },
+    { "id": "N-MACKEY", "name": "Mackey Street bridge approach" }
+  ],
+  "edges": [
+    {
+      "id": "E-EAST-LOW",
+      "from": "N-EAST-NA",
+      "to": "N-EAST-MID",
+      "name": "Eastern Road (low segment)",
+      "corridorId": "CORR-02",
+      "distanceM": 820
+    },
+    {
+      "id": "E-EAST-SHORE",
+      "from": "N-EAST-NA",
+      "to": "N-BAY",
+      "name": "Shirley Street detour",
+      "distanceM": 1100
+    },
+    {
+      "id": "E-EAST-BAY",
+      "from": "N-EAST-MID",
+      "to": "N-BAY",
+      "name": "Bay Street connector",
+      "distanceM": 650
+    },
+    {
+      "id": "E-BAY-PMH",
+      "from": "N-BAY",
+      "to": "N-PMH",
+      "name": "Bay Street to PMH",
+      "distanceM": 900
+    },
+    {
+      "id": "E-CARM-EAST",
+      "from": "N-CARM",
+      "to": "N-EAST-MID",
+      "name": "Carmichael Rd to Eastern Road",
+      "corridorId": "CORR-02",
+      "distanceM": 740
+    },
+    {
+      "id": "E-CARM-BAY",
+      "from": "N-CARM",
+      "to": "N-BAY",
+      "name": "Carmichael Rd to Bay Street",
+      "distanceM": 980
+    },
+    {
+      "id": "E-SHIRLEY-EAST",
+      "from": "N-SHIRLEY",
+      "to": "N-EAST-MID",
+      "name": "Shirley St to Eastern Road",
+      "corridorId": "CORR-02",
+      "distanceM": 520
+    },
+    {
+      "id": "E-SHIRLEY-BAY",
+      "from": "N-SHIRLEY",
+      "to": "N-BAY",
+      "name": "Shirley Street to Bay Street",
+      "distanceM": 430
+    },
+    {
+      "id": "E-BAY-DOCTORS",
+      "from": "N-BAY",
+      "to": "N-DOCTORS",
+      "name": "Bay Street to Doctor's Hospital",
+      "distanceM": 760
+    },
+    {
+      "id": "E-PARADISE-BRIDGE",
+      "from": "N-PARADISE",
+      "to": "N-MACKEY",
+      "name": "Paradise Island bridge",
+      "corridorId": "CORR-01",
+      "distanceM": 1200
+    },
+    {
+      "id": "E-PARADISE-FERRY",
+      "from": "N-PARADISE",
+      "to": "N-BAY",
+      "name": "Paradise Island ferry detour",
+      "distanceM": 2100
+    },
+    {
+      "id": "E-MACKEY-BAY",
+      "from": "N-MACKEY",
+      "to": "N-BAY",
+      "name": "Mackey Street to Bay Street",
+      "distanceM": 680
+    }
+  ],
+  "tripAnchors": {
+    "T-1001": { "originNodeId": "N-EAST-NA", "destNodeId": "N-PMH" },
+    "T-1003": { "originNodeId": "N-CARM", "destNodeId": "N-PMH" },
+    "T-1006": { "originNodeId": "N-PARADISE", "destNodeId": "N-PMH" },
+    "T-1009": { "originNodeId": "N-SHIRLEY", "destNodeId": "N-DOCTORS" }
+  }
+}

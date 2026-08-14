@@ -1,4 +1,10 @@
-/** Day 18 + Phase 2 Day 1 — defensibility narrative, founder credibility, Phase 2 CAD/EMS roadmap. */
+/** Phase 2 Day 18 — defensibility narrative, founder credibility, Phase 2 sprint close-out pitch. */
+
+import { getLastEvalRun, loadScenarios } from "../eval/index.js";
+import { buildEfficiencySummary } from "../efficiency/index.js";
+
+export const DEFENSIBILITY_SCOPE_GUARD =
+  "Defensibility pitch — workflow + SOP + audit moat narrative; not dispatch authority.";
 
 export const FOUNDER_CREDIBILITY = {
   headline: "County-scale multi-agency GIS coordination — Broward County IT lineage",
@@ -11,7 +17,7 @@ export const FOUNDER_CREDIBILITY = {
     "Caribbean diaspora + Bahamas-rooted scenario for Future Caribbean track",
   ],
   scopeGuard:
-    "Sprint demo is NEMT + hospital partners on a thin map layer — explicitly not county CAD or 911 replacement in 21 days.",
+    "Sprint + Phase 2 demo is NEMT + hospital partners on a thin map layer — explicitly not county CAD or 911 replacement in 21 days.",
 };
 
 export const DEFENSIBILITY_PILLARS = [
@@ -19,7 +25,7 @@ export const DEFENSIBILITY_PILLARS = [
     id: "workflow",
     title: "Workflow moat",
     detail:
-      "Monitor → Triage → Action orchestration with triple HITL (NEMT + two hospital liaisons). Deterministic ranks, map sync, and COMMS-03 staging — LLM enriches prose only.",
+      "Monitor → Triage → Action orchestration with extended HITL (5 roles at L2+). Deterministic ranks, map sync, hazard fusion, and COMMS-03 staging — LLM enriches prose only.",
   },
   {
     id: "sop",
@@ -31,7 +37,7 @@ export const DEFENSIBILITY_PILLARS = [
     id: "audit",
     title: "Audit-first design",
     detail:
-      "Every pipeline run logs steps, SOP citations, HITL approvers with timestamps. Judges can inspect JSON trail — not black-box agent output.",
+      "Append-only JSONL audit persists across restart. Every pipeline run logs Phase 2 sync steps, SOP citations, HITL approvers with timestamps — EOC briefing export ready.",
   },
   {
     id: "eval",
@@ -48,8 +54,8 @@ export const DEFENSIBILITY_PILLARS = [
 ];
 
 export const PHASE2_ROADMAP = {
-  headline: "Phase 2 — CAD / EMS / multi-agency integration (post-sprint)",
-  horizon: "Post Future Caribbean sprint · pilot with design-partner operator",
+  headline: "Phase 2 complete — CAD / EMS / multi-agency integration (Days 1–17)",
+  horizon: "Future Caribbean sprint · 17 days delivered · pilot with design-partner operator next",
   principles: [
     "Read-only situational feeds first — no 911 call-taking in v1",
     "Same command surface; new adapters behind tools API",
@@ -188,7 +194,7 @@ export const PHASE2_ROADMAP = {
       title: "Deeper GIS routing",
       items: [
         "Turn-by-turn avoidance for restricted corridors when pilot agency provides road network",
-        "Flood-depth or wind-exposure overlays when agency GIS available",
+        "Flood-depth and wind-exposure overlays when agency GIS available",
         "On-prem / sovereign deploy path (OWC edge angle for Caribbean operators)",
       ],
       status: "in_progress",
@@ -212,8 +218,67 @@ export const PHASE2_ROADMAP = {
           "Command map flood polygon underlay + COP/EOC export floodHazard block",
         ],
       },
+      day13: {
+        complete: true,
+        deliverables: [
+          "src/geo/wind.js — wind-exposure hazard GIS overlay (read-only gust polygons)",
+          "data/geo/wind-exposure-demo.json — Paradise Island / Eastern Road / Carmichael zones",
+          "GET /api/geo/hazards/wind · /cross-ref · POST /hazards/wind/ingest",
+          "Pipeline step wind_hazard_sync · Monitor tool get_wind_hazard_status",
+          "Command map wind polygon underlay + COP/EOC export windHazard block",
+        ],
+      },
+      day14: {
+        complete: true,
+        deliverables: [
+          "src/geo/multi-hazard.js — fused flood + wind + routing per-trip EOC briefing",
+          "GET /api/geo/hazards/combined · /cross-ref",
+          "Pipeline step multi_hazard_sync · Monitor tool get_multi_hazard_status",
+          "COP + EOC export include multiHazard block · fused trip briefing strip",
+        ],
+      },
+      day15: {
+        complete: true,
+        deliverables: [
+          "src/deploy/sovereign.js — on-prem data residency deploy profile + readiness checks",
+          ".env.sovereign.example · docker-compose.sovereign.yml · docs/sovereign-deploy.md",
+          "GET /api/deploy/sovereign · /sovereign/checklist",
+          "Pipeline step sovereign_deploy_sync · Monitor tool get_sovereign_deploy_status",
+          "Command UI sovereign deploy strip",
+        ],
+      },
+      day16: {
+        complete: true,
+        deliverables: [
+          "src/geo/road-network.js — pilot road graph + turn-by-turn corridor avoidance",
+          "data/geo/road-network-demo.json — Nassau Metro demo nodes/edges + trip anchors",
+          "GET /api/geo/routing/network · /cross-ref · POST /routing/network/ingest",
+          "Pipeline step road_network_sync · Monitor tool get_road_network_status",
+          "COP + EOC export include roadNetwork block · turn-by-turn nested in Hazard fusion UI + driver SMS drafts",
+        ],
+      },
+      day17: {
+        complete: true,
+        deliverables: [
+          "src/demo/rehearsal.js — 5-min pitch beat sheet with live eval + efficiency stats",
+          "GET /api/demo/rehearsal · npm run demo:rehearsal · npm run demo:preflight",
+          "Pipeline step demo_rehearsal_sync · Monitor tool get_demo_rehearsal_status",
+          "Command UI demo rehearsal strip · COP + EOC export include demoRehearsal block",
+          "docs/demo-5min-rehearsal.md — Phase 2 sprint capstone pitch script",
+        ],
+      },
     },
   ],
+  day18: {
+    complete: true,
+    deliverables: [
+      "src/defensibility/index.js — pitch slide builder + live eval/pillar stats",
+      "GET /api/defensibility/summary · /narrative · /phase2 · /pitch",
+      "Pipeline step defensibility_sync · Monitor tool get_defensibility_status",
+      "Command UI defensibility strip · COP + EOC export include defensibility block",
+      "docs/defensibility-slide.md — Broward credibility + five pillars paste-ready",
+    ],
+  },
   notInScope: [
     "911 PSAP call intake or municipal CAD replacement",
     "Automated outbound messaging without human approval",
@@ -221,17 +286,39 @@ export const PHASE2_ROADMAP = {
   ],
 };
 
+function liveProofStats() {
+  const evalRun = getLastEvalRun();
+  const scenarios = loadScenarios();
+  const efficiency = buildEfficiencySummary();
+  const lastPipeline = efficiency.lastPipelineMetrics || efficiency.lastPipeline;
+  return {
+    evalTotal: evalRun?.summary?.total ?? scenarios.length,
+    evalPassed: evalRun?.summary?.passed ?? null,
+    evalSuiteMs: evalRun?.totalLatencyMs ?? null,
+    evalOk: evalRun?.ok ?? null,
+    lastPipelineMs: lastPipeline?.totalLatencyMs ?? null,
+    lastPipelineTokens: lastPipeline?.totalTokens ?? null,
+    pillarCount: DEFENSIBILITY_PILLARS.length,
+    phase2TrackCount: PHASE2_ROADMAP.tracks.length,
+    phase2DaysDelivered: 17,
+  };
+}
+
 export function buildDefensibilitySummary() {
+  const proof = liveProofStats();
   return {
     ok: true,
-    phase: "week-3-day-18",
+    phase: "phase-2-day-18",
     founder: FOUNDER_CREDIBILITY,
     pillars: DEFENSIBILITY_PILLARS,
     phase2: {
       headline: PHASE2_ROADMAP.headline,
       trackCount: PHASE2_ROADMAP.tracks.length,
       principles: PHASE2_ROADMAP.principles,
+      daysDelivered: proof.phase2DaysDelivered,
+      complete: true,
     },
+    proof,
     scopeGuard: FOUNDER_CREDIBILITY.scopeGuard,
     docs: {
       slide: "docs/defensibility-slide.md",
@@ -241,27 +328,139 @@ export function buildDefensibilitySummary() {
 }
 
 export function buildDefensibilityNarrative() {
+  const proof = liveProofStats();
+  const evalLine =
+    proof.evalPassed != null
+      ? `${proof.evalPassed}/${proof.evalTotal} eval scenarios pass`
+      : "8 scripted eval scenarios";
   return {
     headline: "Defensible coordination ops — workflow + SOP moat, not a generic LLM wrapper",
     pitchLine:
-      "We built the class of system I helped deliver at Broward County IT after weather events: multi-agency situational awareness with human gates before anything sends. The sprint proves one vertical (NEMT + hospitals); Phase 2 adds CAD read-only and EMS-adjacent feeds without claiming 911 replacement.",
+      "We built the class of system I helped deliver at Broward County IT after weather events: multi-agency situational awareness with human gates before anything sends. Phase 2 delivered 17 days of CAD read-only, EMS-adjacent, EOC, and GIS routing adapters — without claiming 911 replacement.",
     founder: FOUNDER_CREDIBILITY.headline,
     bullets: [
       ...DEFENSIBILITY_PILLARS.map((p) => `${p.title}: ${p.detail}`),
-      `Phase 2: ${PHASE2_ROADMAP.tracks.map((t) => t.title).join(" · ")}.`,
+      `Phase 2 (${proof.phase2DaysDelivered} days): ${PHASE2_ROADMAP.tracks.map((t) => t.title).join(" · ")}.`,
+      `Proof: ${evalLine}${proof.evalSuiteMs ? ` in ${proof.evalSuiteMs} ms` : ""}.`,
     ],
     rubric: {
-      defensibility: "SOP RAG + triple HITL workflow + audit/eval + Broward lineage",
+      defensibility: "SOP RAG + extended HITL workflow + persisted audit/eval + Broward lineage",
       agenticAI: "Tool-first agents; optional LLM enrichment",
       pmf: "Design-partner NEMT + hospital liaison story; Caribbean operator relevance",
+    },
+    proof,
+  };
+}
+
+export function buildDefensibilityPitch() {
+  const proof = liveProofStats();
+  const evalProof =
+    proof.evalPassed != null
+      ? `${proof.evalPassed}/${proof.evalTotal} scripted scenarios · ${proof.evalSuiteMs ?? "—"} ms suite`
+      : "Run npm run eval:run — 8 scripted scenarios L1–L4";
+
+  const slides = [
+    {
+      id: "founder",
+      title: "Founder credibility — Broward County IT",
+      headline: "Built this class of problem before — county-scale multi-agency weather coordination",
+      bullets: FOUNDER_CREDIBILITY.relevance,
+      scopeGuard: FOUNDER_CREDIBILITY.scopeGuard,
+    },
+    {
+      id: "defensibility",
+      title: "Defensibility — why this is hard to copy",
+      headline: "Workflow + operator corpus + audit — not a chatbot skin",
+      pillars: DEFENSIBILITY_PILLARS.map((p) => ({ title: p.title, detail: p.detail })),
+      oneLiner:
+        "Competitors can copy prompts. They can't copy multi-agency approval workflow + cited SOP ops + eval-gated pipeline without rebuilding operator trust.",
+    },
+    {
+      id: "phase2",
+      title: "Phase 2 delivered — same surface, new adapters",
+      headline: PHASE2_ROADMAP.headline,
+      tracks: PHASE2_ROADMAP.tracks.map((t) => t.title),
+      principles: PHASE2_ROADMAP.principles,
+      notInScope: PHASE2_ROADMAP.notInScope,
+    },
+    {
+      id: "proof",
+      title: "Measured proof",
+      headline: evalProof,
+      metrics: {
+        pillars: proof.pillarCount,
+        phase2Tracks: proof.phase2TrackCount,
+        phase2Days: proof.phase2DaysDelivered,
+        lastPipelineMs: proof.lastPipelineMs,
+        lastPipelineTokens: proof.lastPipelineTokens,
+      },
+    },
+  ];
+
+  return {
+    ok: true,
+    phase: "phase-2-day-18",
+    title: "Climate & Crisis Ops Command — defensibility pitch (slides 7–8)",
+    slides,
+    talkTrack30s:
+      "I helped build multi-agency GIS coordination at Broward County IT after weather events. CCOC applies that pattern to Caribbean NEMT and hospital partners: agents orchestrate, humans approve, audit captures everything. Phase 2 added CAD read-only, transport desk, EOC feeds, hazard fusion, and sovereign deploy — defensibility is the workflow and SOP moat, not the LLM.",
+    scopeGuard: DEFENSIBILITY_SCOPE_GUARD,
+    docs: ["docs/defensibility-slide.md", "docs/phase2-roadmap.md"],
+    api: {
+      summary: "/api/defensibility/summary",
+      narrative: "/api/defensibility/narrative",
+      phase2: "/api/defensibility/phase2",
+      pitch: "/api/defensibility/pitch",
     },
   };
 }
 
+export function formatDefensibilityPitchText(pitch = buildDefensibilityPitch()) {
+  const lines = [pitch.title, `Phase: ${pitch.phase}`, "", pitch.talkTrack30s, ""];
+
+  for (const slide of pitch.slides) {
+    lines.push(`## ${slide.title}`);
+    lines.push(slide.headline);
+    if (slide.bullets) slide.bullets.forEach((b) => lines.push(`- ${b}`));
+    if (slide.pillars) slide.pillars.forEach((p) => lines.push(`- ${p.title}: ${p.detail}`));
+    if (slide.tracks) slide.tracks.forEach((t) => lines.push(`- ${t}`));
+    if (slide.oneLiner) lines.push(`> ${slide.oneLiner}`);
+    if (slide.scopeGuard) lines.push(`Scope: ${slide.scopeGuard}`);
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
+/** Compact status for Monitor agent tool + pipeline audit (Phase 2 Day 18). */
+export function getDefensibilityStatus() {
+  const summary = buildDefensibilitySummary();
+  const pitch = buildDefensibilityPitch();
+  return {
+    ok: true,
+    phase: "phase-2-day-18",
+    pillarCount: summary.proof.pillarCount,
+    phase2TrackCount: summary.proof.phase2TrackCount,
+    phase2DaysDelivered: summary.proof.phase2DaysDelivered,
+    phase2Complete: true,
+    evalPassed: summary.proof.evalPassed,
+    evalTotal: summary.proof.evalTotal,
+    evalSuiteMs: summary.proof.evalSuiteMs,
+    evalOk: summary.proof.evalOk,
+    slideCount: pitch.slides.length,
+    founder: FOUNDER_CREDIBILITY.organization,
+    scopeGuard: DEFENSIBILITY_SCOPE_GUARD,
+    summary: `${summary.proof.pillarCount} pillars · Phase 2 ${summary.proof.phase2DaysDelivered} days · ${summary.proof.evalPassed ?? "?"}/${summary.proof.evalTotal} eval`,
+    docs: summary.docs,
+    api: pitch.api,
+  };
+}
+
+
 export function buildPhase2Roadmap() {
   return {
     ok: true,
-    phase: "phase-2-day-12",
+    phase: "phase-2-day-18",
     day1Complete: true,
     day2Complete: true,
     day3Complete: true,
@@ -274,6 +473,13 @@ export function buildPhase2Roadmap() {
     day10Complete: true,
     day11Complete: true,
     day12Complete: true,
+    day13Complete: true,
+    day14Complete: true,
+    day15Complete: true,
+    day16Complete: true,
+    day17Complete: true,
+    day18Complete: true,
+    phase2Complete: true,
     ...PHASE2_ROADMAP,
   };
 }

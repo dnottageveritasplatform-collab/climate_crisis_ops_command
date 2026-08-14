@@ -15,6 +15,12 @@ import { buildMultiFeedCrossRef } from "../signals/multi-feed.js";
 import { buildSopCorpusCrossRef } from "../sops/corpus.js";
 import { buildRoutingPreviewCrossRef } from "../geo/routing.js";
 import { buildFloodHazardCrossRef } from "../geo/hazards.js";
+import { buildWindHazardCrossRef } from "../geo/wind.js";
+import { buildMultiHazardCrossRef } from "../geo/multi-hazard.js";
+import { getSovereignDeployStatus } from "../deploy/sovereign.js";
+import { buildRoadNetworkCrossRef } from "../geo/road-network.js";
+import { getDemoRehearsalStatus } from "../demo/rehearsal.js";
+import { getDefensibilityStatus } from "../defensibility/index.js";
 
 /**
  * Monitor → Triage → Action with triple HITL gate staged at end.
@@ -40,6 +46,12 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
   const sopCorpusSync = buildSopCorpusCrossRef(threshold);
   const routingPreviewSync = buildRoutingPreviewCrossRef(threshold);
   const floodHazardSync = buildFloodHazardCrossRef(threshold);
+  const windHazardSync = buildWindHazardCrossRef(threshold);
+  const multiHazardSync = buildMultiHazardCrossRef(threshold);
+  const sovereignDeploySync = getSovereignDeployStatus();
+  const roadNetworkSync = buildRoadNetworkCrossRef(threshold);
+  const demoRehearsalSync = getDemoRehearsalStatus();
+  const defensibilitySync = getDefensibilityStatus();
   const audit = recordPipelineRun({
     signals,
     monitor,
@@ -58,6 +70,12 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     sopCorpusSync,
     routingPreviewSync,
     floodHazardSync,
+    windHazardSync,
+    multiHazardSync,
+    sovereignDeploySync,
+    roadNetworkSync,
+    demoRehearsalSync,
+    defensibilitySync,
   });
   const auditPersist = {
     ...getAuditPersistStatus(),
@@ -92,10 +110,10 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-12",
+    phase: "phase-2-day-18",
     pipelineId: audit.id,
     threshold,
-    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "sop_corpus_sync", "routing_preview_sync", "flood_hazard_sync", "audit_persist"],
+    steps: ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "sop_corpus_sync", "routing_preview_sync", "flood_hazard_sync", "wind_hazard_sync", "multi_hazard_sync", "sovereign_deploy_sync", "road_network_sync", "demo_rehearsal_sync", "defensibility_sync", "audit_persist"],
     signals,
     monitor,
     triage,
@@ -111,12 +129,18 @@ export async function runPipeline({ level, refreshSignals = true } = {}) {
     sopCorpusSync,
     routingPreviewSync,
     floodHazardSync,
+    windHazardSync,
+    multiHazardSync,
+    sovereignDeploySync,
+    roadNetworkSync,
+    demoRehearsalSync,
+    defensibilitySync,
     auditPersist,
     hitl,
     audit,
     efficiency,
     hitlGate: hitl.active ? hitl.state : "idle",
     message:
-      "Pipeline complete — flood hazard overlay, corridor routing preview, expanded SOP corpus, multi-feed signals, ESRI corridors, extended HITL, and persisted audit trail.",
+      "Pipeline complete — Phase 2 Day 18: defensibility pitch synced, demo rehearsal stats, road network avoidance, sovereign deploy, multi-hazard fusion, and full Phase 2 adapter stack with persisted audit trail.",
   };
 }

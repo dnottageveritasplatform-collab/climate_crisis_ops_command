@@ -21,6 +21,20 @@ import {
   buildFloodHazardSummary,
   ingestFloodDepthWebhook,
 } from "../geo/hazards.js";
+import {
+  buildWindHazardCrossRef,
+  buildWindHazardSummary,
+  ingestWindExposureWebhook,
+} from "../geo/wind.js";
+import {
+  buildMultiHazardCrossRef,
+  buildMultiHazardSummary,
+} from "../geo/multi-hazard.js";
+import {
+  buildRoadNetworkCrossRef,
+  buildRoadNetworkSummary,
+  ingestRoadNetworkWebhook,
+} from "../geo/road-network.js";
 
 const router = Router();
 
@@ -118,6 +132,60 @@ router.get("/hazards/flood/cross-ref", (req, res) => {
 router.post("/hazards/flood/ingest", (req, res) => {
   try {
     res.json(ingestFloodDepthWebhook(req.body));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+/** Wind-exposure hazard overlay summary (Phase 2 Day 13). */
+router.get("/hazards/wind", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildWindHazardSummary(level));
+});
+
+/** Cross-ref wind zones with restricted corridors + at-risk trips. */
+router.get("/hazards/wind/cross-ref", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildWindHazardCrossRef(level));
+});
+
+/** Webhook ingest for pilot agency wind-exposure GIS layer. */
+router.post("/hazards/wind/ingest", (req, res) => {
+  try {
+    res.json(ingestWindExposureWebhook(req.body));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+/** Combined flood + wind + routing fusion summary (Phase 2 Day 14). */
+router.get("/hazards/combined", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildMultiHazardSummary(level));
+});
+
+/** Per-trip fused hazard + routing briefing cross-ref. */
+router.get("/hazards/combined/cross-ref", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildMultiHazardCrossRef(level));
+});
+
+/** Pilot road network summary (Phase 2 Day 16). */
+router.get("/routing/network", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildRoadNetworkSummary(level));
+});
+
+/** Turn-by-turn corridor avoidance cross-ref for at-risk trips. */
+router.get("/routing/network/cross-ref", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildRoadNetworkCrossRef(level));
+});
+
+/** Webhook ingest for pilot agency road network graph. */
+router.post("/routing/network/ingest", (req, res) => {
+  try {
+    res.json(ingestRoadNetworkWebhook(req.body));
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message });
   }

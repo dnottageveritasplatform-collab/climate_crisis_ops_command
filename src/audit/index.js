@@ -95,6 +95,12 @@ export function buildAuditTrail(limit = 15) {
       sopCorpusSync: e.sopCorpusSync,
       routingPreviewSync: e.routingPreviewSync,
       floodHazardSync: e.floodHazardSync,
+      windHazardSync: e.windHazardSync,
+      multiHazardSync: e.multiHazardSync,
+      sovereignDeploySync: e.sovereignDeploySync,
+      roadNetworkSync: e.roadNetworkSync,
+      demoRehearsalSync: e.demoRehearsalSync,
+      defensibilitySync: e.defensibilitySync,
       approvers: e.approvers || normalizeApprovers(e.hitl?.approvers),
       hitl: e.hitl,
       mode: e.mode,
@@ -205,6 +211,12 @@ export function recordPipelineRun({
   sopCorpusSync,
   routingPreviewSync,
   floodHazardSync,
+  windHazardSync,
+  multiHazardSync,
+  sovereignDeploySync,
+  roadNetworkSync,
+  demoRehearsalSync,
+  defensibilitySync,
 }) {
   const ts = new Date().toISOString();
   const cadNote = cadCrossRef?.matchedCount
@@ -237,10 +249,32 @@ export function recordPipelineRun({
   const floodNote = floodHazardSync?.tripExposureCount
     ? ` · flood ${floodHazardSync.tripExposureCount} trip(s) in hazard zones`
     : "";
+  const windNote = windHazardSync?.tripExposureCount
+    ? ` · wind ${windHazardSync.tripExposureCount} trip(s) in gust zones`
+    : "";
+  const multiNote = multiHazardSync?.fusedTripCount
+    ? ` · fused ${multiHazardSync.fusedTripCount} trip briefing(s) (${multiHazardSync.criticalTripCount} critical)`
+    : "";
+  const sovereignNote = sovereignDeploySync?.ok
+    ? ` · sovereign ${sovereignDeploySync.checksPassed}/${sovereignDeploySync.checksTotal} deploy checks`
+    : sovereignDeploySync
+      ? ` · sovereign deploy ${sovereignDeploySync.checksPassed}/${sovereignDeploySync.checksTotal} checks`
+      : "";
+  const roadNetworkNote = roadNetworkSync?.avoidanceRouteCount
+    ? ` · road network ${roadNetworkSync.avoidanceRouteCount} avoidance route(s)`
+    : "";
+  const rehearsalNote = demoRehearsalSync?.evalPassed != null
+    ? ` · rehearsal ${demoRehearsalSync.evalPassed}/${demoRehearsalSync.evalTotal} eval · ${demoRehearsalSync.beatCount} beats`
+    : demoRehearsalSync?.beatCount
+      ? ` · rehearsal ${demoRehearsalSync.beatCount} beats`
+      : "";
+  const defensibilityNote = defensibilitySync?.pillarCount
+    ? ` · defensibility ${defensibilitySync.pillarCount} pillars · Phase 2 ${defensibilitySync.phase2DaysDelivered}d`
+    : "";
   const hitlModeNote = hitl?.extendedHitl ? " · extended HITL (5)" : "";
   return appendAuditEntry({
     type: "pipeline_run",
-    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}${sopNote}${routingNote}${floodNote}`,
+    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}${sopNote}${routingNote}${floodNote}${windNote}${multiNote}${sovereignNote}${roadNetworkNote}${rehearsalNote}${defensibilityNote}`,
     signal: {
       level: threshold,
       label: signals?.label,
@@ -334,6 +368,60 @@ export function recordPipelineRun({
             matches: floodHazardSync.zoneMatches?.slice(0, 4),
           }
         : undefined,
+      windHazardSync: windHazardSync
+        ? {
+            activeZoneCount: windHazardSync.activeZoneCount,
+            corridorLinkedZoneCount: windHazardSync.corridorLinkedZoneCount,
+            tripExposureCount: windHazardSync.tripExposureCount,
+            matches: windHazardSync.zoneMatches?.slice(0, 4),
+          }
+        : undefined,
+      multiHazardSync: multiHazardSync
+        ? {
+            fusedTripCount: multiHazardSync.fusedTripCount,
+            criticalTripCount: multiHazardSync.criticalTripCount,
+            highTripCount: multiHazardSync.highTripCount,
+            matches: multiHazardSync.tripBriefings?.slice(0, 4),
+          }
+        : undefined,
+      sovereignDeploySync: sovereignDeploySync
+        ? {
+            ok: sovereignDeploySync.ok,
+            checksPassed: sovereignDeploySync.checksPassed,
+            checksTotal: sovereignDeploySync.checksTotal,
+            auditPersistPath: sovereignDeploySync.auditPersistPath,
+            llmOutbound: sovereignDeploySync.llmOutbound,
+          }
+        : undefined,
+      roadNetworkSync: roadNetworkSync
+        ? {
+            avoidanceRouteCount: roadNetworkSync.avoidanceRouteCount,
+            blockedEdgeCount: roadNetworkSync.blockedEdgeCount,
+            nodeCount: roadNetworkSync.nodeCount,
+            edgeCount: roadNetworkSync.edgeCount,
+            matches: roadNetworkSync.tripAvoidanceRoutes?.slice(0, 4),
+          }
+        : undefined,
+      demoRehearsalSync: demoRehearsalSync
+        ? {
+            beatCount: demoRehearsalSync.beatCount,
+            evalPassed: demoRehearsalSync.evalPassed,
+            evalTotal: demoRehearsalSync.evalTotal,
+            evalSuiteMs: demoRehearsalSync.evalSuiteMs,
+            lastPipelineMs: demoRehearsalSync.lastPipelineMs,
+            lastPipelineTokens: demoRehearsalSync.lastPipelineTokens,
+          }
+        : undefined,
+      defensibilitySync: defensibilitySync
+        ? {
+            pillarCount: defensibilitySync.pillarCount,
+            phase2DaysDelivered: defensibilitySync.phase2DaysDelivered,
+            phase2TrackCount: defensibilitySync.phase2TrackCount,
+            evalPassed: defensibilitySync.evalPassed,
+            evalTotal: defensibilitySync.evalTotal,
+            slideCount: defensibilitySync.slideCount,
+          }
+        : undefined,
     },
     cadCrossRef: cadCrossRef?.matches?.map((m) => ({
       tripId: m.tripId,
@@ -402,6 +490,52 @@ export function recordPipelineRun({
       depthLevel: z.depthBand || `${z.depthInches}"`,
       exposureCount: z.exposureCount,
     })),
+    windHazardSync: windHazardSync?.zoneMatches?.slice(0, 4).map((z) => ({
+      zoneId: z.zoneId,
+      corridorId: (z.restrictedLinkedCorridors || z.linkedCorridors || [])[0],
+      gustMph: z.gustMph,
+      windBand: z.windBand,
+    })),
+    multiHazardSync: multiHazardSync?.tripBriefings?.slice(0, 4).map((t) => ({
+      tripId: t.tripId,
+      compositeRisk: t.compositeRisk,
+      hazardTypes: t.hazardTypes,
+      briefingLine: t.briefingLine,
+    })),
+    sovereignDeploySync: sovereignDeploySync
+      ? [
+          {
+            profile: sovereignDeploySync.profile,
+            checks: `${sovereignDeploySync.checksPassed}/${sovereignDeploySync.checksTotal}`,
+            ok: sovereignDeploySync.ok,
+          },
+        ]
+      : undefined,
+    roadNetworkSync: roadNetworkSync?.tripAvoidanceRoutes?.slice(0, 4).map((r) => ({
+      tripId: r.tripId,
+      corridor: r.corridor,
+      stepCount: r.stepCount,
+      briefingLine: r.briefingLine,
+    })),
+    demoRehearsalSync: demoRehearsalSync
+      ? [
+          {
+            eval: `${demoRehearsalSync.evalPassed ?? "?"}/${demoRehearsalSync.evalTotal}`,
+            beats: demoRehearsalSync.beatCount,
+            durationMin: demoRehearsalSync.durationMin,
+          },
+        ]
+      : undefined,
+    defensibilitySync: defensibilitySync
+      ? [
+          {
+            pillars: defensibilitySync.pillarCount,
+            phase2Days: defensibilitySync.phase2DaysDelivered,
+            eval: `${defensibilitySync.evalPassed ?? "?"}/${defensibilitySync.evalTotal}`,
+            slides: defensibilitySync.slideCount,
+          },
+        ]
+      : undefined,
     steps: [
       { id: "monitor", label: "Monitor brief", agent: "monitor", auditId: monitor.audit?.id, ts: monitor.audit?.ts },
       { id: "triage", label: "Triage rank", agent: "triage", auditId: triage.audit?.id, ts: triage.audit?.ts },

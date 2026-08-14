@@ -77,6 +77,12 @@ curl.exe http://127.0.0.1:8787/api/public-safety/summary
 curl.exe http://127.0.0.1:8787/api/public-safety/cop-export?level=2
 curl.exe http://127.0.0.1:8787/api/geo/corridors/esri?level=2
 curl.exe http://127.0.0.1:8787/api/geo/corridors/source
+curl.exe http://127.0.0.1:8787/api/geo/hazards/combined?level=2
+curl.exe http://127.0.0.1:8787/api/geo/hazards/combined/cross-ref?level=2
+curl.exe http://127.0.0.1:8787/api/deploy/sovereign
+curl.exe http://127.0.0.1:8787/api/geo/routing/network?level=2
+curl.exe http://127.0.0.1:8787/api/demo/rehearsal
+curl.exe http://127.0.0.1:8787/api/defensibility/pitch
 curl.exe http://127.0.0.1:8787/api/signals/multi-feed?level=2
 curl.exe http://127.0.0.1:8787/api/signals/cross-ref?level=2
 curl.exe http://127.0.0.1:8787/api/sops/corpus
@@ -267,6 +273,120 @@ npm run eval:run
 curl.exe http://127.0.0.1:8787/api/geo/hazards/flood?level=2
 curl.exe http://127.0.0.1:8787/api/geo/hazards/flood/cross-ref?level=2
 npm run geo:flood-hazard
+npm run pipeline:run
+npm run eval:run
+```
+
+### Phase 2 Day 13 (Wind-exposure hazard GIS overlay) ✅
+
+- **`src/geo/wind.js`** — read-only gust-exposure polygons cross-referenced with corridors + at-risk trips
+- **`data/geo/wind-exposure-demo.json`** — Paradise Island coastal, Eastern Road, Carmichael Rd demo zones
+- **`GET /api/geo/hazards/wind`** · **`GET /api/geo/hazards/wind/cross-ref`** · **`POST /api/geo/hazards/wind/ingest`**
+- Monitor tool **`get_wind_hazard_status`** · pipeline **`wind_hazard_sync`** audit step
+- Command map wind polygon underlay · COP + EOC export include **`windHazard`** block
+
+**Scope guard:** Wind overlay is situational awareness only — not meteorology authority, not automated road closure orders; HITL still required before outbound COMMS.
+
+```bash
+curl.exe http://127.0.0.1:8787/api/geo/hazards/wind?level=2
+curl.exe http://127.0.0.1:8787/api/geo/hazards/wind/cross-ref?level=2
+npm run geo:wind-hazard
+npm run pipeline:run
+npm run eval:run
+```
+
+### Phase 2 Day 14 (Combined hazard + routing fusion) ✅
+
+- **`src/geo/multi-hazard.js`** — fuse flood + wind exposure with corridor routing advisories per at-risk trip
+- **`GET /api/geo/hazards/combined`** · **`GET /api/geo/hazards/combined/cross-ref`**
+- Monitor tool **`get_multi_hazard_status`** · pipeline **`multi_hazard_sync`** audit step
+- Command UI fused briefing strip · COP + EOC export include **`multiHazard`** block
+
+**Scope guard:** Combined fusion is read-only EOC briefing — not navigation authority, not automated road closure; HITL still required before outbound COMMS.
+
+```bash
+curl.exe http://127.0.0.1:8787/api/geo/hazards/combined?level=2
+curl.exe http://127.0.0.1:8787/api/geo/hazards/combined/cross-ref?level=2
+npm run geo:multi-hazard
+npm run pipeline:run
+npm run eval:run
+```
+
+### Phase 2 Day 15 (Sovereign on-prem deploy) ✅
+
+- **`src/deploy/sovereign.js`** — operator-controlled data residency profile + readiness checks
+- **`.env.sovereign.example`** · **`docker-compose.sovereign.yml`** · **`docs/sovereign-deploy.md`**
+- **`GET /api/deploy/sovereign`** · **`GET /api/deploy/sovereign/checklist`**
+- Monitor tool **`get_sovereign_deploy_status`** · pipeline **`sovereign_deploy_sync`** audit step
+- Command UI sovereign deploy strip (checks + air-gap demo mode)
+
+**Scope guard:** Sovereign profile is on-prem coordination software — not multi-tenant SaaS, not 911 dispatch; HITL still required before outbound COMMS.
+
+```bash
+npm run deploy:sovereign
+curl.exe http://127.0.0.1:8787/api/deploy/sovereign
+docker compose -f docker-compose.sovereign.yml up --build
+npm run pipeline:run
+npm run eval:run
+```
+
+### Phase 2 Day 16 (Road network turn-by-turn avoidance) ✅
+
+- **`src/geo/road-network.js`** — pilot road graph + shortest-path corridor avoidance per at-risk trip
+- **`data/geo/road-network-demo.json`** — Nassau Metro demo nodes, edges, and trip anchors
+- **`GET /api/geo/routing/network`** · **`GET /api/geo/routing/network/cross-ref`** · **`POST /api/geo/routing/network/ingest`**
+- Monitor tool **`get_road_network_status`** · pipeline **`road_network_sync`** audit step
+- Command UI **Hazard fusion** strip nests turn-by-turn under each fused trip (**Turn-by-turn ▾**) · COP + EOC export include **`roadNetwork`** block
+
+**Scope guard:** Turn-by-turn avoidance is read-only EOC/driver briefing — not navigation dispatch authority, not automated reroute; HITL still required before outbound COMMS.
+
+```bash
+curl.exe http://127.0.0.1:8787/api/geo/routing/network?level=2
+curl.exe http://127.0.0.1:8787/api/geo/routing/network/cross-ref?level=2
+npm run geo:road-network
+npm run pipeline:run
+npm run eval:run
+```
+
+### Phase 2 Day 17 (5-minute demo rehearsal — sprint capstone) ✅
+
+- **`src/demo/rehearsal.js`** — pitch beat sheet with live eval + efficiency stats injection
+- **`docs/demo-5min-rehearsal.md`** — mentor pitch + live demo rehearsal runbook (Phase 2 updated)
+- **`GET /api/demo/rehearsal`** · **`GET /api/demo/rehearsal?format=text`** · **`npm run demo:rehearsal`**
+- Monitor tool **`get_demo_rehearsal_status`** · pipeline **`demo_rehearsal_sync`** audit step
+- Command UI **Demo rehearsal** strip (eval pass count, beat count, beat sheet link)
+- COP + EOC export include **`demoRehearsal`** block
+
+**Scope guard:** Rehearsal script is pitch prep with measured proof numbers — not dispatch authority; HITL still required before outbound COMMS.
+
+```bash
+npm run eval:run
+npm run demo:rehearsal
+npm run demo:preflight
+curl.exe http://127.0.0.1:8787/api/demo/rehearsal
+curl.exe "http://127.0.0.1:8787/api/demo/rehearsal?format=text"
+npm run pipeline:run
+npm run eval:run
+```
+
+**Phase 2 sprint complete (Days 1–17).** Day 18 (post-sprint): defensibility pitch slide + Phase 2 roadmap paste for slide 8.
+
+### Phase 2 Day 18 (Defensibility pitch — post-sprint close) ✅
+
+- **`src/defensibility/index.js`** — pitch slide builder with live eval + pillar stats injection
+- **`docs/defensibility-slide.md`** — Broward credibility + five pillars paste-ready for deck slides 7–8
+- **`GET /api/defensibility/summary`** · **`/narrative`** · **`/phase2`** · **`/pitch`**
+- Monitor tool **`get_defensibility_status`** · pipeline **`defensibility_sync`** audit step
+- Command UI **Defensibility** strip · COP + EOC export include **`defensibility`** block
+
+**Scope guard:** Defensibility narrative is pitch prep with measured proof — not dispatch authority; HITL still required before outbound COMMS.
+
+```bash
+npm run eval:run
+npm run defensibility:summary
+npm run defensibility:pitch
+curl.exe http://127.0.0.1:8787/api/defensibility/pitch
+curl.exe "http://127.0.0.1:8787/api/defensibility/pitch?format=text"
 npm run pipeline:run
 npm run eval:run
 ```

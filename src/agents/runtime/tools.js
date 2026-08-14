@@ -11,6 +11,12 @@ import { getMultiFeedStatus } from "../../signals/multi-feed.js";
 import { getSopCorpusStatus } from "../../sops/corpus.js";
 import { getRoutingPreviewStatus } from "../../geo/routing.js";
 import { getFloodHazardStatus } from "../../geo/hazards.js";
+import { getWindHazardStatus } from "../../geo/wind.js";
+import { getMultiHazardStatus } from "../../geo/multi-hazard.js";
+import { getSovereignDeployStatus } from "../../deploy/sovereign.js";
+import { getRoadNetworkStatus } from "../../geo/road-network.js";
+import { getDemoRehearsalStatus } from "../../demo/rehearsal.js";
+import { getDefensibilityStatus } from "../../defensibility/index.js";
 import { querySopCorpus } from "../../sops/index.js";
 
 const registry = {
@@ -123,6 +129,42 @@ const registry = {
       "Flood-depth hazard GIS overlay — active zones, corridor-linked exposure, and at-risk trip count (Phase 2 Day 12)",
     parameters: { type: "object", properties: {} },
     execute: async () => getFloodHazardStatus(),
+  },
+  get_wind_hazard_status: {
+    description:
+      "Wind-exposure hazard GIS overlay — active gust zones, corridor-linked exposure, and at-risk trip count (Phase 2 Day 13)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getWindHazardStatus(),
+  },
+  get_multi_hazard_status: {
+    description:
+      "Combined hazard + routing fusion — per-trip flood/wind exposure with alternate route advisories for EOC briefing (Phase 2 Day 14)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getMultiHazardStatus(),
+  },
+  get_sovereign_deploy_status: {
+    description:
+      "Sovereign on-prem deploy readiness — data residency checks, local audit persist, air-gapped demo profile (Phase 2 Day 15)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getSovereignDeployStatus(),
+  },
+  get_road_network_status: {
+    description:
+      "Pilot road network graph — turn-by-turn corridor avoidance routes for at-risk trips on restricted corridors (Phase 2 Day 16)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getRoadNetworkStatus(),
+  },
+  get_demo_rehearsal_status: {
+    description:
+      "5-minute demo rehearsal beat sheet — live eval pass count, pipeline efficiency stats, pitch script API (Phase 2 Day 17)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getDemoRehearsalStatus(),
+  },
+  get_defensibility_status: {
+    description:
+      "Defensibility pitch — Broward founder credibility, five pillars, Phase 2 complete stats, paste-ready slide API (Phase 2 Day 18)",
+    parameters: { type: "object", properties: {} },
+    execute: async () => getDefensibilityStatus(),
   },
 };
 

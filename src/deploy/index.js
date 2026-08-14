@@ -24,8 +24,12 @@ export function buildDeployChecklist(baseUrl = `http://127.0.0.1:${config.port}`
   fileOk("eval_scenarios", "data/eval/scenarios.json");
   fileOk("routing_alternates", "data/geo/routing-alternates-demo.json");
   fileOk("flood_depth_demo", "data/geo/flood-depth-demo.json");
+  fileOk("wind_exposure_demo", "data/geo/wind-exposure-demo.json");
   fileOk("backup_script", "docs/backup-demo-video.md");
   fileOk("staging_guide", "docs/staging-deploy.md");
+  fileOk("sovereign_env_example", ".env.sovereign.example");
+  fileOk("sovereign_compose", "docker-compose.sovereign.yml");
+  fileOk("sovereign_guide", "docs/sovereign-deploy.md");
 
   let scenarioCount = 0;
   try {

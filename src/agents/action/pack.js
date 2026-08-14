@@ -3,6 +3,7 @@ import { beginAgentRun, endAgentRun } from "../../efficiency/index.js";
 import { getAtRiskTrips, corridorStatusForLevel, loadDispatch } from "../../dispatch/index.js";
 import { getLastTriageRanking, loadGeoLayers, isHospitalPartner } from "../../geo/index.js";
 import { getShelterFleetStatus } from "../../shelter-fleet/index.js";
+import { buildMultiHazardCrossRef } from "../../geo/multi-hazard.js";
 import { recordActionPack } from "../../audit/index.js";
 import { stageHitlPack } from "../../hitl/index.js";
 import { logAgentEvent } from "../runtime/logger.js";
@@ -51,12 +52,27 @@ export async function runActionPack({ level } = {}) {
     result: levelSop,
   });
 
+  let multiHazard = null;
+  if (threshold >= 2) {
+    logAgentEvent("tool_call", { agent, tool: "get_multi_hazard_status", args: {} });
+    multiHazard = await runTool("get_multi_hazard_status", {});
+    logAgentEvent("tool_result", {
+      agent,
+      tool: "get_multi_hazard_status",
+      args: {},
+      result: multiHazard,
+    });
+  }
+
   const toolResults = [
     { tool: "get_signal_status", result: signal },
     { tool: "summarize_dispatch", args: { level: threshold }, result: dispatch },
     { tool: "query_sop", args: { query: "COMMS-03" }, result: commsSop },
     { tool: "query_sop", args: { query: `Level ${threshold}` }, result: levelSop },
   ];
+  if (multiHazard) {
+    toolResults.push({ tool: "get_multi_hazard_status", result: multiHazard });
+  }
 
   const demoPack = buildActionPack(threshold, signal, dispatch, commsSop, levelSop);
   let pack = demoPack;
@@ -103,6 +119,8 @@ Required keys:
 - driverComms (array): { tripId, draft } — SMS text for at-risk trips only
 
 Rules:
+- When get_multi_hazard_status is present, embed fused hazard + routing advisories in driver SMS (flood/wind exposure, alternate route headline)
+- When fused briefing includes avoidanceRoute.turnByTurn, append segment-level turn-by-turn steps in driver SMS drafts only (HITL-gated)
 - Use exact trip IDs, corridor IDs (CORR-01, CORR-02), and facility IDs from tool results
 - Draft COMMS-03 hospital bulletins per partner; cite corridor status and P1 dialysis/oncology trips
 - End each bulletin body with: "--- DRAFT ONLY — COMMS-03 — Triple HITL approval required before send ---"
@@ -170,12 +188,55 @@ function mergeLlmActionPack(demoPack, llmPack, commsSop) {
     pack.driverComms = pack.driverComms.map((d) => {
       const llmSms = byTrip[d.tripId];
       if (!llmSms?.draft) return d;
-      return { ...d, draft: String(llmSms.draft) };
+      return { ...d, draft: String(llmSms.draft), llmEdited: true };
     });
   }
 
   pack.hospitalBulletin = buildCombinedHospitalBulletin(pack.hospitalBulletins, pack.level, commsSop);
   return pack;
+}
+
+function fusedBriefingMap(level) {
+  if (level < 2) return {};
+  const crossRef = buildMultiHazardCrossRef(level);
+  return Object.fromEntries((crossRef.tripBriefings || []).map((t) => [t.tripId, t]));
+}
+
+function formatFusionForDriver(fusion) {
+  if (!fusion) return null;
+  const parts = [];
+  if (fusion.hazardTypes?.length) {
+    parts.push(`Exposure: ${fusion.hazardTypes.join(" + ")}`);
+  }
+  if (fusion.floodExposure?.zoneId) {
+    const depth = fusion.floodExposure.depthInches ? ` (${fusion.floodExposure.depthInches}" depth)` : "";
+    parts.push(`Flood zone ${fusion.floodExposure.zoneId}${depth}`);
+  }
+  if (fusion.windExposure?.zoneId) {
+    const gust = fusion.windExposure.gustMph ? `${fusion.windExposure.gustMph} mph gusts · ` : "";
+    parts.push(`Wind ${gust}${fusion.windExposure.zoneId}`);
+  }
+  if (fusion.routingAdvisory?.alternateName) {
+    parts.push(`Alternate route: ${fusion.routingAdvisory.alternateName}`);
+  }
+  if (fusion.routingAdvisory?.advisory) {
+    parts.push(fusion.routingAdvisory.advisory);
+  }
+  return parts.join(" ");
+}
+
+function formatTurnByTurnForDriver(fusion) {
+  const turns = fusion?.avoidanceRoute?.turnByTurn;
+  if (!turns?.length) return null;
+  const condensed = turns.map((step) => step.replace(/^\d+\.\s*/, "")).join(" → ");
+  return `Turn-by-turn: ${condensed}`;
+}
+
+function formatFusionForHospital(fusion) {
+  if (!fusion) return null;
+  const hazards = fusion.hazardTypes?.length ? fusion.hazardTypes.join("+") : "routing";
+  const alt = fusion.routingAdvisory?.alternateName ? ` · alt ${fusion.routingAdvisory.alternateName}` : "";
+  return `  • ${fusion.tripId}: ${fusion.corridor} · ${hazards}${alt} (${fusion.compositeRisk})`;
 }
 
 function buildActionPack(level, signal, dispatch, commsSop, levelSop) {
@@ -184,11 +245,21 @@ function buildActionPack(level, signal, dispatch, commsSop, levelSop) {
   const corrLines = Object.entries(corridorStatus)
     .map(([id, st]) => `${id}: ${st.toUpperCase()}`)
     .join("; ");
+  const fusedByTrip = fusedBriefingMap(level);
+  const fusedCount = Object.keys(fusedByTrip).length;
 
-  const checklist = buildChecklist(level, dispatch, atRisk, corridorStatus);
-  const hospitalBulletins = buildHospitalBulletins(level, signal, dispatch, atRisk, corrLines, commsSop);
+  const checklist = buildChecklist(level, dispatch, atRisk, corridorStatus, fusedCount);
+  const hospitalBulletins = buildHospitalBulletins(
+    level,
+    signal,
+    dispatch,
+    atRisk,
+    corrLines,
+    commsSop,
+    fusedByTrip
+  );
   const hospitalBulletin = buildCombinedHospitalBulletin(hospitalBulletins, level, commsSop);
-  const driverComms = buildDriverComms(atRisk, level, corridorStatus);
+  const driverComms = buildDriverComms(atRisk, level, corridorStatus, fusedByTrip);
   const shelterFleet = level >= 2 ? getShelterFleetStatus() : null;
   const { shelterRoutingBrief, fleetAllocationBrief } = buildShelterFleetBriefs(
     level,
@@ -207,11 +278,18 @@ function buildActionPack(level, signal, dispatch, commsSop, levelSop) {
   return {
     level,
     geography: signal.serviceArea,
-    summary: `Level ${level} ${signal.label} action pack — ${checklist.length} dispatch checklist items, ${partnerCount} hospital COMMS-03 draft(s) (PMH + Doctor's), ${driverComms.length} driver SMS draft(s). ${hitlLabel} must approve before send.`,
+    summary: `Level ${level} ${signal.label} action pack — ${checklist.length} dispatch checklist items, ${partnerCount} hospital COMMS-03 draft(s) (PMH + Doctor's), ${driverComms.length} driver SMS draft(s)${fusedCount ? ` with ${fusedCount} hazard-fusion advisory(ies)` : ""}. ${hitlLabel} must approve before send.`,
     checklist,
     hospitalBulletins,
     hospitalBulletin,
     driverComms,
+    multiHazardFusion: fusedCount
+      ? {
+          fusedTripCount: fusedCount,
+          criticalTripCount: Object.values(fusedByTrip).filter((t) => t.compositeRisk === "critical").length,
+          scopeGuard: "Driver SMS + COMMS embed fused advisories — drafts only until HITL release",
+        }
+      : null,
     shelterRoutingBrief,
     fleetAllocationBrief,
     extendedHitlRequired,
@@ -228,7 +306,7 @@ function buildActionPack(level, signal, dispatch, commsSop, levelSop) {
   };
 }
 
-function buildChecklist(level, dispatch, atRisk, corridorStatus) {
+function buildChecklist(level, dispatch, atRisk, corridorStatus, fusedCount = 0) {
   const items = [
     {
       id: "CHK-01",
@@ -262,7 +340,9 @@ function buildChecklist(level, dispatch, atRisk, corridorStatus) {
 
   items.push({
     id: "CHK-05",
-    task: `SMS pre-notify ${atRisk.length} P1 patient(s) in first 12h window`,
+    task: fusedCount
+      ? `SMS pre-notify ${atRisk.length} P1 patient(s) — ${fusedCount} include fused flood/wind + alternate route advisories (HITL before send)`
+      : `SMS pre-notify ${atRisk.length} P1 patient(s) in first 12h window`,
     owner: "dispatch",
     status: "pending",
   });
@@ -359,7 +439,7 @@ function buildShelterFleetBriefs(level, signal, atRisk, corrLines, shelterFleet)
   return { shelterRoutingBrief, fleetAllocationBrief };
 }
 
-function buildHospitalBulletins(level, signal, dispatch, atRisk, corrLines, commsSop) {
+function buildHospitalBulletins(level, signal, dispatch, atRisk, corrLines, commsSop, fusedByTrip = {}) {
   const { facilities } = loadGeoLayers();
   const allTrips = loadDispatch();
   const hospitals = facilities.features.filter((f) => isHospitalPartner(f.properties.role));
@@ -374,6 +454,9 @@ function buildHospitalBulletins(level, signal, dispatch, atRisk, corrLines, comm
 
       const p1Trips = facilityTrips.filter((t) => t.priority === "P1");
       const atRiskToFacility = atRisk.filter((t) => t.facilityId === facilityId);
+      const fusedLines = atRiskToFacility
+        .map((t) => formatFusionForHospital(fusedByTrip[t.id]))
+        .filter(Boolean);
       const tripList = p1Trips
         .map((t) => `  • ${t.id}: ${t.pickup} → ${t.facility} via ${t.corridor}`)
         .join("\n");
@@ -400,6 +483,9 @@ function buildHospitalBulletins(level, signal, dispatch, atRisk, corrLines, comm
         tripList || "  • No P1 trips in current window",
         atRiskToFacility.length
           ? `At-risk trips to this facility: ${atRiskToFacility.map((t) => t.id).join(", ")}`
+          : "",
+        fusedLines.length
+          ? `FUSED HAZARD + ROUTING ADVISORIES (drivers receive matching SMS after HITL):\n${fusedLines.join("\n")}`
           : "",
         ``,
         `ESTIMATED IMPACT: Delays possible on restricted corridors. Dialysis and oncology patients flagged for priority routing review.`,
@@ -473,11 +559,16 @@ function buildCombinedHospitalBulletin(bulletins, level, commsSop) {
   };
 }
 
-function buildDriverComms(atRisk, level, corridorStatus) {
+function buildDriverComms(atRisk, level, corridorStatus, fusedByTrip = {}) {
   return atRisk.map((trip) => {
+    const fusion = fusedByTrip[trip.id];
+    const fusionHeadline = formatFusionForDriver(fusion);
+    const turnByTurn = formatTurnByTurnForDriver(fusion);
     const corrNote = corridorStatus[trip.corridor];
     let routeNote = "";
-    if (corrNote === "restricted") {
+    if (fusionHeadline) {
+      routeNote = fusionHeadline;
+    } else if (corrNote === "restricted") {
       routeNote = `${trip.corridor} is RESTRICTED at Level ${level}. Confirm alternate routing with dispatch before departure.`;
     } else if (corrNote === "closed") {
       routeNote = `${trip.corridor} is CLOSED. Do not proceed — await supervisor callback.`;
@@ -489,8 +580,10 @@ function buildDriverComms(atRisk, level, corridorStatus) {
       `Nassau Metro NEMT (DEMO): Storm Level ${level} advisory for trip ${trip.id}.`,
       `Pickup: ${trip.pickup}. Priority: ${trip.priority}.`,
       routeNote,
+      turnByTurn,
       `Reply ACK to confirm receipt or CALL dispatch for routing update.`,
-    ].join(" ");
+      `--- DRAFT SMS — Triple/Extended HITL approval required before send ---`,
+    ].filter(Boolean).join(" ");
 
     return {
       tripId: trip.id,
@@ -499,6 +592,16 @@ function buildDriverComms(atRisk, level, corridorStatus) {
       corridor: trip.corridor,
       channel: "SMS",
       draft,
+      fusedBriefing: fusion
+        ? {
+            compositeRisk: fusion.compositeRisk,
+            hazardTypes: fusion.hazardTypes,
+            briefingLine: fusion.briefingLine,
+            alternateRoute: fusion.routingAdvisory?.alternateName || null,
+            turnByTurnSteps: fusion.avoidanceRoute?.stepCount || null,
+            turnByTurn: fusion.avoidanceRoute?.turnByTurn || null,
+          }
+        : null,
       status: "draft_pending_hitl",
     };
   });

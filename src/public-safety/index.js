@@ -3,6 +3,8 @@
 import { getActiveCorridorStatus, getCorridorLayerMeta } from "../geo/esri.js";
 import { buildRoutingPreviewCrossRef } from "../geo/routing.js";
 import { buildFloodHazardCrossRef } from "../geo/hazards.js";
+import { buildWindHazardCrossRef } from "../geo/wind.js";
+import { buildMultiHazardCrossRef } from "../geo/multi-hazard.js";
 import { buildCadSummary } from "../cad/index.js";
 import { buildTransportDeskSummary, getHandoffWriteBackStatus } from "../transport-desk/index.js";
 import { buildEnrichedDispatchSummary } from "../cad/enrichment.js";
@@ -188,10 +190,12 @@ export async function buildCopExport(level = 2) {
   const corridorMeta = getCorridorLayerMeta();
   const routingPreview = buildRoutingPreviewCrossRef(level);
   const floodHazard = buildFloodHazardCrossRef(level);
+  const windHazard = buildWindHazardCrossRef(level);
+  const multiHazard = buildMultiHazardCrossRef(level);
 
   return {
     ok: true,
-    phase: "phase-2-day-12",
+    phase: "phase-2-day-14",
     exportType: "common_operating_picture",
     generatedAt: new Date().toISOString(),
     level,
@@ -243,6 +247,21 @@ export async function buildCopExport(level = 2) {
       zoneMatches: floodHazard.zoneMatches?.slice(0, 6),
       tripExposures: floodHazard.tripExposures,
       scopeGuard: floodHazard.scopeGuard,
+    },
+    windHazard: {
+      activeZoneCount: windHazard.activeZoneCount,
+      corridorLinkedZoneCount: windHazard.corridorLinkedZoneCount,
+      tripExposureCount: windHazard.tripExposureCount,
+      zoneMatches: windHazard.zoneMatches?.slice(0, 6),
+      tripExposures: windHazard.tripExposures,
+      scopeGuard: windHazard.scopeGuard,
+    },
+    multiHazard: {
+      fusedTripCount: multiHazard.fusedTripCount,
+      criticalTripCount: multiHazard.criticalTripCount,
+      highTripCount: multiHazard.highTripCount,
+      tripBriefings: multiHazard.tripBriefings?.slice(0, 6),
+      scopeGuard: multiHazard.scopeGuard,
     },
     disclaimer: "Synthetic demo COP — read-only feeds; not authoritative for dispatch.",
   };
