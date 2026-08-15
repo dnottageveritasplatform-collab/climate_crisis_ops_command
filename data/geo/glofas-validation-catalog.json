@@ -1,0 +1,26 @@
+{
+  "scopeGuard": "Phase 3 Day 8 — historical GloFAS validation spike; demo clips vs pilot agency GIS; not operational hydrology authority.",
+  "phase": "phase-3-day-8",
+  "events": [
+    {
+      "id": "alma-2016",
+      "label": "Tropical Storm Alma (2016 Bahamas analogue)",
+      "pilotScenario": "alma-demo",
+      "window": { "start": "2016-10-04", "end": "2016-10-06" },
+      "agencyPath": "flood-depth-demo.json",
+      "glofasHistoricalPath": "glofas-historical-alma-demo.json",
+      "level": 2,
+      "notes": "Pilot Alma exercise maps to moderate TS river/network flooding on CORR-02."
+    },
+    {
+      "id": "dorian-2019",
+      "label": "Hurricane Dorian (2019 New Providence surge window)",
+      "pilotScenario": "dorian-historical",
+      "window": { "start": "2019-09-01", "end": "2019-09-03" },
+      "agencyPath": "flood-depth-dorian-demo.json",
+      "glofasHistoricalPath": "glofas-historical-dorian-demo.json",
+      "level": 3,
+      "notes": "Major surge + urban pluvial mix — tests coarse GloFAS limits on street ponding."
+    }
+  ]
+}

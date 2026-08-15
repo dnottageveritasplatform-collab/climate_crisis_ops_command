@@ -1,0 +1,203 @@
+{
+  "type": "FeatureCollection",
+  "scopeGuard": "Urban flood grid slice demo — depth cells clipped to downtown Nassau (simulates JBA/Fathom vendor export)",
+  "source": "urban_flood_grid_demo",
+  "serviceName": "urban-flood-vendor-grid-demo",
+  "provider": "Commercial urban flood (grid demo)",
+  "vendor": "jba",
+  "updatedAt": "2026-08-15T19:18:11.393Z",
+  "clipBbox": {
+    "minLon": -77.34,
+    "maxLon": -77.3,
+    "minLat": 25.04,
+    "maxLat": 25.08
+  },
+  "gridResolutionDeg": 0.001,
+  "depthThresholdInches": 4,
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-GRID-01",
+        "name": "Bay Street urban pluvial · moderate depth",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "jba",
+        "depthInches": 12,
+        "depthBand": "major",
+        "returnPeriodYears": 10,
+        "linkedCorridors": [
+          "CORR-02"
+        ],
+        "activeAtLevel": 2,
+        "gridLon": -77.326,
+        "gridLat": 25.063
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.3265,
+              25.0625
+            ],
+            [
+              -77.32549999999999,
+              25.0625
+            ],
+            [
+              -77.32549999999999,
+              25.063499999999998
+            ],
+            [
+              -77.3265,
+              25.063499999999998
+            ],
+            [
+              -77.3265,
+              25.0625
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-GRID-02",
+        "name": "Bay Street block · pluvial ponding",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "jba",
+        "depthInches": 10,
+        "depthBand": "moderate",
+        "returnPeriodYears": 10,
+        "linkedCorridors": [
+          "CORR-02"
+        ],
+        "activeAtLevel": 2,
+        "gridLon": -77.324,
+        "gridLat": 25.062
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.3245,
+              25.061500000000002
+            ],
+            [
+              -77.3235,
+              25.061500000000002
+            ],
+            [
+              -77.3235,
+              25.0625
+            ],
+            [
+              -77.3245,
+              25.0625
+            ],
+            [
+              -77.3245,
+              25.061500000000002
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-GRID-03",
+        "name": "Shirley Street cul-de-sac · minor pluvial",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "jba",
+        "depthInches": 8,
+        "depthBand": "moderate",
+        "returnPeriodYears": 5,
+        "linkedCorridors": [
+          "CORR-04"
+        ],
+        "activeAtLevel": 2,
+        "gridLon": -77.326,
+        "gridLat": 25.054
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.3265,
+              25.0535
+            ],
+            [
+              -77.32549999999999,
+              25.0535
+            ],
+            [
+              -77.32549999999999,
+              25.054499999999997
+            ],
+            [
+              -77.3265,
+              25.054499999999997
+            ],
+            [
+              -77.3265,
+              25.0535
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-GRID-04",
+        "name": "Shirley Street approach · shallow ponding",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "jba",
+        "depthInches": 6,
+        "depthBand": "minor",
+        "returnPeriodYears": 5,
+        "linkedCorridors": [
+          "CORR-04"
+        ],
+        "activeAtLevel": 2,
+        "gridLon": -77.325,
+        "gridLat": 25.053
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.3255,
+              25.052500000000002
+            ],
+            [
+              -77.3245,
+              25.052500000000002
+            ],
+            [
+              -77.3245,
+              25.0535
+            ],
+            [
+              -77.3255,
+              25.0535
+            ],
+            [
+              -77.3255,
+              25.052500000000002
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

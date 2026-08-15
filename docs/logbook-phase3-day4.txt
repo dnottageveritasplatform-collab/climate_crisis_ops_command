@@ -1,0 +1,83 @@
+Phase 3 Day 4 Logbook — Agency + GloFAS Merge Rules + Hazard Fusion Source Attribution
+
+Date: 2026-08-14
+Focus: Agency-wins corridor merge metadata, confidence normalization, per-trip flood source in hazard fusion + driver SMS briefings — verified on merge tests, pipeline audit, and command-center UI
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/glofas.js — merge rules + confidence normalization
+   - mergeGlofasGapFill() returns structured merge result (features + metadata)
+   - mergeRule: agency_wins_corridor · suppressedGlofasZones with reason agency_corridor_override
+   - normalizeAgencyFeature() — source: agency · confidence: agency_confirmed
+   - GloFAS gap-fill zones retain source: glofas · confidence: model_estimated
+
+2. src/geo/hazards.js — merged flood layer + corridor resolver
+   - Agency features normalized on load and webhook ingest
+   - resolveFloodZoneForCorridor() — prefers agency_confirmed over model_estimated
+   - Cross-ref exposes mergeRule, suppressedGlofasZoneCount, suppressedGlofasZones
+
+3. src/geo/multi-hazard.js — per-trip flood source attribution
+   - floodExposure includes source, confidence, sourceLabel
+   - briefingLine appends flood:agency_confirmed or flood:model_estimated
+   - agencyFloodTripCount / modelFloodTripCount summary counts
+   - floodMergeRule + suppressed zone counts in fusion cross-ref
+
+4. src/agents/action/pack.js — driver SMS + hospital COMMS source labels
+   - formatFusionForDriver() notes agency_confirmed vs model_estimated GloFAS gap-fill
+   - formatFusionForHospital() includes flood:sourceLabel per trip
+   - fusedBriefing.floodSourceLabel surfaced for driver SMS draft chip
+
+5. src/ui/public/index.html — hazard fusion strip + driver SMS chips
+   - Fused trip flood chips show · agency_confirmed or · model_estimated
+   - Driver SMS draft chip: critical · flood+wind · flood:agency_confirmed · alt … · N seg
+   - Phase pill → Phase 3 · Day 4
+
+6. EOC export + phase bump
+   - src/audit/eoc-export.js — flood merge metadata + fusion source counts
+   - phase-3-day-4 across server, orchestrator, defensibility, glofas-cds
+
+7. Tests + CLI
+   - tests/glofas-merge.test.mjs — 11 asserts on demo agency + GloFAS overlap
+   - npm run test:glofas-merge
+
+================================================================================
+
+SCOPE GUARD
+
+- Agency GIS wins on corridor overlap — GloFAS is gap-fill only where agency has no coverage
+- model_estimated zones never presented as field-confirmed depth
+- Source attribution in fusion briefings is read-only situational awareness
+- HITL mandatory before outbound COMMS
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-merge
+npm run test:glofas-convert
+set GLOFAS_ENABLED=true && npm run geo:flood-cross-ref
+set GLOFAS_ENABLED=true && npm run geo:multi-hazard-cross-ref
+npm run pipeline:run
+npm run eval:run
+
+Merge: 2 agency + 1 glofas gap · 1 GLOFAS-01 suppressed on CORR-02
+Fusion: CORR-02 trips → flood:agency_confirmed · CORR-01 gap → flood:model_estimated
+Driver SMS T-1001 chip: critical · flood+wind · flood:agency_confirmed · alt Bay Street corridor · 2 seg
+Eval: 8/8 · pipeline ~1007 ms · 0 tokens demo path
+Phase: phase-3-day-4
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day4-merge-attribution.png
+  90 KB · Phase 3 Day 4 pill · L2 Alma · hazard fusion strip flood FLOOD-01 14" · agency_confirmed
+  · driver SMS draft chip flood:agency_confirmed · extended HITL pending · pipeline complete 1007 ms
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 4: CCOC applies agency-wins GloFAS merge rules with agency_confirmed vs model_estimated confidence labels, and hazard fusion + driver SMS briefings now attribute flood source per at-risk trip so operators know whether exposure is agency GIS or Copernicus gap-fill.

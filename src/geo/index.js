@@ -7,15 +7,22 @@ import { attachLiveCadToTrips } from "../cad/enrichment.js";
 import { attachTransportDeskToFacilities } from "../transport-desk/index.js";
 import { buildPublicSafetyMapUnits } from "../public-safety/index.js";
 import { getActiveCorridorStatus, getCorridorLayerMeta, loadCorridorLayer } from "./esri.js";
-import { buildFloodMapOverlay } from "./hazards.js";
+import { buildFloodMapOverlay, buildFloodMapBadge } from "./hazards.js";
 import { buildWindMapOverlay } from "./wind.js";
+import { getGlofasCdsStatus, isGlofasEnabled } from "./glofas.js";
+import { getUrbanFloodVendorStatus, isUrbanFloodEnabled } from "./urban-flood.js";
 
 const geoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/geo");
 
 const MAP = {
-  viewBox: { width: 800, height: 480 },
+  viewBox: { width: 800, height: 480, padLeft: 110 },
   bbox: { minLon: -77.36, maxLon: -77.24, minLat: 25.03, maxLat: 25.10 },
 };
+
+export function mapViewBoxString() {
+  const pad = MAP.viewBox.padLeft || 0;
+  return `0 0 ${MAP.viewBox.width + pad} ${MAP.viewBox.height}`;
+}
 
 function readGeo(file) {
   return JSON.parse(fs.readFileSync(path.join(geoRoot, file), "utf8"));
@@ -94,11 +101,20 @@ function lineMidpoint(coords) {
 }
 
 const STREET_STYLE = {
-  primary: { width: 3, opacity: 0.85, color: "#8fa89a", label: true },
-  trunk: { width: 3.2, opacity: 0.9, color: "#9fb5a8", label: true },
-  secondary: { width: 2, opacity: 0.72, color: "#6b8578", label: true },
-  tertiary: { width: 1.2, opacity: 0.5, color: "#4a6358", label: false },
-  motorway: { width: 3.5, opacity: 0.9, color: "#a8beb2", label: true },
+  primary: { width: 3.2, opacity: 0.88, color: "#9fb5a8", label: true },
+  trunk: { width: 3.4, opacity: 0.92, color: "#a8c4b4", label: true },
+  secondary: { width: 2.4, opacity: 0.8, color: "#7a9488", label: true },
+  tertiary: { width: 1.2, opacity: 0.45, color: "#4a6358", label: false },
+  motorway: { width: 3.6, opacity: 0.92, color: "#b8cec2", label: true },
+};
+
+const LABELED_STREET = {
+  color: "#cfe4d9",
+  importantColor: "#effaf4",
+  widthBoost: 1,
+  importantWidthBoost: 1.75,
+  opacity: 0.92,
+  importantOpacity: 0.98,
 };
 
 /** Real street centerlines + names from OpenStreetMap (Nassau / New Providence bbox). */
@@ -126,21 +142,40 @@ export function buildStreetOverlay() {
     const mid = lineMidpoint(coords);
     const name = f.properties.name;
     const labelKey = `${name}-${Math.round(mid.x / 16)}-${Math.round(mid.y / 16)}`;
-    const forceLabel = f.properties.label === true && IMPORTANT.test(name);
+    const isImportant = Boolean(name && IMPORTANT.test(name));
+    const minLen = isImportant ? 8 : hw === "primary" || hw === "trunk" ? 22 : hw === "secondary" ? 28 : 999;
     const showLabel =
-      (style.label || forceLabel) &&
-      (forceLabel || len >= (hw === "primary" || hw === "trunk" ? 22 : hw === "secondary" ? 35 : 999)) &&
+      name &&
+      (isImportant || style.label || f.properties.label === true) &&
+      len >= minLen &&
       !seenLabels.has(labelKey);
     if (showLabel) seenLabels.add(labelKey);
+
+    const labeled = Boolean(showLabel);
+    const widthBoost = isImportant ? LABELED_STREET.importantWidthBoost : labeled ? LABELED_STREET.widthBoost : 0;
+    const lineColor = labeled
+      ? isImportant
+        ? LABELED_STREET.importantColor
+        : LABELED_STREET.color
+      : f.properties.manual
+        ? "#a8c4b4"
+        : style.color;
+    const lineOpacity = labeled
+      ? isImportant
+        ? LABELED_STREET.importantOpacity
+        : LABELED_STREET.opacity
+      : style.opacity;
 
     return {
       name,
       highway: hw,
       manual: f.properties.manual === true,
+      important: isImportant,
+      labeled,
       path: lineToSvgPath(coords),
-      width: f.properties.manual ? style.width + 0.5 : style.width,
-      opacity: style.opacity,
-      color: f.properties.manual ? "#a8c4b4" : style.color,
+      width: (f.properties.manual ? style.width + 0.5 : style.width) + widthBoost,
+      opacity: lineOpacity,
+      color: lineColor,
       label: showLabel ? { x: mid.x, y: mid.y - 2, text: name } : null,
     };
   });
@@ -176,7 +211,10 @@ export function attachCadOverlay(layers) {
   const trips = attachLiveCadToTrips(layers.trips || []);
   const corridorMeta = getCorridorLayerMeta();
   const floodZones = buildFloodMapOverlay(level);
+  const floodMapBadge = buildFloodMapBadge(floodZones, level);
   const windZones = buildWindMapOverlay(level);
+  const glofasCds = isGlofasEnabled() ? getGlofasCdsStatus() : null;
+  const urbanVendor = isUrbanFloodEnabled() ? getUrbanFloodVendorStatus() : null;
   return {
     ...layers,
     facilities,
@@ -187,7 +225,19 @@ export function attachCadOverlay(layers) {
     cadEnrichment: true,
     floodHazardOverlay: floodZones.length > 0,
     floodZones,
-    floodZoneCount: floodZones.length,
+    floodZoneCount: floodMapBadge.totalCount,
+    floodAgencyZoneCount: floodMapBadge.agencyZoneCount,
+    floodGlofasGapZoneCount: floodMapBadge.glofasGapZoneCount,
+    floodCommercialGapZoneCount: floodMapBadge.commercialGapZoneCount,
+    floodBadgeLabel: floodMapBadge.badgeLabel,
+    glofasFloodEnabled: floodMapBadge.glofasEnabled,
+    urbanFloodEnabled: floodMapBadge.urbanEnabled,
+    glofasStaleWarning: glofasCds?.staleWarning ?? false,
+    glofasStaleHours: glofasCds?.staleHours ?? null,
+    glofasStaleThresholdHours: glofasCds?.staleThresholdHours ?? null,
+    urbanStaleWarning: urbanVendor?.staleWarning ?? false,
+    urbanStaleHours: urbanVendor?.staleHours ?? null,
+    urbanStaleThresholdHours: urbanVendor?.staleThresholdHours ?? null,
     windHazardOverlay: windZones.length > 0,
     windZones,
     windZoneCount: windZones.length,
@@ -315,7 +365,8 @@ export function buildMapLayersFromTriage(ranking) {
     level,
     demo: true,
     serviceArea: ranking.geography || "New Providence · DEMO",
-    viewBox: `0 0 ${MAP.viewBox.width} ${MAP.viewBox.height}`,
+    viewBox: mapViewBoxString(),
+    mapPadLeft: MAP.viewBox.padLeft || 0,
     bbox: MAP.bbox,
     zone,
     corridors: projectedCorridors,
@@ -392,7 +443,8 @@ export function buildMapLayers(level = 2) {
     level,
     demo: true,
     serviceArea: "New Providence · DEMO",
-    viewBox: `0 0 ${MAP.viewBox.width} ${MAP.viewBox.height}`,
+    viewBox: mapViewBoxString(),
+    mapPadLeft: MAP.viewBox.padLeft || 0,
     bbox: MAP.bbox,
     zone,
     corridors: projectedCorridors,

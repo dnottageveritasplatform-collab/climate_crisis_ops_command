@@ -210,7 +210,13 @@ function formatFusionForDriver(fusion) {
   }
   if (fusion.floodExposure?.zoneId) {
     const depth = fusion.floodExposure.depthInches ? ` (${fusion.floodExposure.depthInches}" depth)` : "";
-    parts.push(`Flood zone ${fusion.floodExposure.zoneId}${depth}`);
+    const src =
+      fusion.floodExposure.sourceLabel === "model_estimated"
+        ? " · model_estimated GloFAS gap-fill"
+        : fusion.floodExposure.sourceLabel === "agency_confirmed"
+          ? " · agency_confirmed"
+          : "";
+    parts.push(`Flood zone ${fusion.floodExposure.zoneId}${depth}${src}`);
   }
   if (fusion.windExposure?.zoneId) {
     const gust = fusion.windExposure.gustMph ? `${fusion.windExposure.gustMph} mph gusts · ` : "";
@@ -236,7 +242,8 @@ function formatFusionForHospital(fusion) {
   if (!fusion) return null;
   const hazards = fusion.hazardTypes?.length ? fusion.hazardTypes.join("+") : "routing";
   const alt = fusion.routingAdvisory?.alternateName ? ` · alt ${fusion.routingAdvisory.alternateName}` : "";
-  return `  • ${fusion.tripId}: ${fusion.corridor} · ${hazards}${alt} (${fusion.compositeRisk})`;
+  const floodSrc = fusion.floodExposure?.sourceLabel ? ` · flood:${fusion.floodExposure.sourceLabel}` : "";
+  return `  • ${fusion.tripId}: ${fusion.corridor} · ${hazards}${floodSrc}${alt} (${fusion.compositeRisk})`;
 }
 
 function buildActionPack(level, signal, dispatch, commsSop, levelSop) {
@@ -597,6 +604,7 @@ function buildDriverComms(atRisk, level, corridorStatus, fusedByTrip = {}) {
             compositeRisk: fusion.compositeRisk,
             hazardTypes: fusion.hazardTypes,
             briefingLine: fusion.briefingLine,
+            floodSourceLabel: fusion.floodExposure?.sourceLabel || null,
             alternateRoute: fusion.routingAdvisory?.alternateName || null,
             turnByTurnSteps: fusion.avoidanceRoute?.stepCount || null,
             turnByTurn: fusion.avoidanceRoute?.turnByTurn || null,

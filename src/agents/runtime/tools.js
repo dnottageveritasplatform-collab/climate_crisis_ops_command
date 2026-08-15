@@ -11,6 +11,10 @@ import { getMultiFeedStatus } from "../../signals/multi-feed.js";
 import { getSopCorpusStatus } from "../../sops/corpus.js";
 import { getRoutingPreviewStatus } from "../../geo/routing.js";
 import { getFloodHazardStatus } from "../../geo/hazards.js";
+import { getGlofasFloodStatus } from "../../geo/glofas.js";
+import { getGlofasRunbookStatus } from "../../geo/glofas-runbook.js";
+import { getFloodStackRunbookStatus } from "../../geo/flood-stack-runbook.js";
+import { getUrbanFloodStatus } from "../../geo/urban-flood.js";
 import { getWindHazardStatus } from "../../geo/wind.js";
 import { getMultiHazardStatus } from "../../geo/multi-hazard.js";
 import { getSovereignDeployStatus } from "../../deploy/sovereign.js";
@@ -129,6 +133,50 @@ const registry = {
       "Flood-depth hazard GIS overlay — active zones, corridor-linked exposure, and at-risk trip count (Phase 2 Day 12)",
     parameters: { type: "object", properties: {} },
     execute: async () => getFloodHazardStatus(),
+  },
+  get_glofas_flood_status: {
+    description:
+      "GloFAS gap-fill flood layer — pipeline glofas_flood_sync snapshot: CDS cache, escalation refresh policy, stale EWDS warning, merge rule, gap zone counts (Phase 3 Day 7)",
+    parameters: {
+      type: "object",
+      properties: {
+        level: { type: "number", description: "Escalation level 1-4" },
+      },
+    },
+    execute: async ({ level = 2 } = {}) => getGlofasFloodStatus(level),
+  },
+  get_urban_flood_status: {
+    description:
+      "Commercial urban flood layer — pipeline urban_flood_sync snapshot: L2+ escalation refresh, cache-only below L2, stale vendor warning, three-way merge badge (Phase 3b Day 7)",
+    parameters: {
+      type: "object",
+      properties: {
+        level: { type: "number", description: "Escalation level 1-4" },
+      },
+    },
+    execute: async ({ level = 2 } = {}) => getUrbanFloodStatus(level),
+  },
+  get_glofas_runbook_status: {
+    description:
+      "GloFAS pilot runbook — agency-first trust matrix, scope guard review, primary trust posture (Phase 3 Day 10)",
+    parameters: {
+      type: "object",
+      properties: {
+        level: { type: "number", description: "Escalation level 1-4" },
+      },
+    },
+    execute: async ({ level = 2 } = {}) => getGlofasRunbookStatus(level),
+  },
+  get_flood_stack_runbook_status: {
+    description:
+      "Three-layer flood stack runbook — 8-rule agency · GloFAS · commercial trust matrix + scope guard (Phase 3b Day 10)",
+    parameters: {
+      type: "object",
+      properties: {
+        level: { type: "number", description: "Escalation level 1-4" },
+      },
+    },
+    execute: async ({ level = 2 } = {}) => getFloodStackRunbookStatus(level),
   },
   get_wind_hazard_status: {
     description:

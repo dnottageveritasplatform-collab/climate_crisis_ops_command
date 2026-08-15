@@ -1,0 +1,130 @@
+Phase 3b Day 9 Logbook — Sovereign Urban Flood Air-Gap Bundle + urban_flood_airgap_sync
+
+Date: 2026-08-15
+Focus: Pre-downloaded urban-flood-nassau-latest.json offline clip · sovereign deploy urban_flood_airgap_clip check · pipeline urban_flood_airgap_sync teal audit chip · verified on air-gap profile + sovereign 10/10 deploy checks + L2 pipeline audit trail
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/urban-flood-sovereign.js — commercial urban air-gap bundle module
+   - getUrbanFloodAirGapConfig() — URBAN_FLOOD_ENABLED · URBAN_FLOOD_AIRGAP · URBAN_FLOOD_LIVE · clip path
+   - buildUrbanFloodAirGapProfile() — bundle file inventory · clipReady · fetchPolicy offline_clip_only
+   - buildUrbanFloodAirGapPipelineStep() — step: urban_flood_airgap_sync · badge urban air-gap clip · N feature(s)
+   - Bundle files: clip (required) · grid · cache · validation_catalog (optional)
+   - Recommended env: URBAN_FLOOD_AIRGAP=true · URBAN_FLOOD_LIVE=false · URBAN_FLOOD_DEMO=false
+
+2. src/deploy/sovereign.js — urban_flood_airgap_clip deploy check
+   - Passes when URBAN_FLOOD_ENABLED=false OR urban-flood-nassau-latest.json present on disk
+   - dataResidency.urbanFloodClip block · urbanFloodAirGap profile in sovereign response
+   - Sovereign checks: 10/10 when GloFAS + urban flood air-gap clips both present
+   - recommendedEnv adds URBAN_FLOOD_ENABLED · URBAN_FLOOD_AIRGAP · URBAN_FLOOD_CLIP_PATH
+
+3. src/orchestrator/index.js — urban_flood_airgap_sync after urban_flood_validation_sync · phase-3b-day-9
+
+4. src/audit/index.js — air-gap audit visibility
+   - Summary note: urban_flood_airgap_sync · urban air-gap clip · 4 feature(s)
+   - Meta chip urbanFloodAirGapSync · pipeline step chip in steps array
+   - buildAuditTrail urbanFloodAirGapSync row (clipReady · badge · fetchPolicy)
+
+5. src/audit/eoc-export.js — operatingPicture.urbanFloodAirGap block
+   - clipReady · clipPath · clipFeatureCount · fetchPolicy · airGapMode · bundleFileCount · recommendedEnv · scopeGuard
+
+6. src/routes/geo.js — GET /hazards/urban-flood/air-gap
+
+7. src/ui/public/index.html — teal urban-flood-airgap audit chip
+   - formatUrbanFloodAirGapAuditChip() — urban_flood_airgap_sync·urban-air-gap-clip·4-feature(s)
+   - Latest audit header + trail meta row show urban air-gap chip alongside glofas air-gap chip
+   - Phase pill → Phase 3b · Day 9
+
+8. src/server.js — phase-3b-day-9 · phase3bDay9Complete: true
+
+9. docs/sovereign-deploy.md — Urban flood air-gap bundle section
+   - Bundle layout · recommended sovereign env · pre-download workflow (staging → edge)
+   - Verify commands · pipeline audit chip · urban_flood_airgap_clip deploy check
+
+10. .env.example — URBAN_FLOOD_AIRGAP · URBAN_FLOOD_VALIDATION_CATALOG_PATH
+    .env.sovereign.example — full urban air-gap profile alongside GloFAS bundle
+
+11. package.json — npm run geo:urban-flood-airgap · npm run test:urban-flood-airgap
+
+12. data/eval/scenarios.json — eval-l2-pipeline-audit adds urban_flood_airgap_sync step
+
+13. Tests + CLI
+    - tests/urban-flood-airgap.test.mjs — 12 asserts · clip 4 features · sovereign urban_flood_airgap_clip OK
+    - npm run test:urban-flood-airgap
+    - npm run eval:run — 8/8
+
+================================================================================
+
+BUNDLE LAYOUT (DEMO)
+
+| File | Required | Status (demo) | Purpose |
+|------|----------|---------------|---------|
+| urban-flood-nassau-latest.json | Yes | 4 features | Pre-converted commercial urban clip |
+| urban-flood-grid-nassau-demo.json | Optional | present | Grid sidecar for refresh worker |
+| urban-flood-cache.json | Optional | — | Last vendor fetch metadata |
+| urban-flood-validation-catalog.json | Optional | present | Dorian FLOOD-04 offline validation |
+
+Fetch policy: offline_clip_only when URBAN_FLOOD_LIVE=false — no Fathom/JBA vendor API at runtime.
+
+================================================================================
+
+ENV
+
+URBAN_FLOOD_ENABLED=true
+URBAN_FLOOD_AIRGAP=true
+URBAN_FLOOD_LIVE=false
+URBAN_FLOOD_DEMO=false
+URBAN_FLOOD_CLIP_PATH=data/geo/urban-flood-nassau-latest.json
+GLOFAS_ENABLED=true
+GLOFAS_AIRGAP=true
+
+================================================================================
+
+SCOPE GUARD
+
+- urban_flood_airgap_sync verifies disk bundle only — not vendor license authority
+- Pre-downloaded clip is commercial_model guidance — agency GIS remains primary on overlap
+- Air-gap edge uses cached clip + three-way merge; HITL mandatory before COMMS
+- Connected sovereign LAN refresh: docs/urban-flood-sovereign-cron.md (Day 7 policy)
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:urban-flood-airgap
+npm run geo:urban-flood-airgap
+curl.exe http://127.0.0.1:8787/api/geo/hazards/urban-flood/air-gap
+curl.exe http://127.0.0.1:8787/api/deploy/sovereign
+set URBAN_FLOOD_ENABLED=true && npm run pipeline:run
+npm run audit:eoc-briefing
+npm run eval:run
+
+Pipeline summary: urban_flood_airgap_sync · urban air-gap clip · 4 feature(s) · sovereign 10/10 deploy checks
+Audit chips: urban_flood_airgap_sync·urban-air-gap-clip·4-feature(s) · glofas_airgap_sync·air-gap-clip·2-feature(s)
+Sovereign check: urban_flood_airgap_clip OK · urban-flood-nassau-latest.json · 4 feature(s) offline
+Eval: 8/8 · Phase: phase-3b-day-9
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3b-day9-airgap-audit.jpg
+  13 KB · Phase 3b · Day 9 · L2 Alma tropical storm demo · Audit Trail panel
+  · Pipeline L2 summary with urban_flood_airgap_sync · urban air-gap clip · 4 feature(s)
+  · Teal urban_flood_airgap_sync chip · glofas_airgap_sync · air-gap clip · 2 feature(s)
+  · urban_flood_validation_sync · urban-layer-acceptable · urban_flood_sync · escalation_refresh chips visible
+  · sovereign 10/10 deploy checks · EOC audit export button · timestamp 15:57:54
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 9: CCOC ships a sovereign air-gap bundle around pre-downloaded urban-flood-nassau-latest.json so offline edge hosts run commercial urban pluvial gap-fill without vendor API calls, verifies the clip in urban_flood_airgap_clip sovereign deploy checks + urban_flood_airgap_sync pipeline audit, and documents the staging→edge copy workflow in docs/sovereign-deploy.md alongside the existing GloFAS air-gap bundle.
+
+================================================================================
+
+NEXT (Day 10)
+
+Runbook + scope guard review — extend docs/glofas-pilot-runbook.md → docs/flood-stack-runbook.md · flood_stack_runbook_sync pipeline step · 8-rule trust matrix (agency · GloFAS · commercial) · Phase 3b close-out.

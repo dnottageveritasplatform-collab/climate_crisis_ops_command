@@ -807,14 +807,87 @@
     .map-legend {
       position: absolute; bottom: 0.75rem; left: 0.75rem;
       z-index: 2;
-      pointer-events: none;
+      pointer-events: auto;
       background: rgba(7,11,15,.92);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 0.55rem 0.75rem;
       font-size: 0.65rem;
+      width: fit-content;
+      max-width: 11.2rem;
+      box-sizing: border-box;
+      transform: scale(0.81);
+      transform-origin: bottom left;
     }
-    .map-legend div { display: flex; align-items: center; gap: 0.4rem; margin: 0.2rem 0; color: var(--muted); }
+    .map-legend-head {
+      font-size: 0.58rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .map-legend-toggle {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+      width: 100%;
+      margin: 0.12rem 0;
+      padding: 0.12rem 0.25rem;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.65rem;
+      text-align: left;
+      cursor: pointer;
+      line-height: 1.25;
+    }
+    .map-legend-toggle:hover {
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+    }
+    .map-legend-toggle:focus-visible {
+      outline: 1px solid var(--gold);
+      outline-offset: 1px;
+    }
+    .map-legend-toggle.is-off {
+      opacity: 0.45;
+    }
+    .map-legend-toggle.is-off .map-legend-label {
+      text-decoration: line-through;
+    }
+    .map-legend-toggle.is-off .dot,
+    .map-legend-toggle.is-off .map-legend-swatch {
+      opacity: 0.35;
+    }
+    .map-legend-label {
+      flex: 1;
+      min-width: 0;
+    }
+    .map-legend-swatch {
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .map-legend-note {
+      display: block;
+      margin: 0.2rem 0;
+      padding-left: 0.1rem;
+      font-size: 0.58rem;
+      color: var(--muted);
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+    .map-legend div.map-legend-wrap,
+    .map-legend > .map-legend-note:last-child {
+      display: block;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.35;
+    }
     .dot { width: 8px; height: 8px; border-radius: 50%; }
     .map-badge {
       position: absolute; top: 0.75rem; right: 0.75rem;
@@ -825,6 +898,36 @@
       border: 1px dashed var(--border);
       border-radius: 6px;
       padding: 0.3rem 0.55rem;
+    }
+    .flood-stack-badge {
+      position: absolute; top: 0.75rem; left: 0.75rem;
+      z-index: 2;
+      pointer-events: none;
+      font-size: 0.62rem; font-weight: 600;
+      color: #ddd6fe;
+      background: rgba(30, 20, 48, 0.92);
+      border: 1px solid rgba(124, 58, 237, 0.45);
+      border-radius: 6px;
+      padding: 0.3rem 0.55rem;
+      max-width: min(16rem, calc(100% - 1.5rem));
+      line-height: 1.35;
+    }
+    .map-chrome {
+      position: absolute;
+      top: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      pointer-events: none;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(220, 230, 240, 0.88);
+      background: rgba(7, 11, 15, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      padding: 0.22rem 0.65rem;
     }
     .map-head-actions {
       display: flex;
@@ -1013,6 +1116,44 @@
     }
     .audit-chip.step { background: rgba(167,139,250,.12); color: #e9d5ff; border-color: rgba(167,139,250,.25); }
     .audit-chip.cite { background: rgba(255,199,44,.08); color: var(--gold); border-color: rgba(255,199,44,.2); }
+    .audit-chip.glofas-sync { background: rgba(56,189,248,.12); color: #7dd3fc; border-color: rgba(56,189,248,.35); font-weight: 600; }
+    .audit-chip.glofas-stale { background: rgba(251,191,36,.12); color: #fcd34d; border-color: rgba(251,191,36,.35); font-weight: 600; }
+    .audit-chip.glofas-validation { background: rgba(167,139,250,.12); color: #c4b5fd; border-color: rgba(167,139,250,.35); font-weight: 600; }
+    .audit-chip.urban-flood-validation { background: rgba(192,132,252,.12); color: #d8b4fe; border-color: rgba(192,132,252,.35); font-weight: 600; }
+    .audit-chip.glofas-airgap { background: rgba(52,211,153,.1); color: #6ee7b7; border-color: rgba(52,211,153,.28); font-weight: 600; }
+    .audit-chip.urban-flood-airgap { background: rgba(45,212,191,.1); color: #5eead4; border-color: rgba(45,212,191,.28); font-weight: 600; }
+    .audit-chip.glofas-runbook { background: rgba(251,191,36,.12); color: #fde68a; border-color: rgba(251,191,36,.35); font-weight: 600; }
+    .audit-chip.flood-stack-runbook { background: rgba(250,204,21,.12); color: #fef08a; border-color: rgba(250,204,21,.35); font-weight: 600; }
+    .glofas-stale-banner {
+      margin: 0.55rem 0 0.35rem;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(251,191,36,.1);
+      border: 1px solid rgba(251,191,36,.28);
+      color: #fcd34d;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+    .glofas-sync-banner {
+      margin: 0.55rem 0 0.35rem;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(56,189,248,.08);
+      border: 1px solid rgba(56,189,248,.22);
+      color: #7dd3fc;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+    .glofas-cache-banner {
+      margin: 0.55rem 0 0.35rem;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(148,163,184,.08);
+      border: 1px solid rgba(148,163,184,.22);
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
     .audit-chip.approver { background: rgba(95,212,164,.1); color: var(--ok); border-color: rgba(95,212,164,.25); }
     button.pipeline {
       background: linear-gradient(135deg, var(--gold) 0%, #e8a020 100%);
@@ -1248,7 +1389,7 @@
     </div>
     <div class="topbar-meta">
       <div class="toolbar">
-        <span class="pill gold" id="phasePill">Phase 2 · Day 18</span>
+        <span class="pill gold" id="phasePill">Phase 3b · Day 10</span>
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
         <button type="button" class="toggle strip-toggle" id="toggleDemoRehearsalStrip" data-strip="demoRehearsalStrip" data-accent="rehearsal" aria-pressed="false" title="5-minute demo rehearsal beat sheet with live eval stats">Demo rehearsal</button>
         <button type="button" class="toggle strip-toggle" id="toggleDefensibilityStrip" data-strip="defensibilityStrip" data-accent="defensibility" aria-pressed="false" title="Defensibility pitch — Broward credibility + five pillars">Defensibility</button>
@@ -1456,33 +1597,39 @@
         </div>
       </div>
       <div class="map-wrap" id="mapWrap">
+        <span class="map-chrome" id="mapChrome">Nassau · New Providence</span>
+        <span class="flood-stack-badge" id="floodStackBadge" hidden></span>
         <span class="map-badge" id="mapBadge">Loading map layers…</span>
         <span class="map-zoom-hint" id="mapZoomHint">Scroll to zoom · scrollbars when zoomed · double-click reset</span>
         <div class="map-scroll-host" id="mapScrollHost">
           <div class="map-scroll-surface" id="mapScrollSurface">
-            <svg class="map-svg" id="mapSvg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" aria-label="Nassau metro command map"></svg>
+            <svg class="map-svg" id="mapSvg" viewBox="0 0 910 480" xmlns="http://www.w3.org/2000/svg" aria-label="Nassau metro command map"></svg>
           </div>
         </div>
-        <div class="map-legend">
-          <div><span class="dot" style="background:#ff6b6b"></span> Hospital (public)</div>
-          <div><span class="dot" style="background:#c084fc"></span> Hospital (private)</div>
-          <div style="font-size:0.58rem;color:var(--muted)">Bed % pill = transport desk pressure</div>
-          <div style="font-size:0.58rem;color:var(--muted)">At-risk trip label = live CAD run (Day 5)</div>
-          <div><span class="dot" style="background:#00abc9"></span> NEMT operator</div>
-          <div><span class="dot" style="background:#38bdf8"></span> CAD unit (read-only)</div>
-          <div><span style="display:inline-block;width:10px;height:10px;background:#f97316;transform:rotate(45deg);margin-right:0.35rem"></span> Fire unit (EOC)</div>
-          <div><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px 2px 4px 4px;margin-right:0.35rem"></span> Police unit (EOC)</div>
-          <div><span class="dot" style="background:#ffc72c"></span> At-risk trip</div>
-          <div style="font-size:0.58rem;color:var(--muted)">Purple rank = full manifest; yellow = at-risk only</div>
-          <div style="font-size:0.58rem;color:var(--muted)">Corridor lines = ESRI agency GIS when configured</div>
-          <div><span class="dot" style="background:#ffb347"></span> Restricted corridor</div>
-          <div><span class="dot" style="background:#ff6b6b"></span> Closed corridor</div>
-          <div><span style="display:inline-block;width:12px;height:8px;background:rgba(14,165,233,.35);border:1px solid #0ea5e9;margin-right:0.35rem"></span> Flood depth zone (GIS)</div>
-          <div><span style="display:inline-block;width:12px;height:8px;background:rgba(168,85,247,.28);border:1px dashed #a855f7;margin-right:0.35rem"></span> Wind · hurricane tier (GIS)</div>
-          <div><span style="display:inline-block;width:12px;height:8px;background:rgba(249,115,22,.24);border:1px dashed #f97316;margin-right:0.35rem"></span> Wind · strong gust (GIS)</div>
-          <div><span style="display:inline-block;width:12px;height:8px;background:rgba(251,191,36,.18);border:1px dashed #fbbf24;margin-right:0.35rem"></span> Wind · tropical storm (GIS)</div>
-          <div style="font-size:0.58rem;color:var(--muted)">Wind label = peak gust mph · Use Hazard fusion for trip cross-ref</div>
-          <div style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px solid var(--border);font-size:0.58rem;opacity:0.65">Streets © OpenStreetMap</div>
+        <div class="map-legend" id="mapLegend">
+          <div class="map-legend-head">Layers - click to toggle</div>
+          <button type="button" class="map-legend-toggle" data-layer="hospital-public" aria-pressed="true"><span class="dot" style="background:#ff6b6b"></span><span class="map-legend-label">Hospital (public)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="hospital-private" aria-pressed="true"><span class="dot" style="background:#c084fc"></span><span class="map-legend-label">Hospital (private)</span></button>
+          <div class="map-legend-note">Bed % pill = transport desk pressure</div>
+          <div class="map-legend-note">At-risk trip label = live CAD run (Day 5)</div>
+          <button type="button" class="map-legend-toggle" data-layer="nemt" aria-pressed="true"><span class="dot" style="background:#00abc9"></span><span class="map-legend-label">NEMT operator</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="cad" aria-pressed="true"><span class="dot" style="background:#38bdf8"></span><span class="map-legend-label">CAD unit (read-only)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="fire" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:10px;height:10px;background:#f97316;transform:rotate(45deg)"></span><span class="map-legend-label">Fire unit (EOC)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="police" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px 2px 4px 4px"></span><span class="map-legend-label">Police unit (EOC)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="trips" aria-pressed="true"><span class="dot" style="background:#ffc72c"></span><span class="map-legend-label">At-risk trip</span></button>
+          <div class="map-legend-note">Purple rank = full manifest; yellow = at-risk only</div>
+          <div class="map-legend-note">Corridor lines = ESRI agency GIS when configured</div>
+          <button type="button" class="map-legend-toggle" data-layer="corridors" aria-pressed="true"><span class="dot" style="background:#ffb347"></span><span class="map-legend-label">Corridors (open / restricted / closed)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="street-labels" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:12px;height:8px;background:transparent;border:2px solid rgba(239,250,244,.85)"></span><span class="map-legend-label">Named streets (line + label)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="flood-agency" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:12px;height:8px;background:rgba(14,165,233,.35);border:1px solid #0ea5e9"></span><span class="map-legend-label">Solid blue = agency confirmed</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="flood-glofas" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:12px;height:8px;background:rgba(56,189,248,.12);border:1px dashed #38bdf8"></span><span class="map-legend-label">Dashed blue = GloFAS model</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="flood-commercial" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:12px;height:8px;background:rgba(124,58,237,.22);border:1px dotted #a78bfa"></span><span class="map-legend-label">Dotted violet = urban commercial model</span></button>
+          <div class="map-legend-note">Agency label = depth inches · GloFAS = return period or model · Urban = depth or urban model</div>
+          <button type="button" class="map-legend-toggle" data-layer="wind-hurricane" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:12px;height:8px;background:rgba(168,85,247,.28);border:1px dashed #a855f7"></span><span class="map-legend-label">Wind · hurricane tier (GIS)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="wind-strong" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:12px;height:8px;background:rgba(249,115,22,.24);border:1px dashed #f97316"></span><span class="map-legend-label">Wind · strong gust (GIS)</span></button>
+          <button type="button" class="map-legend-toggle" data-layer="wind-tropical" aria-pressed="true"><span class="map-legend-swatch" style="display:inline-block;width:12px;height:8px;background:rgba(251,191,36,.18);border:1px dashed #fbbf24"></span><span class="map-legend-label">Wind · tropical storm (GIS)</span></button>
+          <div class="map-legend-note map-legend-wrap">Wind label = peak gust mph · Use Hazard fusion for trip cross-ref</div>
+          <div class="map-legend-note map-legend-wrap" style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px solid var(--border);opacity:0.65">Basemap © Esri World Imagery · Streets © OpenStreetMap</div>
         </div>
       </div>
     </section>
@@ -1561,9 +1708,27 @@
     let lastTriageMap = null;
     let llmProviderLabel = "LLM";
     let mapLoadGen = 0;
+    let lastMapPaint = { layers: null, ranks: {} };
+    const mapLegendVisibility = {
+      "hospital-public": true,
+      "hospital-private": true,
+      nemt: true,
+      cad: true,
+      fire: true,
+      police: true,
+      trips: true,
+      corridors: true,
+      "street-labels": true,
+      "flood-agency": true,
+      "flood-glofas": true,
+      "flood-commercial": true,
+      "wind-hurricane": true,
+      "wind-strong": true,
+      "wind-tropical": true,
+    };
     let hitlState = null;
     let hitlModalRole = null;
-    let mapBaseViewBox = { x: 0, y: 0, w: 800, h: 480 };
+    let mapBaseViewBox = { x: 0, y: 0, w: 910, h: 480 };
     let mapZoom = 1;
     const MAP_ZOOM_MIN = 1;
     const MAP_ZOOM_MAX = 5;
@@ -1840,7 +2005,10 @@
       wrap.addEventListener("mouseenter", () => wrap.classList.add("map-hover"));
       wrap.addEventListener("mouseleave", () => wrap.classList.remove("map-hover"));
       host.addEventListener("wheel", zoomMapWheel, { passive: false });
-      wrap.addEventListener("dblclick", resetMapView);
+      wrap.addEventListener("dblclick", (e) => {
+        if (e.target.closest("#mapLegend")) return;
+        resetMapView();
+      });
       window.addEventListener("resize", applyMapZoomSurface);
     }
 
@@ -1951,6 +2119,125 @@
       updateOpsTabLabels();
     }
 
+    function isMapLayerVisible(key) {
+      return mapLegendVisibility[key] !== false;
+    }
+
+    function mapLayerG(key, inner) {
+      if (!isMapLayerVisible(key)) return "";
+      return `<g data-map-layer="${key}">${inner}</g>`;
+    }
+
+    function facilityLayerKey(role) {
+      if (role === "hospital_partner") return "hospital-public";
+      if (role === "hospital_partner_private") return "hospital-private";
+      return "nemt";
+    }
+
+    function isCommercialFloodZone(f) {
+      return f.confidence === "commercial_model" || f.source === "commercial";
+    }
+
+    function isGlofasFloodZone(f) {
+      if (isCommercialFloodZone(f)) return false;
+      return Boolean(f.strokeDasharray || f.source === "glofas" || f.confidence === "model_estimated");
+    }
+
+    function floodLayerKey(f) {
+      if (isCommercialFloodZone(f)) return "flood-commercial";
+      return isGlofasFloodZone(f) ? "flood-glofas" : "flood-agency";
+    }
+
+    function floodGlowFilter(f) {
+      if (isCommercialFloodZone(f)) return "url(#floodGlowCommercial)";
+      if (isGlofasFloodZone(f)) return "url(#floodGlowGlofas)";
+      return "url(#floodGlowAgency)";
+    }
+
+    function escapeSvgText(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function streetPathMarkup(s, { background = false } = {}) {
+      const width = s.width || 2;
+      const opacity = background ? Math.min(0.38, (s.opacity || 0.5) * 0.55) : s.opacity || 0.85;
+      const color = background ? "#6b8578" : s.color || "#cfe4d9";
+      if (background) {
+        return `<path d="${s.path}" fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+      }
+      const halo = s.important ? 3.5 : 2.5;
+      return `
+        <path d="${s.path}" fill="none" stroke="rgba(6,12,18,0.88)" stroke-width="${width + halo}" stroke-opacity="0.95" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="${s.path}" fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>
+      `;
+    }
+
+    function streetLabelMarkup(s) {
+      const text = escapeSvgText(s.label.text);
+      const prominent = s.important || /bay street|eastern|shirley/i.test(s.label.text);
+      const fs = prominent ? 9 : 8;
+      const weight = prominent ? 700 : 600;
+      const x = s.label.x;
+      const y = s.label.y;
+      return `
+        <text x="${x}" y="${y}" text-anchor="middle" fill="rgba(6,12,18,0.92)" stroke="rgba(6,12,18,0.92)" stroke-width="3" paint-order="stroke" font-size="${fs}" font-family="system-ui" font-weight="${weight}">${text}</text>
+        <text x="${x}" y="${y}" text-anchor="middle" fill="rgba(236,246,241,0.96)" font-size="${fs}" font-family="system-ui" font-weight="${weight}">${text}</text>
+      `;
+    }
+
+    function floodCalloutMarkup(f) {
+      const commercial = isCommercialFloodZone(f);
+      const model = isGlofasFloodZone(f);
+      const c = f.callout || {};
+      const headline = escapeSvgText(c.headline || f.name || "Flood zone");
+      const detail = escapeSvgText(c.detail || f.label?.text || "");
+      const stroke = f.stroke || "#0ea5e9";
+      const lx = f.label?.x ?? 400;
+      const ly = f.label?.y ?? 240;
+      const boxW = Math.min(128, Math.max(78, headline.length * 5.6));
+      const boxH = 24;
+      const bx = Math.round(lx - boxW / 2);
+      const by = Math.round(ly - 34);
+      const dash = commercial ? ' stroke-dasharray="2 2"' : model ? ' stroke-dasharray="4 2"' : "";
+      return `
+        <line x1="${lx}" y1="${ly - 5}" x2="${lx}" y2="${by + boxH}" stroke="${stroke}" stroke-width="1" opacity="0.75"/>
+        <rect x="${bx}" y="${by}" width="${boxW}" height="${boxH}" rx="4" fill="rgba(8,12,18,0.94)" stroke="${stroke}" stroke-width="1.2"${dash}/>
+        <text x="${lx}" y="${by + 10}" text-anchor="middle" fill="${stroke}" font-size="7" font-weight="700" font-family="system-ui">${headline}</text>
+        <text x="${lx}" y="${by + 19}" text-anchor="middle" fill="rgba(210,220,230,0.88)" font-size="6.5" font-family="system-ui">${detail}</text>
+      `;
+    }
+
+    function windLayerKey(w) {
+      if (w.windBand === "hurricane") return "wind-hurricane";
+      if (w.windBand === "strong") return "wind-strong";
+      return "wind-tropical";
+    }
+
+    function syncMapLegendUi() {
+      document.querySelectorAll(".map-legend-toggle[data-layer]").forEach((btn) => {
+        const on = isMapLayerVisible(btn.dataset.layer);
+        btn.classList.toggle("is-off", !on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    }
+
+    function initMapLegend() {
+      const legend = document.getElementById("mapLegend");
+      if (!legend) return;
+      legend.addEventListener("click", (e) => {
+        const btn = e.target.closest(".map-legend-toggle[data-layer]");
+        if (!btn) return;
+        const key = btn.dataset.layer;
+        mapLegendVisibility[key] = !isMapLayerVisible(key);
+        syncMapLegendUi();
+        if (lastMapPaint.layers) paintMap(lastMapPaint.layers, lastMapPaint.ranks, { preserveView: true });
+      });
+      syncMapLegendUi();
+    }
+
     function renderMap(layers, ranks = tripRanks) {
       mapLoadGen++;
       paintMap(layers, ranks);
@@ -1986,7 +2273,8 @@
       return { bed, hold, diversion };
     }
 
-    function paintMap(layers, ranks = tripRanks) {
+    function paintMap(layers, ranks = tripRanks, { preserveView = false } = {}) {
+      lastMapPaint = { layers, ranks };
       const svg = document.getElementById("mapSvg");
       const badge = document.getElementById("mapBadge");
       const mapMeta = document.getElementById("mapMeta");
@@ -1995,64 +2283,90 @@
         return;
       }
 
+      const floodStackBadge = document.getElementById("floodStackBadge");
+      if (floodStackBadge) {
+        const showStack =
+          layers.floodHazardOverlay &&
+          layers.floodBadgeLabel &&
+          (layers.urbanFloodEnabled || layers.glofasFloodEnabled);
+        floodStackBadge.hidden = !showStack;
+        floodStackBadge.textContent = showStack ? layers.floodBadgeLabel : "";
+      }
       svg.setAttribute("viewBox", layers.viewBox);
       const syncLabel = layers.syncSource === "triage" ? " · triage sync" : "";
       const cadLabel = layers.cadOverlay ? ` · ${layers.cadUnitCount || 0} CAD unit(s)` : "";
       const eocLabel = layers.publicSafetyOverlay ? ` · ${layers.publicSafetyUnitCount || 0} EOC unit(s)` : "";
       const enrichLabel = layers.cadEnrichment ? " · live CAD" : "";
       const esriLabel = layers.esriCorridorOverlay ? " · ESRI corridors" : "";
-      const floodLabel = layers.floodHazardOverlay ? ` · ${layers.floodZoneCount || 0} flood zone(s)` : "";
+      const floodLabel = layers.floodHazardOverlay
+        ? ` · ${layers.floodBadgeLabel || `${layers.floodZoneCount || 0} flood zone(s)`}`
+        : "";
       const windLabel = layers.windHazardOverlay ? ` · ${layers.windZoneCount || 0} wind zone(s)` : "";
       const conflictNote = layers.conflictCount ? ` · ${layers.conflictCount} corridor conflict(s)` : "";
       badge.textContent = `${layers.serviceArea} · L${layers.level} · ${layers.atRiskCount} at-risk${syncLabel}${cadLabel}${eocLabel}${enrichLabel}${esriLabel}${floodLabel}${windLabel}`;
       mapMeta.textContent = layers.syncSource === "triage"
-        ? `Thin GIS · synced to triage${layers.cadOverlay ? " · CAD overlay" : ""}${layers.publicSafetyOverlay ? " · EOC overlay" : ""}${layers.esriCorridorOverlay ? " · ESRI corridors" : ""}${layers.floodHazardOverlay ? " · flood hazard" : ""}${layers.windHazardOverlay ? " · wind hazard" : ""}${conflictNote}`
+        ? `Thin GIS · synced to triage${layers.cadOverlay ? " · CAD overlay" : ""}${layers.publicSafetyOverlay ? " · EOC overlay" : ""}${layers.esriCorridorOverlay ? " · ESRI corridors" : ""}${layers.floodHazardOverlay ? " · flood hazard" : ""}${layers.windHazardOverlay ? " · wind hazard" : ""}${layers.glofasStaleWarning ? ` · GloFAS stale ${layers.glofasStaleHours}h` : ""}${conflictNote}`
         : layers.cadOverlay || layers.publicSafetyOverlay || layers.esriCorridorOverlay || layers.floodHazardOverlay || layers.windHazardOverlay
-          ? `Thin GIS · ${[layers.esriCorridorOverlay && "ESRI", layers.floodHazardOverlay && "flood", layers.windHazardOverlay && "wind", layers.cadOverlay && "CAD", layers.publicSafetyOverlay && "EOC"].filter(Boolean).join(" + ")} read-only`
+          ? `Thin GIS · ${[layers.esriCorridorOverlay && "ESRI", layers.floodHazardOverlay && "flood", layers.windHazardOverlay && "wind", layers.glofasStaleWarning && "GloFAS stale", layers.cadOverlay && "CAD", layers.publicSafetyOverlay && "EOC"].filter(Boolean).join(" + ")} read-only`
           : "Thin GIS · level-based layers";
 
       const z = layers.zone;
+      const mapPadLeft = layers.mapPadLeft ?? 110;
+      const mapWidth = 800;
+      const mapTotalWidth = mapWidth + mapPadLeft;
 
+      const floodActive = (layers.floodZones || []).length > 0;
       const islandHtml = (layers.island || [])
         .map(
           (isle) => `
-        <path d="${isle.path}" fill="url(#landGrad)" stroke="rgba(120,160,130,.35)" stroke-width="1" stroke-linejoin="round"/>
+        <path d="${isle.path}" fill="${floodActive ? "rgba(18,28,24,0.08)" : "url(#landGrad)"}" stroke="rgba(160,200,180,.45)" stroke-width="${floodActive ? 1.2 : 1}" stroke-linejoin="round"/>
       `
         )
         .join("");
 
-      const streetsHtml = (layers.streets || [])
-        .map(
-          (s) =>
-            `<path d="${s.path}" fill="none" stroke="${s.color}" stroke-width="${s.width}" stroke-opacity="${s.opacity}" stroke-linecap="round" stroke-linejoin="round"/>`
-        )
+      const streetsBackHtml = (layers.streets || [])
+        .filter((s) => !s.label)
+        .map((s) => streetPathMarkup(s, { background: true }))
         .join("");
 
-      const streetLabelsHtml = (layers.streets || [])
-        .filter((s) => s.label)
-        .map(
-          (s) =>
-            `<text x="${s.label.x}" y="${s.label.y}" text-anchor="middle" fill="rgba(200,220,210,.72)" font-size="8" font-family="system-ui" font-weight="500">${s.label.text}</text>`
-        )
+      const streetsLabeledHtml = mapLayerG(
+        "street-labels",
+        (layers.streets || [])
+          .filter((s) => s.label)
+          .map((s) => `${streetPathMarkup(s)}${streetLabelMarkup(s)}`)
+          .join("")
+      );
+
+      const floodPathsHtml = (layers.floodZones || [])
+        .map((f) => {
+          const commercial = isCommercialFloodZone(f);
+          return mapLayerG(
+            floodLayerKey(f),
+            `<path d="${f.path}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="${commercial ? 2 : 1.6}" opacity="${Math.min(0.95, (f.opacity || 0.8) + 0.08)}" stroke-linejoin="round" filter="${floodGlowFilter(f)}"${f.strokeDasharray ? ` stroke-dasharray="${f.strokeDasharray}"` : ""}/>`
+          );
+        })
         .join("");
 
-      const floodHtml = (layers.floodZones || [])
-        .map(
-          (f) => `
-        <path d="${f.path}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="1.5" opacity="${f.opacity}" stroke-linejoin="round"/>
-        <text x="${f.label.x}" y="${f.label.y}" text-anchor="middle" fill="${f.stroke}" font-size="8" font-weight="600" font-family="system-ui">${f.label.text}</text>
-      `
-        )
+      const floodCalloutsHtml = (layers.floodZones || [])
+        .map((f) => mapLayerG(floodLayerKey(f), floodCalloutMarkup(f)))
         .join("");
+
+      const floodHtml = `${floodPathsHtml}${floodCalloutsHtml}`;
 
       const windHtml = (layers.windZones || [])
-        .map(
-          (w) => `
+        .map((w) =>
+          mapLayerG(
+            windLayerKey(w),
+            `
         <path d="${w.path}" fill="${w.fill}" stroke="${w.stroke}" stroke-width="1.5" opacity="${w.opacity}" stroke-linejoin="round" stroke-dasharray="4 2"/>
         <text x="${w.label.x}" y="${w.label.y}" text-anchor="middle" fill="${w.stroke}" font-size="8" font-weight="600" font-family="system-ui">${w.label.text}</text>
       `
+          )
         )
         .join("");
+
+      const zoneFill = floodActive ? "rgba(255,179,71,.04)" : "rgba(255,179,71,.06)";
+      const zoneLabel = floodActive ? "" : `<text x="${z.cx}" y="${z.cy + 5}" text-anchor="middle" fill="#ffb347" font-size="10" font-family="system-ui" opacity="0.85">Affected zone · Level ${layers.level}</text>`;
 
       let html = `
         <defs>
@@ -2064,15 +2378,27 @@
             <stop offset="0%" stop-color="#061018"/>
             <stop offset="100%" stop-color="#0c1a28"/>
           </linearGradient>
+          <filter id="floodGlowAgency" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#0ea5e9" flood-opacity="0.45"/>
+          </filter>
+          <filter id="floodGlowGlofas" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#38bdf8" flood-opacity="0.4"/>
+          </filter>
+          <filter id="floodGlowCommercial" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#a78bfa" flood-opacity="0.55"/>
+          </filter>
         </defs>
-        <rect width="800" height="480" fill="url(#oceanGrad)"/>
+        <rect x="0" y="0" width="${mapTotalWidth}" height="480" fill="url(#oceanGrad)"/>
+        <g transform="translate(${mapPadLeft}, 0)">
+        <image href="/assets/nassau-basemap.jpg" x="0" y="0" width="${mapWidth}" height="480" preserveAspectRatio="xMidYMid slice" opacity="0.94"/>
+        <rect width="${mapWidth}" height="480" fill="rgba(4,12,20,0.22)"/>
         ${islandHtml}
-        ${streetsHtml}
-        ${streetLabelsHtml}
+        ${streetsBackHtml}
         ${floodHtml}
         ${windHtml}
-        <ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="rgba(255,179,71,.06)" stroke="rgba(255,179,71,.35)" stroke-width="1.5" stroke-dasharray="6 3"/>
-        <text x="${z.cx}" y="${z.cy + 5}" text-anchor="middle" fill="#ffb347" font-size="10" font-family="system-ui" opacity="0.85">Affected zone · Level ${layers.level}</text>
+        ${streetsLabeledHtml}
+        <ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="${zoneFill}" stroke="rgba(255,179,71,.28)" stroke-width="1.2" stroke-dasharray="6 3"/>
+        ${zoneLabel}
       `;
 
       for (const c of layers.corridors) {
@@ -2082,70 +2408,91 @@
         const midX = Math.round((s.x1 + s.x2) / 2);
         const midY = Math.round((s.y1 + s.y2) / 2);
         const statusLabel = c.status === "closed" ? "CLOSED" : c.status === "restricted" ? "RESTRICTED" : "OPEN";
-        html += `
+        html += mapLayerG(
+          "corridors",
+          `
           <line x1="${s.x1}" y1="${s.y1}" x2="${s.x2}" y2="${s.y2}" stroke="${c.color}" stroke-width="${width}" ${dash} opacity="0.9"/>
           <rect x="${midX - 42}" y="${midY - 16}" width="84" height="${c.atRiskTrips ? 28 : 18}" rx="4" fill="#121a22" stroke="${c.color}" stroke-width="1"/>
           <text x="${midX}" y="${midY - 2}" text-anchor="middle" fill="${c.color}" font-size="9" font-family="system-ui" font-weight="600">${c.id} · ${statusLabel}</text>
           ${c.atRiskTrips ? `<text x="${midX}" y="${midY + 10}" text-anchor="middle" fill="#ffc72c" font-size="8" font-family="system-ui">${c.atRiskTrips} at-risk</text>` : ""}
-        `;
+        `
+        );
       }
 
+      let tripsHtml = "";
       for (const t of layers.trips) {
         const rank = t.rank ?? ranks[t.id];
         if (layers.syncSource !== "triage" && !t.atRisk && !rank) continue;
         const s = t.svg;
-        html += `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${t.color}" stroke="#000" stroke-width="1"/>`;
+        tripsHtml += `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${t.color}" stroke="#000" stroke-width="1"/>`;
         if (rank) {
-          html += `<text x="${s.x}" y="${s.y - 10}" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="700" font-family="system-ui">#${rank}</text>`;
+          tripsHtml += `<text x="${s.x}" y="${s.y - 10}" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="700" font-family="system-ui">#${rank}</text>`;
         }
         if (t.cadRunId && (t.atRisk || rank)) {
-          html += `<text x="${s.x}" y="${s.y + s.r + 11}" text-anchor="middle" fill="#38bdf8" font-size="7" font-weight="600" font-family="system-ui">${t.cadRunId.replace("RUN-", "R")}${t.unitStatus ? ` · ${t.unitStatus.replace("_", " ")}` : ""}</text>`;
+          tripsHtml += `<text x="${s.x}" y="${s.y + s.r + 11}" text-anchor="middle" fill="#38bdf8" font-size="7" font-weight="600" font-family="system-ui">${t.cadRunId.replace("RUN-", "R")}${t.unitStatus ? ` · ${t.unitStatus.replace("_", " ")}` : ""}</text>`;
         }
       }
+      html += mapLayerG("trips", tripsHtml);
 
       for (const f of layers.facilities) {
+        const layerKey = facilityLayerKey(f.role);
+        if (!isMapLayerVisible(layerKey)) continue;
         const s = f.svg;
         const badges = hospitalBedBadgeSvg(f, s);
-        html += `
+        html += mapLayerG(
+          layerKey,
+          `
           ${badges.diversion}
           ${badges.bed}
           <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="${f.color}" stroke="#fff" stroke-width="2"/>
           ${f.rank ? `<text x="${s.x + s.r + 14}" y="${s.y + 4}" text-anchor="start" fill="#ffc72c" font-size="10" font-weight="700" font-family="system-ui">#${f.rank}</text>` : ""}
           <text x="${s.x}" y="${s.y + s.r + 14}" text-anchor="middle" fill="${f.color}" font-size="9" font-family="system-ui"${f.role === "hospital_partner" || f.role === "hospital_partner_private" ? ' font-weight="600"' : ""}>${f.name.split(" ").slice(0, 2).join(" ")}</text>
           ${badges.hold}
-        `;
+        `
+        );
       }
 
+      let cadHtml = "";
       for (const u of layers.cadUnits || []) {
         const s = u.svg;
-        html += `
+        cadHtml += `
           <rect x="${s.x - s.r}" y="${s.y - s.r}" width="${s.r * 2}" height="${s.r * 2}" rx="2" fill="${u.color}" stroke="${u.atRiskLinked ? "#ffc72c" : "#fff"}" stroke-width="${u.atRiskLinked ? 2.5 : 1.5}" opacity="0.95"/>
           <text x="${s.x}" y="${s.y + 4}" text-anchor="middle" fill="#001" font-size="8" font-weight="800" font-family="system-ui">${u.unitId.replace("UNIT-", "U")}</text>
         `;
       }
+      html += mapLayerG("cad", cadHtml);
 
       for (const u of layers.publicSafetyUnits || []) {
+        const layerKey = u.agency === "fire" ? "fire" : "police";
+        if (!isMapLayerVisible(layerKey)) continue;
         const s = u.svg;
         const cx = s.x + 12;
         const cy = s.y + 12;
         const r = s.r;
         const stroke = u.onRestrictedCorridor ? "#ffc72c" : "#fff";
         const sw = u.onRestrictedCorridor ? 2.5 : 1.5;
+        let unitMarkup = "";
         if (s.shape === "diamond") {
-          html += `<polygon points="${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}" fill="${u.color}" stroke="${stroke}" stroke-width="${sw}" opacity="0.95"/>`;
+          unitMarkup += `<polygon points="${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}" fill="${u.color}" stroke="${stroke}" stroke-width="${sw}" opacity="0.95"/>`;
         } else {
-          html += `<path d="M ${cx} ${cy - r} L ${cx + r} ${cy - r * 0.25} L ${cx + r * 0.65} ${cy + r} L ${cx} ${cy + r * 1.05} L ${cx - r * 0.65} ${cy + r} L ${cx - r} ${cy - r * 0.25} Z" fill="${u.color}" stroke="${stroke}" stroke-width="${sw}" opacity="0.95"/>`;
+          unitMarkup += `<path d="M ${cx} ${cy - r} L ${cx + r} ${cy - r * 0.25} L ${cx + r * 0.65} ${cy + r} L ${cx} ${cy + r * 1.05} L ${cx - r * 0.65} ${cy + r} L ${cx - r} ${cy - r * 0.25} Z" fill="${u.color}" stroke="${stroke}" stroke-width="${sw}" opacity="0.95"/>`;
         }
         const label = u.unitId.replace(/^(FP-|RBPF-)/, "");
-        html += `<text x="${cx}" y="${cy + 3}" text-anchor="middle" fill="#fff" font-size="7" font-weight="700" font-family="system-ui">${label}</text>`;
+        unitMarkup += `<text x="${cx}" y="${cy + 3}" text-anchor="middle" fill="#fff" font-size="7" font-weight="700" font-family="system-ui">${label}</text>`;
+        html += mapLayerG(layerKey, unitMarkup);
       }
 
       if (layers.atRiskCount > 0) {
-        html += `<text x="${z.cx}" y="${z.cy - z.ry - 8}" text-anchor="middle" fill="#ffc72c" font-size="8" font-family="system-ui">${layers.atRiskCount} at-risk trip(s)</text>`;
+        html += mapLayerG(
+          "trips",
+          `<text x="${z.cx}" y="${z.cy - z.ry - 8}" text-anchor="middle" fill="#ffc72c" font-size="8" font-family="system-ui">${layers.atRiskCount} at-risk trip(s)</text>`
+        );
       }
 
+      html += "</g>";
+
       svg.innerHTML = html;
-      resetMapViewBox(layers.viewBox);
+      if (!preserveView) resetMapViewBox(layers.viewBox);
     }
 
     async function loadMap(level = 2, ranks = tripRanks, preferTriage = false) {
@@ -2303,6 +2650,9 @@
       const actions = Array.isArray(b.recommendedActions) ? b.recommendedActions : [];
       const citations = Array.isArray(b.sopCitations) ? b.sopCitations : [];
 
+      const floodHazard = result.toolResults?.find((t) => t.tool === "get_flood_hazard_status")?.result;
+      const glofasFlood = result.toolResults?.find((t) => t.tool === "get_glofas_flood_status")?.result;
+      const urbanFlood = result.toolResults?.find((t) => t.tool === "get_urban_flood_status")?.result;
       panel.innerHTML = `
         <div class="severity-row">
           <div class="severity-badge">L${b.level ?? "?"}</div>
@@ -2312,9 +2662,16 @@
           </div>
         </div>
         <div class="brief-summary">${b.summary || ""}</div>
+        ${formatGlofasSyncBanner(glofasFlood)}
+        ${formatUrbanFloodSyncBanner(urbanFlood)}
         <div class="stat-row">
           <div class="stat"><b>${atRisk ?? "—"}</b><span>At Risk</span></div>
           <div class="stat"><b>${dispatch.totalTrips ?? "—"}</b><span>Total Trips</span></div>
+          ${floodHazard?.activeZoneCount != null ? `<div class="stat"><b>${floodHazard.activeZoneCount}</b><span>Flood zones</span></div>` : ""}
+          ${glofasFlood?.floodBadgeLabel ? `<div class="stat"><b title="${glofasFlood.fetchMode || ""}">${glofasFlood.floodBadgeLabel}</b><span>GloFAS merge</span></div>` : glofasFlood?.activeZoneCount != null ? `<div class="stat"><b>${glofasFlood.activeZoneCount}</b><span>GloFAS zones</span></div>` : ""}
+          ${glofasFlood?.enabled ? `<div class="stat"><b title="${glofasFlood.refreshPolicy || ""} · ${glofasFlood.fetchMode || ""}">${formatGlofasSyncLabel(glofasFlood)}</b><span>GloFAS sync</span></div>` : ""}
+          ${urbanFlood?.floodBadgeLabel ? `<div class="stat"><b title="${urbanFlood.vendor || ""} · ${urbanFlood.fetchMode || ""}">${urbanFlood.floodBadgeLabel}</b><span>Urban flood stack</span></div>` : urbanFlood?.enabled && urbanFlood.activeZoneCount != null ? `<div class="stat"><b title="${urbanFlood.vendor || ""} · ${urbanFlood.fetchMode || ""}">${urbanFlood.activeZoneCount} ${urbanFlood.vendor || "urban"}</b><span>Urban zones</span></div>` : ""}
+          ${urbanFlood?.enabled ? `<div class="stat"><b title="${urbanFlood.refreshPolicy || ""} · ${urbanFlood.fetchMode || ""}">${formatUrbanFloodSyncLabel(urbanFlood)}</b><span>Urban sync</span></div>` : ""}
         </div>
         <p class="confidence">Confidence: ${conf}</p>
         <p class="section-label">Recommended actions</p>
@@ -2421,7 +2778,7 @@
       const smsHtml = p.driverComms.map((d) => `
         <div class="sms-item">
           <strong>${d.tripId}</strong> · ${d.priority} · ${d.corridor}
-          ${d.fusedBriefing ? `<span class="desk-chip warn" style="font-size:0.58rem;margin-left:0.25rem">${d.fusedBriefing.compositeRisk} · ${(d.fusedBriefing.hazardTypes || []).join("+")}${d.fusedBriefing.alternateRoute ? ` · alt ${d.fusedBriefing.alternateRoute}` : ""}${d.fusedBriefing.turnByTurnSteps ? ` · ${d.fusedBriefing.turnByTurnSteps} seg` : ""}</span>` : ""}
+          ${d.fusedBriefing ? `<span class="desk-chip warn" style="font-size:0.58rem;margin-left:0.25rem">${d.fusedBriefing.compositeRisk} · ${(d.fusedBriefing.hazardTypes || []).join("+")}${d.fusedBriefing.floodSourceLabel ? ` · flood:${d.fusedBriefing.floodSourceLabel}` : ""}${d.fusedBriefing.alternateRoute ? ` · alt ${d.fusedBriefing.alternateRoute}` : ""}${d.fusedBriefing.turnByTurnSteps ? ` · ${d.fusedBriefing.turnByTurnSteps} seg` : ""}</span>` : ""}
           <br/>
           ${d.draft}
         </div>
@@ -2503,6 +2860,137 @@
       }
     }
 
+    function formatGlofasSyncLabel(g) {
+      if (!g) return "—";
+      if (g.staleWarning) return `stale ${g.staleHours ?? "?"}h`;
+      if (g.skippedRefresh || g.refreshPolicy === "skipped_below_L2") return "cache-only";
+      if (g.refreshPolicy === "escalation_refresh" || g.refreshed) return "L2 refresh";
+      return g.refreshPolicy || g.fetchMode || "sync";
+    }
+
+    function formatGlofasSyncBanner(g) {
+      if (!g?.enabled) return "";
+      if (g.staleWarning) {
+        return `<div class="glofas-stale-banner">GloFAS EWDS feed stale (${g.staleHours}h &gt; ${g.staleThresholdHours || 36}h) — prefer agency flood GIS until refresh completes.</div>`;
+      }
+      if (g.skippedRefresh || g.refreshPolicy === "skipped_below_L2") {
+        return `<div class="glofas-cache-banner">GloFAS cache-only — refresh skipped below L${g.escalationMinLevel || 2}; using cached clip (${g.fetchMode || "demo"}).</div>`;
+      }
+      if (g.refreshPolicy === "escalation_refresh" || g.refreshed) {
+        const age = g.staleHours != null ? `${g.staleHours}h since last fetch` : "refreshed on pipeline";
+        return `<div class="glofas-sync-banner">GloFAS L2+ escalation refresh · ${age} · ${g.fetchMode || "sync"}.</div>`;
+      }
+      return "";
+    }
+
+    function formatGlofasRunbookAuditChip(r) {
+      if (!r) return "";
+      const step = r.step || "glofas_runbook_sync";
+      const label = (r.badge || r.primaryTrust || "agency-first").replace(/\s+/g, "-").replace(/_/g, "-");
+      const title = r.scopeGuard || r.badge || "";
+      return `<span class="audit-chip cite glofas-runbook" title="${title}">${step}·${label}</span>`;
+    }
+
+    function formatFloodStackRunbookAuditChip(r) {
+      if (!r) return "";
+      const step = r.step || "flood_stack_runbook_sync";
+      const label = (r.badge || r.primaryTrust || "three-layer").replace(/\s+/g, "-").replace(/_/g, "-");
+      const title = r.scopeGuard || r.badge || "";
+      return `<span class="audit-chip cite flood-stack-runbook" title="${title}">${step}·${label}</span>`;
+    }
+
+    function formatGlofasAirGapAuditChip(a) {
+      if (!a) return "";
+      const step = a.step || "glofas_airgap_sync";
+      const label = a.badge || (a.clipReady ? "clip ready" : "clip missing");
+      return `<span class="audit-chip cite glofas-airgap" title="${a.fetchPolicy || "offline_clip_only"}">${step}·${label.replace(/\s+/g, "-")}</span>`;
+    }
+
+    function formatUrbanFloodAirGapAuditChip(a) {
+      if (!a) return "";
+      const step = a.step || "urban_flood_airgap_sync";
+      const label = a.badge || (a.clipReady ? "clip ready" : "clip missing");
+      return `<span class="audit-chip cite urban-flood-airgap" title="${a.fetchPolicy || "offline_clip_only"}">${step}·${label.replace(/\s+/g, "-")}</span>`;
+    }
+
+    function formatGlofasValidationAuditChip(v) {
+      if (!v) return "";
+      const step = v.step || "glofas_validation_sync";
+      const verdict = (v.verdict || "unknown").replace(/_/g, "-");
+      const title = v.badge || v.verdict || "";
+      return `<span class="audit-chip cite glofas-validation" title="${title}">${step}·${verdict}</span>`;
+    }
+
+    function formatUrbanFloodValidationAuditChip(v) {
+      if (!v) return "";
+      const step = v.step || "urban_flood_validation_sync";
+      const verdict = (v.verdict || "unknown").replace(/_/g, "-");
+      const title = v.badge || v.verdict || "";
+      return `<span class="audit-chip cite urban-flood-validation" title="${title}">${step}·${verdict}</span>`;
+    }
+
+    function formatUrbanFloodSyncLabel(u) {
+      if (!u) return "—";
+      if (u.staleWarning) return `stale ${u.staleHours ?? "?"}h`;
+      if (u.skippedRefresh || u.refreshPolicy === "skipped_below_L2") return "cache-only";
+      if (u.refreshPolicy === "escalation_refresh" || u.refreshed) return "L2 refresh";
+      return u.refreshPolicy || u.fetchMode || "sync";
+    }
+
+    function formatUrbanFloodSyncBanner(urban) {
+      if (!urban?.enabled) return "";
+      if (urban.staleWarning) {
+        return `<div class="glofas-stale-banner urban-flood-stale">Urban flood vendor feed stale (${urban.staleHours}h &gt; ${urban.staleThresholdHours || 24}h) — prefer agency GIS until refresh completes.</div>`;
+      }
+      if (urban.skippedRefresh || urban.refreshPolicy === "skipped_below_L2") {
+        return `<div class="glofas-cache-banner urban-flood-cache">Urban flood cache-only — refresh skipped below L${urban.escalationMinLevel || 2}; using cached clip (${urban.fetchMode || "demo"}).</div>`;
+      }
+      if (urban.refreshPolicy === "escalation_refresh" || urban.refreshed) {
+        const age = urban.staleHours != null ? `${urban.staleHours}h since last fetch` : "refreshed on pipeline";
+        const badge = urban.floodBadgeLabel ? ` · ${urban.floodBadgeLabel}` : "";
+        return `<div class="glofas-sync-banner urban-flood-sync">Urban flood L2+ escalation refresh · ${age} · ${urban.fetchMode || "sync"}${badge}.</div>`;
+      }
+      if (urban.floodBadgeLabel) {
+        return `<div class="glofas-sync-banner urban-flood-sync">Urban flood stack: ${urban.floodBadgeLabel} · ${urban.fetchMode || "demo"} · three-way merge (agency → commercial → GloFAS).</div>`;
+      }
+      if (urban.conversionPending) {
+        return `<div class="glofas-sync-banner urban-flood-sync">Urban vendor probe · ${urban.fetchMode || "demo"} · three-way merge active (agency → commercial → GloFAS).</div>`;
+      }
+      return "";
+    }
+
+    function formatUrbanFloodAuditChip(u) {
+      if (!u) return "";
+      const step = u.step || "urban_flood_sync";
+      const mode = u.fetchMode || "sync";
+      if (u.staleWarning) {
+        return `<span class="audit-chip cite urban-flood-stale" title="Prefer agency flood GIS until vendor refresh">${step}·stale·${u.staleHours ?? "?"}h·${mode}</span>`;
+      }
+      if (u.skippedRefresh || u.refreshed === false || u.refreshPolicy === "skipped_below_L2" || u.refreshPolicy === "cache_only") {
+        return `<span class="audit-chip cite urban-flood-sync" title="Cache-only — vendor refresh skipped below escalation threshold">${step}·cache_only·${mode}</span>`;
+      }
+      const title = u.badge || u.floodBadgeLabel
+        ? `${u.badge || u.floodBadgeLabel} · escalation_refresh · ${mode}`
+        : u.conversionPending
+          ? "Vendor metadata OK — polygon conversion pending"
+          : `escalation_refresh · ${mode}`;
+      return `<span class="audit-chip cite urban-flood-sync" title="${title}">${step}·escalation_refresh·${mode}</span>`;
+    }
+
+    function formatGlofasAuditChip(g) {
+      if (!g) return "";
+      const step = g.step || "glofas_flood_sync";
+      const mode = g.fetchMode || "sync";
+      if (g.staleWarning) {
+        return `<span class="audit-chip cite glofas-stale" title="Prefer agency flood GIS until EWDS refresh">${step}·stale·${g.staleHours ?? "?"}h·${mode}</span>`;
+      }
+      if (g.skippedRefresh || g.refreshed === false || g.refreshPolicy === "skipped_below_L2") {
+        return `<span class="audit-chip cite glofas-sync" title="Cache-only — refresh skipped below escalation threshold">${step}·cache_only·${mode}</span>`;
+      }
+      const title = g.badge || `${g.refreshPolicy || "escalation_refresh"} · ${mode}`;
+      return `<span class="audit-chip cite glofas-sync" title="${title}">${step}·escalation_refresh·${mode}</span>`;
+    }
+
     function renderAuditTrail(trail) {
       const latestEl = document.getElementById("auditLatest");
       const listEl = document.getElementById("auditTrailList");
@@ -2513,8 +3001,16 @@
       }
 
       const latest = trail.latest;
+      const latestGlofas = (latest?.glofasFloodSync || [])[0];
+      const latestUrban = (latest?.urbanFloodSync || [])[0];
+      const latestValidation = (latest?.glofasValidationSync || [])[0];
+      const latestUrbanValidation = (latest?.urbanFloodValidationSync || [])[0];
+      const latestUrbanAirGap = (latest?.urbanFloodAirGapSync || [])[0];
+      const latestAirGap = (latest?.glofasAirGapSync || [])[0];
+      const latestRunbook = (latest?.glofasRunbookSync || [])[0];
+      const latestFloodStackRunbook = (latest?.floodStackRunbookSync || [])[0];
       latestEl.innerHTML = latest
-        ? `<span class="audit-id">${latest.id}</span> · ${latest.summary || latest.type} · ${fmtTime(latest.ts)}`
+        ? `<span class="audit-id">${latest.id}</span> · ${latest.summary || latest.type} · ${fmtTime(latest.ts)}${latestGlofas ? ` ${formatGlofasAuditChip(latestGlofas)}` : ""}${latestUrban ? ` ${formatUrbanFloodAuditChip(latestUrban)}` : ""}${latestUrbanValidation ? ` ${formatUrbanFloodValidationAuditChip(latestUrbanValidation)}` : ""}${latestUrbanAirGap ? ` ${formatUrbanFloodAirGapAuditChip(latestUrbanAirGap)}` : ""}${latestValidation ? ` ${formatGlofasValidationAuditChip(latestValidation)}` : ""}${latestAirGap ? ` ${formatGlofasAirGapAuditChip(latestAirGap)}` : ""}${latestRunbook ? ` ${formatGlofasRunbookAuditChip(latestRunbook)}` : ""}${latestFloodStackRunbook ? ` ${formatFloodStackRunbookAuditChip(latestFloodStackRunbook)}` : ""}`
         : "";
 
       listEl.innerHTML = trail.entries.slice(0, 8).map((e, i) => {
@@ -2581,7 +3077,31 @@
         const defensibilityHtml = (e.defensibilitySync || [])
           .map((d) => `<span class="audit-chip cite" title="defensibility pitch">${d.pillars || 0} pillars · Phase 2 ${d.phase2Days || 17}d</span>`)
           .join("");
-        const meta = [stepsHtml, citesHtml, cadHtml, handoffHtml, writeBackHtml, enrichHtml, eocHtml, esriHtml, shelterFleetHtml, floodHtml, windHtml, fusionHtml, sovereignHtml, rehearsalHtml, defensibilityHtml, approversHtml].filter(Boolean).join("");
+        const glofasHtml = (e.glofasFloodSync || [])
+          .map((g) => formatGlofasAuditChip(g))
+          .join("");
+        const urbanHtml = (e.urbanFloodSync || [])
+          .map((u) => formatUrbanFloodAuditChip(u))
+          .join("");
+        const validationHtml = (e.glofasValidationSync || [])
+          .map((v) => formatGlofasValidationAuditChip(v))
+          .join("");
+        const urbanValidationHtml = (e.urbanFloodValidationSync || [])
+          .map((v) => formatUrbanFloodValidationAuditChip(v))
+          .join("");
+        const urbanAirGapHtml = (e.urbanFloodAirGapSync || [])
+          .map((a) => formatUrbanFloodAirGapAuditChip(a))
+          .join("");
+        const airGapHtml = (e.glofasAirGapSync || [])
+          .map((a) => formatGlofasAirGapAuditChip(a))
+          .join("");
+        const runbookHtml = (e.glofasRunbookSync || [])
+          .map((r) => formatGlofasRunbookAuditChip(r))
+          .join("");
+        const floodStackRunbookHtml = (e.floodStackRunbookSync || [])
+          .map((r) => formatFloodStackRunbookAuditChip(r))
+          .join("");
+        const meta = [stepsHtml, citesHtml, cadHtml, handoffHtml, writeBackHtml, enrichHtml, eocHtml, esriHtml, shelterFleetHtml, floodHtml, glofasHtml, urbanHtml, urbanValidationHtml, urbanAirGapHtml, validationHtml, airGapHtml, runbookHtml, floodStackRunbookHtml, windHtml, fusionHtml, sovereignHtml, rehearsalHtml, defensibilityHtml, approversHtml].filter(Boolean).join("");
         return `<div class="audit-entry${i === 0 ? " latest" : ""}">
           <div class="audit-entry-head">
             <span class="audit-id">${e.id}</span>
@@ -2954,7 +3474,7 @@
         const route = `${t.pickup || "—"} → ${t.facility || "—"} · ${t.corridor || "—"}`;
         const hazards = (t.hazardTypes || []).map((h) => `<span class="desk-chip">${h}</span>`).join("");
         const flood = t.floodExposure?.zoneId
-          ? `<span class="desk-chip warn">flood ${t.floodExposure.zoneId}${t.floodExposure.depthInches ? ` ${t.floodExposure.depthInches}"` : ""}</span>`
+          ? `<span class="desk-chip warn">flood ${t.floodExposure.zoneId}${t.floodExposure.depthInches ? ` ${t.floodExposure.depthInches}"` : ""}${t.floodExposure.sourceLabel ? ` · ${t.floodExposure.sourceLabel}` : ""}</span>`
           : "";
         const wind = t.windExposure?.zoneId
           ? `<span class="desk-chip warn">wind ${t.windExposure.zoneId}${t.windExposure.gustMph ? ` ${t.windExposure.gustMph} mph` : ""}</span>`
@@ -3046,7 +3566,7 @@
       const total = profile.checks?.length ?? 0;
       const residency = profile.dataResidency || {};
       document.getElementById("sovereignDeployText").innerHTML =
-        `${profile.headline || "Sovereign on-prem profile"} · audit <em>${residency.auditTrail || "local JSONL"}</em> · LLM ${residency.llmCalls || "—"}`;
+        `${profile.headline || "Sovereign on-prem profile"} · audit <em>${residency.auditTrail || "local JSONL"}</em> · LLM ${residency.llmCalls || "—"}${residency.glofasClip ? ` · GloFAS <em>${residency.glofasClip}</em>` : ""}`;
       const checksEl = document.getElementById("sovereignDeployChecks");
       checksEl.textContent = profile.ok ? `${passed}/${total} checks OK` : `${passed}/${total} checks`;
       checksEl.className = profile.ok ? "desk-chip ok" : "desk-chip warn";
@@ -3135,6 +3655,16 @@
       return summary;
     }
 
+    function formatPhaseLabel(phase) {
+      const hyphen = String(phase).match(/^phase-(\d+)-day-(\d+)$/i);
+      if (hyphen) return `Phase ${hyphen[1]} · Day ${hyphen[2]}`;
+      return String(phase)
+        .replace(/_/g, " ")
+        .replace(/phase (\d)/i, "Phase $1 ·")
+        .replace(/week (\d)/i, "Week $1 ·")
+        .replace(/day (\d)/i, "Day $1");
+    }
+
     async function loadStatus() {
       const [statusRes, healthRes] = await Promise.all([
         fetch("/api/status"),
@@ -3142,11 +3672,7 @@
       ]);
       const data = await statusRes.json();
       const health = await healthRes.json();
-      document.getElementById("phasePill").textContent = data.phase
-        .replace(/_/g, " ")
-        .replace(/phase (\d)/i, "Phase $1 ·")
-        .replace(/week (\d)/i, "Week $1 ·")
-        .replace(/day (\d)/i, "Day $1");
+      document.getElementById("phasePill").textContent = formatPhaseLabel(data.phase);
       renderScenario(data.scenario);
       if (health.demoMode) {
         llmProviderLabel = "Demo";
@@ -3233,6 +3759,7 @@
 
     initMapZoom();
     initMapFullscreen();
+    initMapLegend();
     initFeedStripToggles();
 
     (async () => {

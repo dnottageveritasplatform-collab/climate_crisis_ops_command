@@ -1,0 +1,100 @@
+Phase 3b Day 3 Logbook — Export → Polygon Normalization
+
+Date: 2026-08-15
+Focus: Commercial urban flood vendor grid depth cells → GeoJSON urban clip (Bay Street + Shirley Street), convertUrbanFloodExport pipeline, converted layer preferred over hand-drawn demo JSON — verified via unit tests + eval suite
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/urban-flood-convert.js — grid depth → polygon conversion module
+   - depthInchesToDepthBand() — minor ≥4" · moderate ≥8" · major ≥12"
+   - depthInchesToReturnPeriodYears() · gridCellPolygon() · inferUrbanLinkedCorridors()
+   - convertUrbanFloodGridToFeatures() · convertUrbanFloodExport() / convertUrbanFloodGridFile()
+   - DEFAULT_GRID_PATH · DEFAULT_CLIP_PATH (urban-flood-nassau-latest.json)
+   - 0.001° urban mesh · source: commercial · confidence: commercial_model · vendor tag (jba/fathom)
+
+2. data/geo/urban-flood-grid-nassau-demo.json — 5 depth cells in urban bbox
+   - Bay Street pluvial block (12" · 10") — aligns Dorian FLOOD-04 · CORR-02
+   - Shirley Street cul-de-sac (8" · 6")
+   - 1 sub-threshold cell (2") filtered below 4" floor
+
+3. data/geo/urban-flood-nassau-latest.json — converted clip output (4 features)
+   - fetchMode: vendor_grid_converted · vendor: jba (demo grid)
+
+4. src/geo/urban-flood-vendor.js — attachGridConversion()
+   - Runs after vendor mock · metadata probe · demo_vendor path
+   - Updates cache with clipPath, featureCount, conversionPending: false
+
+5. src/geo/urban-flood.js — layer priority update
+   - Prefers URBAN_FLOOD_CLIP_PATH || urban-flood-nassau-latest.json over demo JSON
+   - mergeRule: standalone_day3 · phase: phase-3b-day-3
+
+6. npm run geo:urban-flood-convert · npm run test:urban-flood-convert
+
+7. .env.example — URBAN_FLOOD_GRID_PATH · URBAN_FLOOD_CLIP_PATH
+
+8. src/server.js · src/ui/public/index.html — phase phase-3b-day-3 · pill Phase 3b · Day 3
+
+9. docs/phase3b-roadmap.md — Day 3 marked complete
+
+================================================================================
+
+CONVERSION BEHAVIOUR
+
+Grid input:  data/geo/urban-flood-grid-nassau-demo.json
+Clip output: data/geo/urban-flood-nassau-latest.json
+fetchMode:   vendor_grid_converted
+Resolution:  0.001° (finer than GloFAS 0.05° — urban pluvial storytelling)
+
+Layer resolution order:
+  1. urban-flood-nassau-latest.json (converted clip)
+  2. urban-flood-nassau-demo.json (Day 1 hand-drawn polygons)
+  3. empty
+
+Pilot vendor: JBA Flood Foresight evaluation requested (jbagr.com) — grid demo simulates vendor export sidecar until API credentials arrive. Fathom remains alternate (requires commercial email).
+
+================================================================================
+
+DAY 3 LIMITS (NOT YET WIRED)
+
+- Not merged into GET /api/geo/hazards/flood (Phase 3b Day 4 — three-way merge)
+- Not on command map overlay (Phase 3b Day 5 — dotted violet urban model styling)
+- Not in hazard fusion briefing commercial source tag (Phase 3b Day 6)
+- Live JBA API export ingest still design-partner scope — grid demo proves conversion path
+- Extended HITL mandatory — never auto-send COMMS from commercial zones alone
+
+================================================================================
+
+SCOPE GUARD
+
+- Day 3 grid conversion is licensed model guidance — not NEMA / field hydrology authority
+- Agency GIS still wins when present — commercial fills urban pluvial gap when agency silent
+- Converted features tagged commercial_model only
+- Vendor licensing + API cost are design-partner decisions
+
+================================================================================
+
+QUICK VERIFY
+
+npm run geo:urban-flood-convert
+npm run test:urban-flood-convert
+npm run test:urban-flood
+npm run test:urban-flood-vendor
+npm run test:urban-flood-pipeline
+set URBAN_FLOOD_ENABLED=true
+set URBAN_FLOOD_VENDOR=jba
+npm run geo:urban-flood
+curl.exe http://127.0.0.1:8787/api/geo/hazards/urban-flood/status?level=2
+npm run pipeline:run
+npm run eval:run
+
+featureCount: 4 · fetchMode: vendor_grid_converted · vendor: jba · conversionPending: false
+Pipeline audit: urban_flood_sync · cache_only · vendor_grid_converted
+Eval: 8/8 · Phase: phase-3b-day-3
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 3: CCOC converts commercial urban flood vendor grid depth cells (0.001° Bay Street + Shirley Street demo) to GeoJSON polygons in urban-flood-nassau-latest.json via convertUrbanFloodExport, wires grid conversion into vendor fetch/cache, and prefers the converted clip over hand-drawn demo JSON for urban flood status and cross-ref — three-way merge ships Day 4.

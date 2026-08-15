@@ -95,6 +95,8 @@ export function buildAuditTrail(limit = 15) {
       sopCorpusSync: e.sopCorpusSync,
       routingPreviewSync: e.routingPreviewSync,
       floodHazardSync: e.floodHazardSync,
+      glofasFloodSync: e.glofasFloodSync,
+      urbanFloodSync: e.urbanFloodSync,
       windHazardSync: e.windHazardSync,
       multiHazardSync: e.multiHazardSync,
       sovereignDeploySync: e.sovereignDeploySync,
@@ -211,6 +213,14 @@ export function recordPipelineRun({
   sopCorpusSync,
   routingPreviewSync,
   floodHazardSync,
+  glofasFloodSync,
+  urbanFloodSync,
+  urbanFloodValidationSync,
+  urbanFloodAirGapSync,
+  glofasValidationSync,
+  glofasAirGapSync,
+  glofasRunbookSync,
+  floodStackRunbookSync,
   windHazardSync,
   multiHazardSync,
   sovereignDeploySync,
@@ -249,6 +259,64 @@ export function recordPipelineRun({
   const floodNote = floodHazardSync?.tripExposureCount
     ? ` · flood ${floodHazardSync.tripExposureCount} trip(s) in hazard zones`
     : "";
+  const glofasNote = glofasFloodSync?.fetchMode
+    ? glofasFloodSync?.staleWarning
+      ? ` · glofas_flood_sync · stale ${glofasFloodSync.staleHours}h · ${glofasFloodSync.fetchMode || "sync"}`
+      : glofasFloodSync?.skippedRefresh || glofasFloodSync?.refreshed === false
+        ? ` · glofas_flood_sync · cache_only · ${glofasFloodSync.fetchMode || "cache"}`
+        : glofasFloodSync?.refreshPolicy === "escalation_refresh" || glofasFloodSync?.refreshed
+          ? ` · glofas_flood_sync · escalation_refresh · ${glofasFloodSync.fetchMode || "sync"}`
+          : glofasFloodSync?.cds?.ok
+            ? ` · glofas_flood_sync · ${glofasFloodSync.fetchMode || "sync"}`
+            : glofasFloodSync?.floodBadgeLabel
+              ? ` · glofas_flood_sync · ${glofasFloodSync.floodBadgeLabel}`
+              : glofasFloodSync?.cds?.reason === "missing_cds_key"
+                ? " · glofas_flood_sync · demo (no CDS key)"
+                : glofasFloodSync?.activeZoneCount
+                  ? ` · glofas_flood_sync · ${glofasFloodSync.activeZoneCount} zone(s)`
+                  : ""
+    : "";
+  const urbanNote = urbanFloodSync?.fetchMode
+    ? urbanFloodSync?.staleWarning
+      ? ` · urban_flood_sync · stale ${urbanFloodSync.staleHours}h · ${urbanFloodSync.fetchMode || "sync"}`
+      : urbanFloodSync?.skippedRefresh || urbanFloodSync?.refreshed === false
+        ? ` · urban_flood_sync · cache_only · ${urbanFloodSync.fetchMode || "cache"}`
+        : urbanFloodSync?.refreshPolicy === "escalation_refresh" || urbanFloodSync?.refreshed
+          ? ` · urban_flood_sync · escalation_refresh · ${urbanFloodSync.fetchMode || "sync"}`
+          : urbanFloodSync?.vendor?.reason === "missing_api_key"
+            ? " · urban_flood_sync · demo (no vendor key)"
+            : urbanFloodSync?.activeZoneCount
+              ? ` · urban_flood_sync · ${urbanFloodSync.activeZoneCount} zone(s)`
+              : urbanFloodSync?.enabled === false
+                ? " · urban_flood_sync · disabled"
+                : ""
+    : "";
+  const urbanValidationNote = urbanFloodValidationSync?.decisionGate?.verdict
+    ? ` · urban_flood_validation_sync · ${urbanFloodValidationSync.decisionGate.verdict.replace(/_/g, "-")}`
+    : "";
+  const glofasValidationNote = glofasValidationSync?.decisionGate?.verdict
+    ? ` · glofas_validation_sync · ${glofasValidationSync.decisionGate.verdict.replace(/_/g, "-")}`
+    : "";
+  const urbanAirGapNote = urbanFloodAirGapSync?.clipReady
+    ? ` · urban_flood_airgap_sync · ${urbanFloodAirGapSync.airGapBadgeLabel || "clip ready"}`
+    : urbanFloodAirGapSync?.enabled
+      ? " · urban_flood_airgap_sync · clip missing"
+      : "";
+  const glofasAirGapNote = glofasAirGapSync?.clipReady
+    ? ` · glofas_airgap_sync · ${glofasAirGapSync.airGapBadgeLabel || "clip ready"}`
+    : glofasAirGapSync?.enabled
+      ? " · glofas_airgap_sync · clip missing"
+      : "";
+  const glofasRunbookNote = glofasRunbookSync?.runbookBadgeLabel
+    ? ` · glofas_runbook_sync · ${glofasRunbookSync.runbookBadgeLabel}`
+    : glofasRunbookSync?.step
+      ? " · glofas_runbook_sync · scope-guard-review"
+      : "";
+  const floodStackRunbookNote = floodStackRunbookSync?.runbookBadgeLabel
+    ? ` · flood_stack_runbook_sync · ${floodStackRunbookSync.runbookBadgeLabel}`
+    : floodStackRunbookSync?.step
+      ? " · flood_stack_runbook_sync · scope-guard-review"
+      : "";
   const windNote = windHazardSync?.tripExposureCount
     ? ` · wind ${windHazardSync.tripExposureCount} trip(s) in gust zones`
     : "";
@@ -274,7 +342,7 @@ export function recordPipelineRun({
   const hitlModeNote = hitl?.extendedHitl ? " · extended HITL (5)" : "";
   return appendAuditEntry({
     type: "pipeline_run",
-    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}${sopNote}${routingNote}${floodNote}${windNote}${multiNote}${sovereignNote}${roadNetworkNote}${rehearsalNote}${defensibilityNote}`,
+    summary: `Pipeline L${threshold}: brief → ${triage.ranking?.rankedTrips?.length ?? 0} ranked → action pack · HITL ${hitl?.active ? hitl.state : "idle"}${hitlModeNote}${cadNote}${handoffNote}${publicSafetyNote}${enrichNote}${esriNote}${shelterFleetNote}${signalFeedNote}${sopNote}${routingNote}${floodNote}${glofasNote}${urbanNote}${urbanValidationNote}${urbanAirGapNote}${glofasValidationNote}${glofasAirGapNote}${glofasRunbookNote}${floodStackRunbookNote}${windNote}${multiNote}${sovereignNote}${roadNetworkNote}${rehearsalNote}${defensibilityNote}`,
     signal: {
       level: threshold,
       label: signals?.label,
@@ -366,6 +434,124 @@ export function recordPipelineRun({
             corridorLinkedZoneCount: floodHazardSync.corridorLinkedZoneCount,
             tripExposureCount: floodHazardSync.tripExposureCount,
             matches: floodHazardSync.zoneMatches?.slice(0, 4),
+          }
+        : undefined,
+      glofasFloodSync: glofasFloodSync
+        ? {
+            step: glofasFloodSync.step || "glofas_flood_sync",
+            activeZoneCount: glofasFloodSync.activeZoneCount,
+            tripExposureCount: glofasFloodSync.tripExposureCount,
+            fetchMode: glofasFloodSync.fetchMode,
+            lastSuccessfulFetchAt: glofasFloodSync.lastSuccessfulFetchAt,
+            cdsOk: glofasFloodSync.cds?.ok ?? false,
+            cdsReason: glofasFloodSync.cds?.reason,
+            fallback: glofasFloodSync.fallback,
+            mergeRule: glofasFloodSync.mergeRule,
+            agencyZoneCount: glofasFloodSync.agencyZoneCount,
+            glofasGapZoneCount: glofasFloodSync.glofasGapZoneCount,
+            suppressedGlofasZoneCount: glofasFloodSync.suppressedGlofasZoneCount,
+            floodBadgeLabel: glofasFloodSync.floodBadgeLabel,
+            refreshed: glofasFloodSync.refreshed,
+            skippedRefresh: glofasFloodSync.skippedRefresh,
+            refreshPolicy: glofasFloodSync.refreshPolicy,
+            staleWarning: glofasFloodSync.staleWarning,
+            staleHours: glofasFloodSync.staleHours,
+            staleThresholdHours: glofasFloodSync.staleThresholdHours,
+            syncAt: glofasFloodSync.syncAt,
+          }
+        : undefined,
+      urbanFloodSync: urbanFloodSync
+        ? {
+            step: urbanFloodSync.step || "urban_flood_sync",
+            activeZoneCount: urbanFloodSync.activeZoneCount,
+            tripExposureCount: urbanFloodSync.tripExposureCount,
+            fetchMode: urbanFloodSync.fetchMode,
+            vendor: urbanFloodSync.vendor,
+            lastSuccessfulFetchAt: urbanFloodSync.lastSuccessfulFetchAt,
+            vendorOk: urbanFloodSync.vendor?.ok ?? false,
+            vendorReason: urbanFloodSync.vendor?.reason,
+            fallback: urbanFloodSync.fallback,
+            mergeRule: urbanFloodSync.mergeRule,
+            enabled: urbanFloodSync.enabled,
+            agencyZoneCount: urbanFloodSync.agencyZoneCount,
+            commercialGapZoneCount: urbanFloodSync.commercialGapZoneCount,
+            glofasGapZoneCount: urbanFloodSync.glofasGapZoneCount,
+            suppressedCommercialZoneCount: urbanFloodSync.suppressedCommercialZoneCount,
+            suppressedGlofasZoneCount: urbanFloodSync.suppressedGlofasZoneCount,
+            escalationMinLevel: urbanFloodSync.escalationMinLevel,
+            floodBadgeLabel: urbanFloodSync.floodBadgeLabel,
+            refreshed: urbanFloodSync.refreshed,
+            skippedRefresh: urbanFloodSync.skippedRefresh,
+            refreshPolicy: urbanFloodSync.refreshPolicy,
+            conversionPending: urbanFloodSync.conversionPending,
+            staleWarning: urbanFloodSync.staleWarning,
+            staleHours: urbanFloodSync.staleHours,
+            staleThresholdHours: urbanFloodSync.staleThresholdHours,
+            syncAt: urbanFloodSync.syncAt,
+          }
+        : undefined,
+      glofasValidationSync: glofasValidationSync
+        ? {
+            step: glofasValidationSync.step || "glofas_validation_sync",
+            eventCount: glofasValidationSync.eventCount,
+            verdict: glofasValidationSync.decisionGate?.verdict,
+            commercialReviewRecommended: glofasValidationSync.decisionGate?.commercialReviewRecommended,
+            validationBadgeLabel: glofasValidationSync.validationBadgeLabel,
+            syncAt: glofasValidationSync.syncAt,
+          }
+        : undefined,
+      urbanFloodValidationSync: urbanFloodValidationSync
+        ? {
+            step: urbanFloodValidationSync.step || "urban_flood_validation_sync",
+            eventCount: urbanFloodValidationSync.eventCount,
+            verdict: urbanFloodValidationSync.decisionGate?.verdict,
+            stayAgencyOnlyRecommended: urbanFloodValidationSync.decisionGate?.stayAgencyOnlyRecommended,
+            validationBadgeLabel: urbanFloodValidationSync.validationBadgeLabel,
+            badge: urbanFloodValidationSync.badge,
+            syncAt: urbanFloodValidationSync.syncAt,
+          }
+        : undefined,
+      urbanFloodAirGapSync: urbanFloodAirGapSync
+        ? {
+            step: urbanFloodAirGapSync.step || "urban_flood_airgap_sync",
+            clipReady: urbanFloodAirGapSync.clipReady,
+            clipFeatureCount: urbanFloodAirGapSync.clipFeatureCount,
+            fetchPolicy: urbanFloodAirGapSync.fetchPolicy,
+            airGapBadgeLabel: urbanFloodAirGapSync.airGapBadgeLabel,
+            syncAt: urbanFloodAirGapSync.syncAt,
+          }
+        : undefined,
+      glofasAirGapSync: glofasAirGapSync
+        ? {
+            step: glofasAirGapSync.step || "glofas_airgap_sync",
+            clipReady: glofasAirGapSync.clipReady,
+            clipFeatureCount: glofasAirGapSync.clipFeatureCount,
+            fetchPolicy: glofasAirGapSync.fetchPolicy,
+            airGapBadgeLabel: glofasAirGapSync.airGapBadgeLabel,
+            syncAt: glofasAirGapSync.syncAt,
+          }
+        : undefined,
+      glofasRunbookSync: glofasRunbookSync
+        ? {
+            step: glofasRunbookSync.step || "glofas_runbook_sync",
+            ruleCount: glofasRunbookSync.ruleCount,
+            primaryTrust: glofasRunbookSync.currentPosture?.primaryTrust,
+            primaryRuleId: glofasRunbookSync.currentPosture?.primaryRuleId,
+            scopeGuardHeadline: glofasRunbookSync.scopeGuardReview?.headline,
+            runbookBadgeLabel: glofasRunbookSync.runbookBadgeLabel,
+            syncAt: glofasRunbookSync.syncAt,
+          }
+        : undefined,
+      floodStackRunbookSync: floodStackRunbookSync
+        ? {
+            step: floodStackRunbookSync.step || "flood_stack_runbook_sync",
+            ruleCount: floodStackRunbookSync.ruleCount,
+            primaryTrust: floodStackRunbookSync.currentPosture?.primaryTrust,
+            primaryRuleId: floodStackRunbookSync.currentPosture?.primaryRuleId,
+            scopeGuardHeadline: floodStackRunbookSync.scopeGuardReview?.headline,
+            runbookBadgeLabel: floodStackRunbookSync.runbookBadgeLabel,
+            urbanValidationVerdict: floodStackRunbookSync.urbanValidationVerdict,
+            syncAt: floodStackRunbookSync.syncAt,
           }
         : undefined,
       windHazardSync: windHazardSync
@@ -490,6 +676,101 @@ export function recordPipelineRun({
       depthLevel: z.depthBand || `${z.depthInches}"`,
       exposureCount: z.exposureCount,
     })),
+    glofasFloodSync: glofasFloodSync
+      ? [
+          {
+            step: glofasFloodSync.step || "glofas_flood_sync",
+            fetchMode: glofasFloodSync.fetchMode,
+            badge: glofasFloodSync.floodBadgeLabel,
+            gapZones: glofasFloodSync.glofasGapZoneCount,
+            cdsOk: glofasFloodSync.cds?.ok,
+            refreshed: glofasFloodSync.refreshed,
+            skippedRefresh: glofasFloodSync.skippedRefresh,
+            refreshPolicy: glofasFloodSync.refreshPolicy,
+            staleWarning: glofasFloodSync.staleWarning,
+            staleHours: glofasFloodSync.staleHours,
+          },
+        ]
+      : undefined,
+    urbanFloodSync: urbanFloodSync
+      ? [
+          {
+            step: urbanFloodSync.step || "urban_flood_sync",
+            fetchMode: urbanFloodSync.fetchMode,
+            vendor: urbanFloodSync.vendor,
+            badge: urbanFloodSync.floodBadgeLabel,
+            zones: urbanFloodSync.activeZoneCount,
+            commercialGap: urbanFloodSync.commercialGapZoneCount,
+            vendorOk: urbanFloodSync.vendor?.ok,
+            refreshed: urbanFloodSync.refreshed,
+            skippedRefresh: urbanFloodSync.skippedRefresh,
+            refreshPolicy: urbanFloodSync.refreshPolicy,
+            conversionPending: urbanFloodSync.conversionPending,
+            staleWarning: urbanFloodSync.staleWarning,
+            staleHours: urbanFloodSync.staleHours,
+          },
+        ]
+      : undefined,
+    glofasValidationSync: glofasValidationSync
+      ? [
+          {
+            step: glofasValidationSync.step || "glofas_validation_sync",
+            verdict: glofasValidationSync.decisionGate?.verdict,
+            badge: glofasValidationSync.validationBadgeLabel,
+            commercialReview: glofasValidationSync.decisionGate?.commercialReviewRecommended,
+          },
+        ]
+      : undefined,
+    urbanFloodValidationSync: urbanFloodValidationSync
+      ? [
+          {
+            step: urbanFloodValidationSync.step || "urban_flood_validation_sync",
+            verdict: urbanFloodValidationSync.decisionGate?.verdict,
+            badge: urbanFloodValidationSync.validationBadgeLabel || urbanFloodValidationSync.badge,
+            stayAgencyOnly: urbanFloodValidationSync.decisionGate?.stayAgencyOnlyRecommended,
+          },
+        ]
+      : undefined,
+    urbanFloodAirGapSync: urbanFloodAirGapSync
+      ? [
+          {
+            step: urbanFloodAirGapSync.step || "urban_flood_airgap_sync",
+            clipReady: urbanFloodAirGapSync.clipReady,
+            badge: urbanFloodAirGapSync.airGapBadgeLabel,
+            fetchPolicy: urbanFloodAirGapSync.fetchPolicy,
+          },
+        ]
+      : undefined,
+    glofasAirGapSync: glofasAirGapSync
+      ? [
+          {
+            step: glofasAirGapSync.step || "glofas_airgap_sync",
+            clipReady: glofasAirGapSync.clipReady,
+            badge: glofasAirGapSync.airGapBadgeLabel,
+            fetchPolicy: glofasAirGapSync.fetchPolicy,
+          },
+        ]
+      : undefined,
+    glofasRunbookSync: glofasRunbookSync
+      ? [
+          {
+            step: glofasRunbookSync.step || "glofas_runbook_sync",
+            badge: glofasRunbookSync.runbookBadgeLabel,
+            primaryTrust: glofasRunbookSync.currentPosture?.primaryTrust,
+            scopeGuard: glofasRunbookSync.scopeGuardReview?.headline,
+          },
+        ]
+      : undefined,
+    floodStackRunbookSync: floodStackRunbookSync
+      ? [
+          {
+            step: floodStackRunbookSync.step || "flood_stack_runbook_sync",
+            badge: floodStackRunbookSync.runbookBadgeLabel,
+            primaryTrust: floodStackRunbookSync.currentPosture?.primaryTrust,
+            scopeGuard: floodStackRunbookSync.scopeGuardReview?.headline,
+          },
+        ]
+      : undefined,
     windHazardSync: windHazardSync?.zoneMatches?.slice(0, 4).map((z) => ({
       zoneId: z.zoneId,
       corridorId: (z.restrictedLinkedCorridors || z.linkedCorridors || [])[0],
@@ -541,6 +822,90 @@ export function recordPipelineRun({
       { id: "triage", label: "Triage rank", agent: "triage", auditId: triage.audit?.id, ts: triage.audit?.ts },
       { id: "action", label: "Action pack", agent: "action", auditId: action.audit?.id, ts: action.audit?.ts },
       { id: "hitl_staged", label: "HITL staged", gateId: hitl?.id, ts: hitl?.stagedAt || ts },
+      ...(glofasFloodSync?.fetchMode
+        ? [
+            {
+              id: "glofas_flood_sync",
+              label: glofasFloodSync.staleWarning
+                ? `glofas_flood_sync · stale ${glofasFloodSync.staleHours}h · ${glofasFloodSync.fetchMode}`
+                : glofasFloodSync.skippedRefresh || glofasFloodSync.refreshed === false
+                  ? `glofas_flood_sync · cache_only · ${glofasFloodSync.fetchMode}`
+                  : `glofas_flood_sync · escalation_refresh · ${glofasFloodSync.fetchMode}`,
+              ts: glofasFloodSync.syncAt || ts,
+            },
+          ]
+        : []),
+      ...(urbanFloodSync?.step
+        ? [
+            {
+              id: "urban_flood_sync",
+              label: urbanFloodSync.staleWarning
+                ? `urban_flood_sync · stale ${urbanFloodSync.staleHours}h · ${urbanFloodSync.fetchMode || "sync"}`
+                : urbanFloodSync.skippedRefresh || urbanFloodSync.refreshed === false
+                  ? `urban_flood_sync · cache_only · ${urbanFloodSync.fetchMode || "cache"}`
+                  : `urban_flood_sync · escalation_refresh · ${urbanFloodSync.fetchMode || "sync"}`,
+              ts: urbanFloodSync.syncAt || ts,
+            },
+          ]
+        : []),
+      ...(urbanFloodValidationSync?.decisionGate?.verdict
+        ? [
+            {
+              id: "urban_flood_validation_sync",
+              label: `urban_flood_validation_sync · ${urbanFloodValidationSync.decisionGate.verdict.replace(/_/g, "-")}`,
+              ts: urbanFloodValidationSync.syncAt || ts,
+            },
+          ]
+        : []),
+      ...(urbanFloodAirGapSync?.step
+        ? [
+            {
+              id: "urban_flood_airgap_sync",
+              label: urbanFloodAirGapSync.clipReady
+                ? `urban_flood_airgap_sync · ${urbanFloodAirGapSync.airGapBadgeLabel}`
+                : "urban_flood_airgap_sync · clip missing",
+              ts: urbanFloodAirGapSync.syncAt || ts,
+            },
+          ]
+        : []),
+      ...(glofasValidationSync?.decisionGate?.verdict
+        ? [
+            {
+              id: "glofas_validation_sync",
+              label: `glofas_validation_sync · ${glofasValidationSync.decisionGate.verdict.replace(/_/g, "-")}`,
+              ts: glofasValidationSync.syncAt || ts,
+            },
+          ]
+        : []),
+      ...(glofasAirGapSync?.step
+        ? [
+            {
+              id: "glofas_airgap_sync",
+              label: glofasAirGapSync.clipReady
+                ? `glofas_airgap_sync · ${glofasAirGapSync.airGapBadgeLabel}`
+                : "glofas_airgap_sync · clip missing",
+              ts: glofasAirGapSync.syncAt || ts,
+            },
+          ]
+        : []),
+      ...(glofasRunbookSync?.step
+        ? [
+            {
+              id: "glofas_runbook_sync",
+              label: `glofas_runbook_sync · ${glofasRunbookSync.runbookBadgeLabel || "scope-guard-review"}`,
+              ts: glofasRunbookSync.syncAt || ts,
+            },
+          ]
+        : []),
+      ...(floodStackRunbookSync?.step
+        ? [
+            {
+              id: "flood_stack_runbook_sync",
+              label: `flood_stack_runbook_sync · ${floodStackRunbookSync.runbookBadgeLabel || "scope-guard-review"}`,
+              ts: floodStackRunbookSync.syncAt || ts,
+            },
+          ]
+        : []),
       { id: "audit_persist", label: "Audit persisted (JSONL)", ts },
     ],
     citations: uniqueCitationRefs(monitor.brief?.sopCitations, action.pack?.sopCitations),

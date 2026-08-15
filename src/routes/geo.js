@@ -22,6 +22,32 @@ import {
   ingestFloodDepthWebhook,
 } from "../geo/hazards.js";
 import {
+  buildGlofasCrossRef,
+  buildGlofasSummary,
+  getGlofasFloodStatus,
+  ingestGlofasWebhook,
+  syncGlofasFloodLayer,
+} from "../geo/glofas.js";
+import {
+  buildGlofasValidationReport,
+  buildGlofasValidationSummary,
+} from "../geo/glofas-validation.js";
+import {
+  buildUrbanFloodValidationReport,
+  buildUrbanFloodValidationSummary,
+} from "../geo/urban-flood-validation.js";
+import { buildGlofasAirGapProfile } from "../geo/glofas-sovereign.js";
+import { buildUrbanFloodAirGapProfile } from "../geo/urban-flood-sovereign.js";
+import { buildGlofasRunbookSummary } from "../geo/glofas-runbook.js";
+import { buildFloodStackRunbookSummary } from "../geo/flood-stack-runbook.js";
+import {
+  buildUrbanFloodCrossRef,
+  buildUrbanFloodSummary,
+  getUrbanFloodStatus,
+  ingestUrbanFloodWebhook,
+  syncUrbanFloodLayer,
+} from "../geo/urban-flood.js";
+import {
   buildWindHazardCrossRef,
   buildWindHazardSummary,
   ingestWindExposureWebhook,
@@ -135,6 +161,124 @@ router.post("/hazards/flood/ingest", (req, res) => {
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message });
   }
+});
+
+/** GloFAS gap-fill summary (Phase 3 Day 1). */
+router.get("/hazards/glofas", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildGlofasSummary(level));
+});
+
+/** CDS cache + credential status (Phase 3 Day 2). */
+router.get("/hazards/glofas/status", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(getGlofasFloodStatus(level));
+});
+
+/** Cross-ref GloFAS zones with restricted corridors + at-risk trips. */
+router.get("/hazards/glofas/cross-ref", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildGlofasCrossRef(level));
+});
+
+/** Attempt live EWDS/CDS fetch (Phase 3 Day 2); returns status + demo fallback note. */
+router.post("/hazards/glofas/fetch", async (req, res) => {
+  try {
+    const level = Number(req.body?.level || req.query?.level) || 2;
+    const result = await syncGlofasFloodLayer(level, { refresh: true });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/** Webhook ingest for pre-clipped GloFAS GeoJSON (sovereign / batch worker). */
+router.post("/hazards/glofas/ingest", (req, res) => {
+  try {
+    res.json(ingestGlofasWebhook(req.body));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+/** Historical validation spike — Alma / Dorian vs agency GIS (Phase 3 Day 8). */
+router.get("/hazards/glofas/validation", (req, res) => {
+  const eventId = req.query.event;
+  if (eventId) {
+    const report = buildGlofasValidationReport(String(eventId));
+    return report.ok ? res.json(report) : res.status(404).json(report);
+  }
+  res.json(buildGlofasValidationSummary());
+});
+
+/** Sovereign air-gap GloFAS clip bundle status (Phase 3 Day 9). */
+router.get("/hazards/glofas/air-gap", (_req, res) => {
+  res.json(buildGlofasAirGapProfile());
+});
+
+/** Pilot runbook — agency-first trust matrix + scope guard review (Phase 3 Day 10). */
+router.get("/hazards/glofas/runbook", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildGlofasRunbookSummary(level));
+});
+
+/** Three-layer flood stack runbook — agency · GloFAS · commercial (Phase 3b Day 10). */
+router.get("/hazards/flood-stack/runbook", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildFloodStackRunbookSummary(level));
+});
+
+/** Commercial urban flood summary (Phase 3b Day 1). */
+router.get("/hazards/urban-flood", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildUrbanFloodSummary(level));
+});
+
+/** Vendor cache + credential status (Phase 3b Day 2). */
+router.get("/hazards/urban-flood/status", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(getUrbanFloodStatus(level));
+});
+
+/** Cross-ref commercial urban zones with restricted corridors + at-risk trips. */
+router.get("/hazards/urban-flood/cross-ref", (req, res) => {
+  const level = Number(req.query.level) || 2;
+  res.json(buildUrbanFloodCrossRef(level));
+});
+
+/** Attempt live vendor API fetch (Phase 3b Day 2); returns status + demo fallback note. */
+router.post("/hazards/urban-flood/fetch", async (req, res) => {
+  try {
+    const level = Number(req.body?.level || req.query?.level) || 2;
+    const result = await syncUrbanFloodLayer(level, { refresh: true });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/** Webhook ingest for licensed commercial urban flood GeoJSON (Fathom/JBA worker). */
+router.post("/hazards/urban-flood/ingest", (req, res) => {
+  try {
+    res.json(ingestUrbanFloodWebhook(req.body));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+/** Dorian FLOOD-04 re-validation — commercial urban vs agency GIS (Phase 3b Day 8). */
+router.get("/hazards/urban-flood/validation", (req, res) => {
+  const eventId = req.query.event;
+  if (eventId) {
+    const report = buildUrbanFloodValidationReport(String(eventId));
+    return report.ok ? res.json(report) : res.status(404).json(report);
+  }
+  res.json(buildUrbanFloodValidationSummary());
+});
+
+/** Sovereign air-gap urban flood clip bundle status (Phase 3b Day 9). */
+router.get("/hazards/urban-flood/air-gap", (_req, res) => {
+  res.json(buildUrbanFloodAirGapProfile());
 });
 
 /** Wind-exposure hazard overlay summary (Phase 2 Day 13). */

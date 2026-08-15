@@ -1,0 +1,22 @@
+{
+  "scopeGuard": "CDS metadata cache — last successful fetch timestamp; polygon conversion pending Day 3",
+  "fetchMode": "cds_grid_converted",
+  "catalogueOk": true,
+  "conversionPending": false,
+  "dataset": "cems-glofas-forecast",
+  "provider": "Copernicus CDS / EWDS",
+  "lastSuccessfulFetchAt": "2026-08-15T20:10:45.275Z",
+  "lastAttemptAt": "2026-08-15T20:10:46.329Z",
+  "ok": true,
+  "reason": "cds_metadata",
+  "message": "Grid converted to Nassau clip GeoJSON",
+  "fallback": "demo_json",
+  "updatedAt": "2026-08-15T20:10:46.330Z",
+  "probeUrl": "https://cds.climate.copernicus.eu/api/catalogue/v1/messages?limit=1",
+  "probeStatus": 200,
+  "forecastReference": null,
+  "clipPath": "C:\\Users\\Dominic Nottage\\aethel-protocol\\Climate & Crisis Ops Command\\data\\geo\\glofas-nassau-latest.json",
+  "gridPath": "C:\\Users\\Dominic Nottage\\aethel-protocol\\Climate & Crisis Ops Command\\data\\geo\\glofas-grid-nassau-demo.json",
+  "featureCount": 2,
+  "filteredBelowThreshold": 1
+}

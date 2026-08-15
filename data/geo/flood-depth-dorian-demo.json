@@ -1,0 +1,80 @@
+{
+  "scopeGuard": "Dorian 2019 historical validation — agency GIS demo snapshot for fit/misfit spike; not field-confirmed.",
+  "source": "agency_historical_demo",
+  "serviceName": "pilot-flood-depth-dorian-demo",
+  "eventId": "dorian-2019",
+  "updatedAt": "2019-09-02T12:00:00Z",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-01",
+        "name": "Eastern Road low segment",
+        "depthInches": 18,
+        "depthBand": "moderate",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.318, 25.044],
+            [-77.302, 25.044],
+            [-77.302, 25.053],
+            [-77.318, 25.053],
+            [-77.318, 25.044]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-04",
+        "name": "Bay Street urban pluvial ponding",
+        "depthInches": 12,
+        "depthBand": "moderate",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 3,
+        "notes": "Urban pluvial — GloFAS 0.05° grid typically under-resolves"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.330, 25.060],
+            [-77.322, 25.060],
+            [-77.322, 25.066],
+            [-77.330, 25.066],
+            [-77.330, 25.060]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-03",
+        "name": "Paradise Island approach surge",
+        "depthInches": 28,
+        "depthBand": "major",
+        "linkedCorridors": ["CORR-01"],
+        "activeAtLevel": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.296, 25.078],
+            [-77.284, 25.078],
+            [-77.284, 25.088],
+            [-77.296, 25.088],
+            [-77.296, 25.078]
+          ]
+        ]
+      }
+    }
+  ]
+}

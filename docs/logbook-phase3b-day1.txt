@@ -1,0 +1,83 @@
+Phase 3b Day 1 Logbook — Commercial Urban Flood Adapter + Nassau Demo Clip
+
+Date: 2026-08-14
+Focus: Fathom/JBA-style urban pluvial adapter, Bay Street + Shirley Street demo zones, standalone API cross-ref — verified via unit tests + eval suite (Phase 3b sprint start)
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/urban-flood.js — commercial urban flood adapter
+   - isUrbanFloodEnabled() · URBAN_FLOOD_VENDOR (demo/fathom/jba)
+   - loadUrbanFloodLayer() · activeUrbanFloodZones()
+   - buildUrbanFloodSummary() · buildUrbanFloodCrossRef()
+   - ingestUrbanFloodWebhook() — POST ingest for licensed vendor worker
+   - normalize: source commercial · confidence commercial_model
+
+2. data/geo/urban-flood-nassau-demo.json — 2 urban pluvial demo features
+   - URBAN-01 Bay Street urban pluvial ponding (aligns Dorian FLOOD-04 · CORR-02)
+   - URBAN-02 Shirley Street cul-de-sac ponding (CORR-02 · street-level gap)
+
+3. GET /api/geo/hazards/urban-flood · /cross-ref · POST /hazards/urban-flood/ingest
+
+4. npm run geo:urban-flood · geo:urban-flood-cross-ref · test:urban-flood
+
+5. .env.example — URBAN_FLOOD_ENABLED · URBAN_FLOOD_DEMO · URBAN_FLOOD_VENDOR · URBAN_FLOOD_CLIP_BBOX
+
+6. src/server.js · src/ui/public/index.html — phase phase-3b-day-1 · pill Phase 3b · Day 1
+
+7. docs/phase3b-roadmap.md — Day 1 marked complete
+
+================================================================================
+
+DEMO ZONES (WHY THESE IDs)
+
+URBAN-01 — Bay Street urban pluvial
+  - Addresses Phase 3 Day 8 Dorian misfit: agency FLOOD-04 urban pluvial not resolved by GloFAS 0.05° grid
+  - depthInches 12 · returnPeriodYears 10 · linkedCorridors CORR-02
+
+URBAN-02 — Shirley Street cul-de-sac
+  - Fine urban spot where GloFAS network layer is typically silent
+  - depthInches 8 · minor band · CORR-02
+
+================================================================================
+
+DAY 1 LIMITS (NOT YET WIRED)
+
+- Not on command map overlay (Phase 3b Day 5 — dotted violet urban model styling)
+- Not merged into GET /api/geo/hazards/flood (Phase 3b Day 4 — three-way merge)
+- Not in Monitor brief · hazard fusion · pipeline audit (Phase 3b Day 6)
+- Not in COMMS-03 or driver SMS — extended HITL mandatory; never auto-send from model zones
+
+mergeRule today: standalone_day1 — API proves adapter + trip/corridor cross-ref only
+
+================================================================================
+
+SCOPE GUARD
+
+- Commercial urban layer is licensed model guidance — not NEMA / field hydrology authority
+- Agency GIS still wins when present — commercial fills urban pluvial gap when agency silent
+- URBAN_FLOOD_ENABLED independent of GLOFAS_ENABLED (both may be true)
+- Urban core clip bbox tighter than GloFAS Nassau bbox (-77.34 to -77.30 · 25.04 to 25.08)
+
+================================================================================
+
+QUICK VERIFY
+
+set URBAN_FLOOD_ENABLED=true
+npm run test:urban-flood
+npm run geo:urban-flood
+npm run geo:urban-flood-cross-ref
+curl.exe http://127.0.0.1:8787/api/geo/hazards/urban-flood?level=2
+curl.exe http://127.0.0.1:8787/api/geo/hazards/urban-flood/cross-ref?level=2
+npm run eval:run
+
+featureCount: 2 · vendor: demo · activeZoneCount: 2 (L2)
+URBAN-01 linked CORR-02 · trip cross-ref when corridor restricted
+Eval: 8/8 · Phase: phase-3b-day-1
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 1: CCOC adds a commercial urban flood adapter with Bay Street + Shirley Street demo pluvial zones (URBAN-01/02) to address the Dorian urban misfit GloFAS cannot resolve, exposes standalone summary + corridor/trip cross-ref via /api/geo/hazards/urban-flood, and documents Day 4–6 wiring for map merge · fusion · operator surfaces.

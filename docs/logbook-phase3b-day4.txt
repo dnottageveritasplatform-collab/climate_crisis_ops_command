@@ -1,0 +1,125 @@
+Phase 3b Day 4 Logbook — Three-Way Flood Merge (Agency + Commercial + GloFAS)
+
+Date: 2026-08-15
+Focus: mergeUrbanCommercialGapFill in hazards.js, per-trip commercial_model source attribution in hazard fusion, flood badge on merged /api/geo/hazards/flood, pipeline merge snapshot from floodHazardSync — verified via unit + integration tests + live pipeline
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/hazards.js — three-way merge stack
+   - mergeUrbanCommercialGapFill(agency, commercial, glofas)
+   - mergeRule: agency_wins_then_commercial_then_glofas
+   - Agency suppresses commercial on same corridor; agency + commercial suppress GloFAS
+   - mergeFloodStack() — agency-only · urban-only · glofas-only · full three-way
+   - resolveFloodZoneForCorridor() — agency_confirmed → commercial_model → model_estimated
+   - buildFloodMapBadge() — N agency + M glofas + K urban zone(s)
+   - buildFloodMapOverlay() — commercial violet stroke #7c3aed · dash 2 2
+   - buildFloodHazardCrossRef/Summary/getFloodHazardStatus — phase-3b-day-4 when urban on
+
+2. src/geo/multi-hazard.js — hazard fusion source tags
+   - floodSourceLabel() includes commercial_model
+   - commercialFloodTripCount · floodCommercialGapZoneCount on cross-ref
+   - buildMultiHazardSummary() fix — urbanOn/glofasOn scope (pipeline crash fix)
+
+3. src/geo/urban-flood.js — pipeline merge snapshot
+   - buildUrbanFloodPipelineSyncStep(level, { floodHazardSync })
+   - mergeRule from floodHazardSync when orchestrator passes cross-ref
+   - phase: phase-3b-day-4 · mergeRule: agency_wins_then_commercial_then_glofas
+
+4. src/orchestrator/index.js
+   - buildUrbanFloodPipelineSyncStep(threshold, { floodHazardSync })
+   - phase-3b-day-4 completion message
+
+5. src/geo/index.js — map badge fields
+   - floodCommercialGapZoneCount · urbanFloodEnabled on attachCadOverlay
+
+6. src/ui/public/index.html · src/server.js
+   - Phase pill: Phase 3b · Day 4
+   - isCommercialFloodZone() · flood-commercial layer key
+   - Urban sync banner references three-way merge
+
+7. tests/urban-flood-merge.test.mjs · npm run test:urban-flood-merge
+   - Unit merge fixtures + live cross-ref with URBAN_FLOOD_ENABLED + GLOFAS_ENABLED
+
+8. Updated tests: urban-flood · urban-flood-pipeline · urban-flood-vendor (phase + mergeRule)
+
+9. docs/phase3b-roadmap.md — Day 4 marked complete
+
+================================================================================
+
+MERGE BEHAVIOUR
+
+Priority stack:
+  1. agency_confirmed   — always shown; suppresses commercial + GloFAS on corridor
+  2. commercial_model   — gap-fill where agency silent (urban pluvial)
+  3. model_estimated    — GloFAS only where agency + commercial both silent
+
+Pilot env (both layers):
+  URBAN_FLOOD_ENABLED=true
+  URBAN_FLOOD_DEMO=true
+  URBAN_FLOOD_VENDOR=jba
+  GLOFAS_ENABLED=true
+
+Live demo merge (Nassau pilot JSON):
+  - 2 agency zones (CORR-02) · 4 commercial urban cells suppressed on CORR-02
+  - 1 GloFAS gap zone (CORR-01) · floodBadgeLabel: 2 agency + 1 glofas + 0 urban zone(s)
+  - Unit fixtures prove commercial gap-fill on CORR-04 when agency silent
+
+Corridor resolution example (CORR-02 Eastern Road):
+  - Agency FLOOD-01/FLOOD-02 win → trips get flood:agency_confirmed
+  - URBAN-GRID-* (Bay Street JBA) suppressed
+  - GLOFAS-01 on CORR-02 suppressed
+
+================================================================================
+
+BUGFIX (PIPELINE)
+
+- buildMultiHazardSummary() referenced undefined urbanOn/glofasOn → GET /api/geo/hazards/combined returned HTML error page → UI pipeline failed parsing JSON
+- Fixed: define flags in summary builder · use crossRef.phase
+- Restart required if port 8787 EADDRINUSE from stale npm start
+
+================================================================================
+
+SCOPE GUARD
+
+- Three-way merge is read-only situational awareness — not hydrology authority
+- commercial_model never presented as agency field confirmation
+- Agency GIS still wins on corridor overlap
+- Extended HITL mandatory before outbound COMMS from fused hazard briefings
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:urban-flood-merge
+npm run test:glofas-merge
+npm run test:urban-flood-pipeline
+npm run test:urban-flood
+set URBAN_FLOOD_ENABLED=true
+set GLOFAS_ENABLED=true
+npm run geo:flood-cross-ref
+npm run geo:multi-hazard-cross-ref
+npm run pipeline:run
+npm run eval:run
+
+Merge unit: 2 agency + 1 commercial gap + 1 glofas gap · 1 commercial + 1 glofas suppressed on CORR-02
+Live cross-ref: commercialGapZoneCount 0 · suppressedCommercialZoneCount 4 · glofasGapZoneCount 1
+Fusion: agencyFloodTripCount 3 · commercialFloodTripCount 0 (demo urban overlaps agency corridors)
+Pipeline audit: urban_flood_sync · agency_wins_then_commercial_then_glofas · flood_hazard_sync
+Eval: 8/8 · Phase: phase-3b-day-4
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3b-day4-three-way-merge.jpg
+  Phase 3b · Day 4 pill · L2 Alma · map badge 2 agency + 1 glofas + 0 urban zone(s)
+  · hazard fusion strip flood FLOOD-01 14" · agency_confirmed · GloFAS gap CORR-01 model
+  · urban vendor banner three-way merge · pipeline complete · extended HITL pending
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 4: CCOC merges agency GIS, commercial urban flood (JBA grid clip), and GloFAS into one flood stack with agency_wins_then_commercial_then_glofas rules, attributes flood source per trip in hazard fusion (agency / commercial / glofas), and surfaces the three-part badge on the command map — dotted violet urban legend styling ships Day 5.

@@ -1,0 +1,18 @@
+{
+  "scopeGuard": "Phase 3b Day 8 — commercial urban flood re-validation spike; demo clips vs agency urban pluvial GIS; not operational hydrology authority.",
+  "phase": "phase-3b-day-8",
+  "events": [
+    {
+      "id": "dorian-2019",
+      "label": "Hurricane Dorian (2019) — Bay Street FLOOD-04 urban pluvial re-validation",
+      "pilotScenario": "dorian-historical",
+      "window": { "start": "2019-09-01", "end": "2019-09-03" },
+      "agencyPath": "flood-depth-dorian-demo.json",
+      "commercialPath": "urban-flood-nassau-demo.json",
+      "glofasHistoricalPath": "glofas-historical-dorian-demo.json",
+      "focusAgencyZoneId": "FLOOD-04",
+      "level": 3,
+      "notes": "Re-run Phase 3 Day 8 Dorian misfit with commercial urban clip — Bay Street pluvial IoU vs GloFAS baseline."
+    }
+  ]
+}

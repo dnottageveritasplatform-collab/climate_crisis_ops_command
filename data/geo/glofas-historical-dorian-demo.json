@@ -1,0 +1,66 @@
+{
+  "scopeGuard": "GloFAS historical demo — Dorian 2019 surge window clipped to Nassau; model_estimated only.",
+  "source": "glofas_historical_demo",
+  "serviceName": "cems-glofas-historical-demo",
+  "eventId": "dorian-2019",
+  "window": { "start": "2019-09-01", "end": "2019-09-03" },
+  "provider": "Copernicus EMS GloFAS (historical demo clip)",
+  "updatedAt": "2019-09-02T18:00:00Z",
+  "clipBbox": { "minLon": -77.36, "maxLon": -77.24, "minLat": 25.03, "maxLat": 25.10 },
+  "gridResolutionDeg": 0.05,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-H-DORIAN-01",
+        "name": "GloFAS historical · Western New Providence surge plume",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "returnPeriodYears": 20,
+        "depthBand": "major",
+        "linkedCorridors": ["CORR-01"],
+        "activeAtLevel": 3,
+        "notes": "Broad river/network surge — partial overlap agency FLOOD-03"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.352, 25.040],
+            [-77.288, 25.040],
+            [-77.288, 25.092],
+            [-77.352, 25.092],
+            [-77.352, 25.040]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-H-DORIAN-02",
+        "name": "GloFAS historical · Eastern coarse exceedance",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "returnPeriodYears": 10,
+        "depthBand": "moderate",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 3,
+        "notes": "Over-broad vs Bay Street urban pluvial — extent misfit documented Day 8"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.340, 25.050],
+            [-77.300, 25.050],
+            [-77.300, 25.072],
+            [-77.340, 25.072],
+            [-77.340, 25.050]
+          ]
+        ]
+      }
+    }
+  ]
+}

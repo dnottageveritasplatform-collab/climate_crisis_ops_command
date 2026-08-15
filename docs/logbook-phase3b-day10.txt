@@ -1,0 +1,137 @@
+Phase 3b Day 10 Logbook — Flood Stack Runbook + Scope Guard Review (Phase 3b Close-Out)
+
+Date: 2026-08-15
+Focus: Three-layer flood stack runbook (8-rule agency · GloFAS · commercial trust matrix) · flood_stack_runbook_sync gold audit chip · defensibility three-layer honest stack narrative · Phase 3b sprint complete (10/10 days)
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/flood-stack-runbook.js — three-layer runbook module
+   - FLOOD_STACK_TRUST_RULES — 8 rules (inherits 6 GloFAS rules + 2 commercial)
+   - commercial_urban_acceptable — Dorian urban_layer_acceptable · three-way merge active
+   - commercial_stay_agency_only — validation fail OR vendor stale · suppress commercial merge
+   - buildFloodStackRunbookSummary() — posture from agency + GloFAS + urban + validation + air-gap state
+   - buildFloodStackRunbookPipelineStep() — step: flood_stack_runbook_sync · badge three-layer-8rules-{trust}
+   - getFloodStackRunbookStatus() — Monitor tool compact status
+
+2. docs/flood-stack-runbook.md — operator guide (extends docs/glofas-pilot-runbook.md)
+   - 8-rule trust matrix table · three-way merge order agency → commercial → GloFAS
+   - Scope guard review (8 bullets) · operator checklist · defensibility narrative
+   - API quick test commands · related docs links
+
+3. src/orchestrator/index.js — flood_stack_runbook_sync after glofas_runbook_sync · phase-3b-day-10
+
+4. src/audit/index.js — runbook audit visibility
+   - Summary note: flood_stack_runbook_sync · three-layer-8rules-offline-clip-only
+   - Meta chip floodStackRunbookSync · pipeline step chip in steps array
+   - buildAuditTrail floodStackRunbookSync row (badge · primaryTrust · scopeGuard)
+
+5. src/audit/eoc-export.js — operatingPicture.floodStackRunbook block
+   - ruleCount · primaryTrust · urbanValidationVerdict · glofasValidationVerdict · floodBadgeLabel · defensibilityLine
+
+6. src/routes/geo.js — GET /hazards/flood-stack/runbook
+
+7. src/agents/monitor/brief.js + src/agents/runtime/tools.js
+   - get_flood_stack_runbook_status L2+ tool plan
+   - Brief summary: Flood stack: three layer 8rules offline clip only
+   - Recommended action: Follow flood stack runbook — three-layer merge agency → commercial → GloFAS
+
+8. src/defensibility/index.js — FLOOD_STACK_DEFENSIBILITY
+   - headline: Three-layer honest flood stack — agency · GloFAS · commercial urban
+   - pitch slide id flood-stack · phase3bComplete: true · phase3bDaysDelivered: 10
+
+9. src/ui/public/index.html — gold flood-stack-runbook audit chip
+   - formatFloodStackRunbookAuditChip() — flood_stack_runbook_sync·three-layer-8rules-…
+   - Phase pill → Phase 3b · Day 10
+
+10. src/server.js — phase-3b-day-10 · phase3bDay10Complete: true · phase3bComplete: true
+
+11. package.json — npm run geo:flood-stack-runbook · npm run test:flood-stack-runbook
+
+12. data/eval/scenarios.json — eval-l2-pipeline-audit adds flood_stack_runbook_sync step
+
+13. docs/phase3b-roadmap.md — Day 10 ✅ · all exit criteria marked complete
+
+14. Tests + CLI
+    - tests/flood-stack-runbook.test.mjs — 16 asserts · 8 rules · urban_layer_acceptable verdict
+    - npm run test:flood-stack-runbook
+    - npm run eval:run — 8/8
+
+================================================================================
+
+8-RULE TRUST MATRIX (SUMMARY)
+
+| Layer / rule              | Trust source              | When active                          |
+|---------------------------|---------------------------|--------------------------------------|
+| agency_fresh              | agency_confirmed          | Agency GIS fresh on corridor         |
+| agency_stale_or_empty     | model_estimated_gap_fill  | Agency webhook down or stale         |
+| ewds_stale                | wait_for_agency           | GloFAS fetch beyond stale threshold  |
+| urban_pluvial             | agency_or_commercial      | Bay Street / street ponding          |
+| validation_urban_caveat   | model_with_caveat         | GloFAS continue_glofas_urban_caveat  |
+| airgap_offline            | offline_clip_only         | Sovereign pre-downloaded clips       |
+| commercial_urban_acceptable | commercial_model_gap_fill | Dorian urban_layer_acceptable        |
+| commercial_stay_agency_only | agency_only_urban       | Validation fail or vendor stale      |
+
+Demo posture: offline_clip_only (both air-gap clips present) · urban_layer_acceptable.
+
+================================================================================
+
+ENV
+
+URBAN_FLOOD_ENABLED=true
+GLOFAS_ENABLED=true
+URBAN_FLOOD_DEMO=true
+GLOFAS_DEMO=true
+
+================================================================================
+
+SCOPE GUARD
+
+- flood_stack_runbook_sync is operator guidance — not hydrology authority
+- Three-way merge is provenance + gap-fill only — HITL mandatory before COMMS
+- 8-rule matrix documents honest limits of each layer — not inch-perfect depth claims
+- Defensibility: agency-first merge + validation gates + audit — not model replacement narrative
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:flood-stack-runbook
+npm run geo:flood-stack-runbook
+curl.exe http://127.0.0.1:8787/api/geo/hazards/flood-stack/runbook
+curl.exe http://127.0.0.1:8787/api/defensibility/narrative
+set URBAN_FLOOD_ENABLED=true && set GLOFAS_ENABLED=true && npm run pipeline:run
+npm run audit:eoc-briefing
+npm run eval:run
+
+Pipeline summary: flood_stack_runbook_sync · three-layer-8rules-offline-clip-only
+Audit chips: flood_stack_runbook_sync·three-layer-8rules-offline-clip-only · glofas_runbook_sync·agency-first-6rules-agency-or-commercial
+Monitor brief: Flood stack: three layer 8rules offline clip only
+Defensibility: Phase 3b flood stack 10d · three-layer honest stack narrative
+Eval: 8/8 · Phase: phase-3b-day-10 · Phase 3b complete (10/10)
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3b-day10-runbook-audit.jpg
+  35 KB · Phase 3b · Day 10 · L2 Alma tropical storm demo · Audit Trail panel
+  · Pipeline L2 summary with flood_stack_runbook_sync · three-layer-8rules-offline-clip-only
+  · Gold flood_stack_runbook_sync chip · glofas_runbook_sync · agency-first-6rules-agency-or-commercial
+  · urban_flood_sync · escalation_refresh · vendor_grid_converted · glofas_flood_sync chips visible
+  · EOC audit export button · timestamp from pipeline run
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 10: CCOC closes the commercial urban flood sprint with an 8-rule flood stack runbook (agency · GloFAS · commercial), updates defensibility to the three-layer honest stack narrative, and surfaces flood_stack_runbook_sync as a gold audit chip on every L2 pipeline run — Phase 3b complete (10/10 days).
+
+================================================================================
+
+PHASE 3B SPRINT COMPLETE
+
+Days 1–10 delivered: commercial urban adapter · vendor probe · grid conversion · three-way merge · map legend · pipeline sync · escalation refresh · Dorian re-validation · sovereign air-gap bundle · flood stack runbook.
+
+Exit criteria: Dorian IoU improved · three-way merge visible · runbook documents trust per layer · eval passes · sovereign urban bundle documented — all met.

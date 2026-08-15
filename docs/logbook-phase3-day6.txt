@@ -1,0 +1,73 @@
+Phase 3 Day 6 Logbook — Pipeline glofas_flood_sync + Monitor Tool + EOC Export
+
+Date: 2026-08-14
+Focus: Formal pipeline sync step, Monitor get_glofas_flood_status tool wiring, expanded EOC glofasFlood block, audit trail chip — verified on pipeline AUD-1191 + Monitor brief
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/glofas.js — pipeline sync step + Monitor status snapshot
+   - buildGlofasPipelineSyncStep() — step: glofas_flood_sync · merge metadata · floodBadgeLabel · syncAt
+   - getGlofasFloodStatus(level) — pipelineStep · monitorTool · merge counts · CDS stale/conversion flags
+   - buildGlofasMergeSnapshot() — agency-wins merge for status without circular imports
+
+2. src/orchestrator/index.js — uses buildGlofasPipelineSyncStep after flood_hazard_sync
+
+3. src/agents/monitor/brief.js — L2+ tool plan
+   - get_flood_hazard_status · get_glofas_flood_status
+   - Brief summary: Flood GIS + GloFAS gap-fill 2 agency + 1 glofas zone(s) (cds_grid_converted)
+   - Monitor stat row: flood zones + GloFAS merge badge
+
+4. src/agents/runtime/tools.js — get_glofas_flood_status accepts level · Day 6 description
+
+5. src/audit/eoc-export.js — expanded glofasFlood operating picture block
+   - pipelineStep · monitorTool · mergeRule · gap/suppressed counts · floodBadgeLabel · sampleZones
+
+6. src/audit/index.js — pipeline audit + visible audit chips
+   - Summary: glofas_flood_sync · cds_grid_converted
+   - Pipeline step chip: glofas_flood_sync · cds_grid_converted
+   - Meta row chip: glofas_flood_sync·cds_grid_converted (cyan badge on latest header + list)
+
+7. src/ui/public/index.html — Monitor GloFAS stat · formatGlofasAuditChip · Day 6 pill
+
+8. Tests + CLI
+   - tests/glofas-pipeline.test.mjs — 12 asserts on step, tool, Monitor brief
+   - npm run test:glofas-pipeline
+
+================================================================================
+
+SCOPE GUARD
+
+- glofas_flood_sync is read-only gap-fill guidance — not hydrology authority
+- Monitor tool surfaces model_estimated zones for situational awareness only
+- EOC export glofasFlood block is briefing context — HITL mandatory before COMMS
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-pipeline
+npm run test:glofas-merge
+set GLOFAS_ENABLED=true && npm run brief:monitor
+npm run pipeline:run
+npm run audit:eoc-briefing
+npm run eval:run
+
+Pipeline AUD-1191: summary glofas_flood_sync · cds_grid_converted · chip glofas_flood_sync·cds_grid_converted
+Monitor brief: GloFAS gap-fill 2 agency + 1 glofas zone(s) (cds_grid_converted)
+Eval: 8/8 · Phase: phase-3-day-6
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day6-pipeline-sync.jpg
+  79 KB · Phase 3 Day 6 pill · Monitor brief GloFAS gap-fill · audit AUD-1191 glofas_flood_sync·cds_grid_converted chip
+  · extended HITL pending · L2 Alma command map
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 6: CCOC wires glofas_flood_sync into the pipeline audit with a visible glofas_flood_sync·cds_grid_converted chip, gives the Monitor agent get_glofas_flood_status with merge-aware status, and expands the EOC export glofasFlood block so operators see CDS fetch mode, gap zone counts, and agency-wins merge metadata in one briefing snapshot.

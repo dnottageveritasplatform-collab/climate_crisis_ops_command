@@ -1,0 +1,56 @@
+{
+  "scopeGuard": "Urban flood grid slice demo — depth cells clipped to downtown Nassau (simulates JBA/Fathom vendor export)",
+  "source": "urban_flood_grid_demo",
+  "serviceName": "urban-flood-vendor-grid-demo",
+  "provider": "Commercial urban flood (grid demo)",
+  "vendor": "jba",
+  "clipBbox": { "minLon": -77.34, "maxLon": -77.30, "minLat": 25.04, "maxLat": 25.08 },
+  "gridResolutionDeg": 0.001,
+  "depthThresholdInches": 4,
+  "thresholds": {
+    "minorInches": 4,
+    "moderateInches": 8,
+    "majorInches": 12
+  },
+  "cells": [
+    {
+      "lon": -77.326,
+      "lat": 25.063,
+      "depthInches": 12,
+      "returnPeriodYears": 10,
+      "linkedCorridors": ["CORR-02"],
+      "name": "Bay Street urban pluvial · moderate depth"
+    },
+    {
+      "lon": -77.324,
+      "lat": 25.062,
+      "depthInches": 10,
+      "returnPeriodYears": 10,
+      "linkedCorridors": ["CORR-02"],
+      "name": "Bay Street block · pluvial ponding"
+    },
+    {
+      "lon": -77.326,
+      "lat": 25.054,
+      "depthInches": 8,
+      "returnPeriodYears": 5,
+      "linkedCorridors": ["CORR-04"],
+      "name": "Shirley Street cul-de-sac · minor pluvial"
+    },
+    {
+      "lon": -77.325,
+      "lat": 25.053,
+      "depthInches": 6,
+      "returnPeriodYears": 5,
+      "linkedCorridors": ["CORR-04"],
+      "name": "Shirley Street approach · shallow ponding"
+    },
+    {
+      "lon": -77.320,
+      "lat": 25.050,
+      "depthInches": 2,
+      "linkedCorridors": ["CORR-02"],
+      "name": "Below threshold — should be filtered"
+    }
+  ]
+}

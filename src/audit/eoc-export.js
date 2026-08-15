@@ -6,6 +6,14 @@ import { buildMultiFeedCrossRef } from "../signals/multi-feed.js";
 import { buildSopCorpusCrossRef } from "../sops/corpus.js";
 import { buildRoutingPreviewCrossRef } from "../geo/routing.js";
 import { buildFloodHazardCrossRef } from "../geo/hazards.js";
+import { getGlofasFloodStatus } from "../geo/glofas.js";
+import { getUrbanFloodStatus, isUrbanFloodEnabled } from "../geo/urban-flood.js";
+import { buildGlofasValidationSummary } from "../geo/glofas-validation.js";
+import { buildUrbanFloodValidationSummary } from "../geo/urban-flood-validation.js";
+import { buildGlofasAirGapProfile } from "../geo/glofas-sovereign.js";
+import { buildUrbanFloodAirGapProfile } from "../geo/urban-flood-sovereign.js";
+import { buildGlofasRunbookSummary } from "../geo/glofas-runbook.js";
+import { buildFloodStackRunbookSummary } from "../geo/flood-stack-runbook.js";
 import { buildWindHazardCrossRef } from "../geo/wind.js";
 import { buildMultiHazardCrossRef } from "../geo/multi-hazard.js";
 import { getSovereignDeployStatus } from "../deploy/sovereign.js";
@@ -27,6 +35,14 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
   const sopCorpus = buildSopCorpusCrossRef(level);
   const routingPreview = buildRoutingPreviewCrossRef(level);
   const floodHazard = buildFloodHazardCrossRef(level);
+  const glofasFlood = getGlofasFloodStatus(level);
+  const urbanFlood = getUrbanFloodStatus(level);
+  const glofasValidation = buildGlofasValidationSummary();
+  const urbanFloodValidation = buildUrbanFloodValidationSummary();
+  const glofasAirGap = buildGlofasAirGapProfile();
+  const urbanFloodAirGap = buildUrbanFloodAirGapProfile();
+  const glofasRunbook = buildGlofasRunbookSummary(level);
+  const floodStackRunbook = buildFloodStackRunbookSummary(level);
   const windHazard = buildWindHazardCrossRef(level);
   const multiHazard = buildMultiHazardCrossRef(level);
   const sovereignDeploy = getSovereignDeployStatus();
@@ -41,7 +57,7 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
 
   return {
     ok: true,
-    phase: "phase-2-day-18",
+    phase: isUrbanFloodEnabled() ? "phase-3b-day-7" : "phase-3-day-10",
     exportType: "eoc_audit_briefing",
     generatedAt: new Date().toISOString(),
     level,
@@ -107,8 +123,129 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
         activeZoneCount: floodHazard.activeZoneCount,
         corridorLinkedZoneCount: floodHazard.corridorLinkedZoneCount,
         tripExposureCount: floodHazard.tripExposureCount,
+        mergeRule: floodHazard.mergeRule,
+        agencyZoneCount: floodHazard.agencyZoneCount,
+        glofasGapZoneCount: floodHazard.glofasGapZoneCount,
+        suppressedGlofasZoneCount: floodHazard.suppressedGlofasZoneCount,
         zoneMatches: floodHazard.zoneMatches?.slice(0, 4),
         scopeGuard: floodHazard.scopeGuard,
+      },
+      glofasFlood: {
+        pipelineStep: glofasFlood.pipelineStep,
+        monitorTool: glofasFlood.monitorTool,
+        enabled: glofasFlood.enabled,
+        fetchMode: glofasFlood.fetchMode,
+        lastSuccessfulFetchAt: glofasFlood.lastSuccessfulFetchAt,
+        activeZoneCount: glofasFlood.activeZoneCount,
+        tripExposureCount: glofasFlood.tripExposureCount,
+        corridorLinkedZoneCount: glofasFlood.corridorLinkedZoneCount,
+        mergeRule: glofasFlood.mergeRule,
+        agencyZoneCount: glofasFlood.agencyZoneCount,
+        glofasGapZoneCount: glofasFlood.glofasGapZoneCount,
+        suppressedGlofasZoneCount: glofasFlood.suppressedGlofasZoneCount,
+        floodBadgeLabel: glofasFlood.floodBadgeLabel,
+        cdsKeyConfigured: glofasFlood.cds?.keyConfigured ?? false,
+        cdsCatalogueOk: glofasFlood.cds?.catalogueOk ?? false,
+        staleWarning: glofasFlood.staleWarning,
+        staleHours: glofasFlood.staleHours,
+        staleThresholdHours: glofasFlood.staleThresholdHours,
+        refreshed: glofasFlood.refreshed,
+        refreshPolicy: glofasFlood.refreshPolicy,
+        escalationMinLevel: glofasFlood.escalationMinLevel,
+        conversionPending: glofasFlood.conversionPending,
+        gridResolutionDeg: glofasFlood.gridResolutionDeg,
+        sampleZones: glofasFlood.sampleZones,
+        scopeGuard: glofasFlood.scopeGuard,
+      },
+      urbanFlood: {
+        pipelineStep: urbanFlood.pipelineStep,
+        monitorTool: urbanFlood.monitorTool,
+        enabled: urbanFlood.enabled,
+        vendor: urbanFlood.vendor,
+        fetchMode: urbanFlood.fetchMode,
+        lastSuccessfulFetchAt: urbanFlood.lastSuccessfulFetchAt,
+        activeZoneCount: urbanFlood.activeZoneCount,
+        tripExposureCount: urbanFlood.tripExposureCount,
+        corridorLinkedZoneCount: urbanFlood.corridorLinkedZoneCount,
+        mergeRule: urbanFlood.mergeRule,
+        agencyZoneCount: urbanFlood.agencyZoneCount,
+        commercialGapZoneCount: urbanFlood.commercialGapZoneCount,
+        glofasGapZoneCount: urbanFlood.glofasGapZoneCount,
+        suppressedCommercialZoneCount: urbanFlood.suppressedCommercialZoneCount,
+        suppressedGlofasZoneCount: urbanFlood.suppressedGlofasZoneCount,
+        floodBadgeLabel: urbanFlood.floodBadgeLabel,
+        vendorCatalogueOk: urbanFlood.vendorStatus?.catalogueOk ?? false,
+        staleWarning: urbanFlood.staleWarning,
+        staleHours: urbanFlood.staleHours,
+        staleThresholdHours: urbanFlood.staleThresholdHours,
+        refreshed: urbanFlood.refreshed,
+        refreshPolicy: urbanFlood.refreshPolicy,
+        escalationMinLevel: urbanFlood.escalationMinLevel,
+        conversionPending: urbanFlood.conversionPending,
+        gridResolutionDeg: urbanFlood.gridResolutionDeg,
+        sampleZones: urbanFlood.sampleZones,
+        scopeGuard: urbanFlood.scopeGuard,
+      },
+      glofasValidation: {
+        step: glofasValidation.step,
+        eventCount: glofasValidation.eventCount,
+        verdict: glofasValidation.decisionGate?.verdict,
+        commercialReviewRecommended: glofasValidation.decisionGate?.commercialReviewRecommended,
+        rationale: glofasValidation.decisionGate?.rationale,
+        reports: glofasValidation.reports,
+        scopeGuard: glofasValidation.scopeGuard,
+      },
+      urbanFloodValidation: {
+        step: urbanFloodValidation.step,
+        eventCount: urbanFloodValidation.eventCount,
+        verdict: urbanFloodValidation.decisionGate?.verdict,
+        stayAgencyOnlyRecommended: urbanFloodValidation.decisionGate?.stayAgencyOnlyRecommended,
+        rationale: urbanFloodValidation.decisionGate?.rationale,
+        reports: urbanFloodValidation.reports,
+        scopeGuard: urbanFloodValidation.scopeGuard,
+      },
+      glofasAirGap: {
+        clipReady: glofasAirGap.clipReady,
+        clipPath: glofasAirGap.clipPath,
+        clipFeatureCount: glofasAirGap.clipFeatureCount,
+        fetchPolicy: glofasAirGap.fetchPolicy,
+        airGapMode: glofasAirGap.airGapMode,
+        bundleFileCount: glofasAirGap.bundleFileCount,
+        recommendedEnv: glofasAirGap.recommendedEnv,
+        scopeGuard: glofasAirGap.scopeGuard,
+      },
+      urbanFloodAirGap: {
+        clipReady: urbanFloodAirGap.clipReady,
+        clipPath: urbanFloodAirGap.clipPath,
+        clipFeatureCount: urbanFloodAirGap.clipFeatureCount,
+        fetchPolicy: urbanFloodAirGap.fetchPolicy,
+        airGapMode: urbanFloodAirGap.airGapMode,
+        bundleFileCount: urbanFloodAirGap.bundleFileCount,
+        recommendedEnv: urbanFloodAirGap.recommendedEnv,
+        scopeGuard: urbanFloodAirGap.scopeGuard,
+      },
+      glofasRunbook: {
+        step: glofasRunbook.step,
+        ruleCount: glofasRunbook.ruleCount,
+        primaryTrust: glofasRunbook.currentPosture?.primaryTrust,
+        primaryRuleId: glofasRunbook.currentPosture?.primaryRuleId,
+        scopeGuardHeadline: glofasRunbook.scopeGuardReview?.headline,
+        defensibilityLine: glofasRunbook.scopeGuardReview?.defensibilityLine,
+        operatorChecklist: glofasRunbook.operatorChecklist,
+        scopeGuard: glofasRunbook.scopeGuard,
+      },
+      floodStackRunbook: {
+        step: floodStackRunbook.step,
+        ruleCount: floodStackRunbook.ruleCount,
+        primaryTrust: floodStackRunbook.currentPosture?.primaryTrust,
+        primaryRuleId: floodStackRunbook.currentPosture?.primaryRuleId,
+        scopeGuardHeadline: floodStackRunbook.scopeGuardReview?.headline,
+        defensibilityLine: floodStackRunbook.scopeGuardReview?.defensibilityLine,
+        urbanValidationVerdict: floodStackRunbook.urbanValidationVerdict,
+        glofasValidationVerdict: floodStackRunbook.glofasValidationVerdict,
+        floodBadgeLabel: floodStackRunbook.floodBadgeLabel,
+        operatorChecklist: floodStackRunbook.operatorChecklist,
+        scopeGuard: floodStackRunbook.scopeGuard,
       },
       windHazard: {
         activeZoneCount: windHazard.activeZoneCount,
@@ -121,6 +258,13 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
         fusedTripCount: multiHazard.fusedTripCount,
         criticalTripCount: multiHazard.criticalTripCount,
         highTripCount: multiHazard.highTripCount,
+        floodMergeRule: multiHazard.floodMergeRule,
+        agencyFloodTripCount: multiHazard.agencyFloodTripCount,
+        modelFloodTripCount: multiHazard.modelFloodTripCount,
+        floodSuppressedGlofasZoneCount: multiHazard.floodSuppressedGlofasZoneCount,
+        floodSuppressedCommercialZoneCount: multiHazard.floodSuppressedCommercialZoneCount ?? 0,
+        commercialFloodTripCount: multiHazard.commercialFloodTripCount ?? 0,
+        floodBadgeLabel: multiHazard.floodBadgeLabel,
         tripBriefings: multiHazard.tripBriefings?.slice(0, 4),
         scopeGuard: multiHazard.scopeGuard,
       },

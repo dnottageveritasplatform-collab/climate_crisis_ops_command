@@ -1,0 +1,93 @@
+Phase 3 Day 8 Logbook — GloFAS Historical Validation Spike (Alma / Dorian)
+
+Date: 2026-08-14
+Focus: Historical GloFAS clips vs agency GIS fit/misfit analysis, decision gate, pipeline glofas_validation_sync — verified via unit tests + eval suite
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/glofas-validation.js — validation spike engine
+   - buildGlofasValidationReport(eventId) — bbox IoU + corridor overlap per zone pair
+   - buildGlofasValidationSummary() — Alma + Dorian rollup decision gate
+   - buildGlofasValidationPipelineStep() — pipeline glofas_validation_sync payload
+
+2. data/geo/glofas-validation-catalog.json — Alma 2016 + Dorian 2019 event windows
+3. data/geo/glofas-historical-alma-demo.json — historical GloFAS clip (CORR-02 align)
+4. data/geo/glofas-historical-dorian-demo.json — coarse surge plume + eastern exceedance
+5. data/geo/flood-depth-dorian-demo.json — agency snapshot incl. Bay Street urban pluvial FLOOD-04
+
+6. GET /api/geo/hazards/glofas/validation · ?event=alma-2016|dorian-2019
+7. npm run geo:glofas-validation · npm run test:glofas-validation
+
+8. src/orchestrator/index.js — glofas_validation_sync pipeline step (after glofas_flood_sync)
+9. src/audit/index.js — summary + purple validation chip glofas_validation_sync·verdict
+10. src/audit/eoc-export.js — glofasValidation block with rollup rationale
+11. src/ui/public/index.html — formatGlofasValidationAuditChip · Phase 3 · Day 8 pill
+
+================================================================================
+
+VALIDATION FINDINGS (DEMO CLIPS)
+
+Alma 2016 (alma-2016)
+  - Agency: flood-depth-demo.json (FLOOD-01 Eastern Road, FLOOD-02 Bay Street)
+  - GloFAS historical: GLOFAS-H-ALMA-01 overlaps FLOOD-01 on CORR-02 (good_corridor_overlap)
+  - GLOFAS-H-ALMA-02 gap-fill on CORR-01 when agency silent
+  - Decision gate: continue_glofas — coarse grid acceptable for river/network gap-fill
+
+Dorian 2019 (dorian-2019)
+  - Agency: flood-depth-dorian-demo.json (+ FLOOD-04 Bay Street urban pluvial ponding)
+  - GloFAS historical: broad western surge (GLOFAS-H-DORIAN-01) partial overlap FLOOD-03
+  - GLOFAS-H-DORIAN-02 over-broad eastern extent vs fine urban pluvial
+  - FLOOD-04 agency_urban_pluvial_miss — GloFAS 0.05° grid under-resolves street ponding
+  - Decision gate: continue_glofas_urban_caveat · commercialReviewRecommended: true
+
+Rollup decision gate
+  - verdict: continue_glofas_urban_caveat
+  - rationale: Continue GloFAS for network flooding; flag urban pluvial for optional Phase 3b commercial layer (Fathom/JBA)
+  - Does NOT auto-escalate — operator review gate documented in logbook
+
+================================================================================
+
+SCOPE GUARD
+
+- Historical clips are demo JSON — not live CDS historical retrieve in sprint
+- Validation is fit/misfit documentation — not hydrology authority
+- Decision gate informs Phase 3b commercial review — HITL still mandatory before COMMS
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-validation
+npm run geo:glofas-validation
+curl.exe http://127.0.0.1:8787/api/geo/hazards/glofas/validation
+curl.exe "http://127.0.0.1:8787/api/geo/hazards/glofas/validation?event=dorian-2019"
+set GLOFAS_ENABLED=true && npm run pipeline:run
+npm run audit:eoc-briefing
+npm run eval:run
+
+Alma verdict: continue_glofas
+Dorian verdict: continue_glofas_urban_caveat
+Rollup: continue_glofas_urban_caveat · commercialReviewRecommended true
+Pipeline AUD-3342:
+  summary glofas_validation_sync · continue-glofas-urban-caveat
+  chips glofas_flood_sync·escalation_refresh·cds_grid_converted
+        glofas_validation_sync·continue-glofas-urban-caveat
+Eval: 8/8 · Phase: phase-3-day-8
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day8-validation-spike.jpg
+  79 KB · Phase 3 Day 8 pill · audit AUD-3342 dual chips
+  · glofas_flood_sync·escalation_refresh·cds_grid_converted (cyan)
+  · glofas_validation_sync·continue-glofas-urban-caveat (purple)
+  · extended HITL action pack · L2 Alma command map · 2 agency + 1 glofas zones
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 8: CCOC runs an Alma/Dorian historical validation spike comparing coarse GloFAS clips to agency GIS, documents corridor overlap vs urban pluvial misfit, gates the decision to continue GloFAS gap-fill with an urban caveat (optional Phase 3b commercial review), and surfaces the rollup in pipeline glofas_validation_sync audit + EOC export.

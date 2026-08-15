@@ -1,0 +1,40 @@
+{
+  "scopeGuard": "GloFAS grid slice demo — discharge cells clipped to New Providence (simulates GRIB/NetCDF extract)",
+  "source": "glofas_grid_demo",
+  "serviceName": "cems-glofas-forecast-grid-demo",
+  "provider": "Copernicus EMS GloFAS (grid demo)",
+  "clipBbox": { "minLon": -77.36, "maxLon": -77.24, "minLat": 25.03, "maxLat": 25.10 },
+  "gridResolutionDeg": 0.05,
+  "dischargeThresholdM3s": 70,
+  "thresholds": {
+    "minorM3s": 75,
+    "moderateM3s": 120,
+    "majorM3s": 180
+  },
+  "cells": [
+    {
+      "lon": -77.31,
+      "lat": 25.048,
+      "dischargeM3s": 142,
+      "percentile": 92,
+      "linkedCorridors": ["CORR-02"],
+      "name": "GloFAS grid · Eastern Road basin exceedance"
+    },
+    {
+      "lon": -77.336,
+      "lat": 25.053,
+      "dischargeM3s": 88,
+      "percentile": 78,
+      "linkedCorridors": ["CORR-01"],
+      "name": "GloFAS grid · Western New Providence elevated discharge"
+    },
+    {
+      "lon": -77.28,
+      "lat": 25.04,
+      "dischargeM3s": 45,
+      "percentile": 52,
+      "linkedCorridors": ["CORR-02"],
+      "name": "Below threshold — should be filtered"
+    }
+  ]
+}

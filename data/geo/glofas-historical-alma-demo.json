@@ -1,0 +1,66 @@
+{
+  "scopeGuard": "GloFAS historical demo — Alma 2016 window clipped to Nassau; model_estimated only.",
+  "source": "glofas_historical_demo",
+  "serviceName": "cems-glofas-historical-demo",
+  "eventId": "alma-2016",
+  "window": { "start": "2016-10-04", "end": "2016-10-06" },
+  "provider": "Copernicus EMS GloFAS (historical demo clip)",
+  "updatedAt": "2016-10-05T12:00:00Z",
+  "clipBbox": { "minLon": -77.36, "maxLon": -77.24, "minLat": 25.03, "maxLat": 25.10 },
+  "gridResolutionDeg": 0.05,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-H-ALMA-01",
+        "name": "GloFAS historical · Eastern Road basin (Alma window)",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "returnPeriodYears": 5,
+        "depthBand": "moderate",
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2,
+        "notes": "Coarse envelope aligns with agency FLOOD-01 on CORR-02"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.322, 25.041],
+            [-77.298, 25.041],
+            [-77.298, 25.056],
+            [-77.322, 25.056],
+            [-77.322, 25.041]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-H-ALMA-02",
+        "name": "GloFAS historical · Western discharge (Alma window)",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "returnPeriodYears": 2,
+        "depthBand": "minor",
+        "linkedCorridors": ["CORR-01"],
+        "activeAtLevel": 2,
+        "notes": "Gap-fill candidate when agency silent on CORR-01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.348, 25.046],
+            [-77.326, 25.046],
+            [-77.326, 25.059],
+            [-77.348, 25.059],
+            [-77.348, 25.046]
+          ]
+        ]
+      }
+    }
+  ]
+}

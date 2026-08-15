@@ -1,7 +1,9 @@
-/** Phase 2 Day 14 — fused flood + wind + routing advisory for at-risk trips. */
+/** Phase 2 Day 14 + Phase 3 Day 4 — fused flood + wind + routing advisory for at-risk trips. */
 
 import { getAtRiskTrips } from "../dispatch/index.js";
-import { buildFloodHazardCrossRef } from "./hazards.js";
+import { buildFloodHazardCrossRef, resolveFloodZoneForCorridor } from "./hazards.js";
+import { isGlofasEnabled } from "./glofas.js";
+import { isUrbanFloodEnabled } from "./urban-flood.js";
 import { buildWindHazardCrossRef } from "./wind.js";
 import { buildRoutingPreviewCrossRef } from "./routing.js";
 import { buildRoadNetworkCrossRef } from "./road-network.js";
@@ -9,7 +11,11 @@ import { buildRoadNetworkCrossRef } from "./road-network.js";
 export const MULTI_HAZARD_SCOPE_GUARD =
   "Combined hazard + routing advisory with nested turn-by-turn avoidance — read-only fused briefing for EOC/COP and HITL-gated driver drafts; not navigation authority.";
 
-function zoneForCorridor(zoneMatches, corridor) {
+function floodZoneForCorridor(zoneMatches, corridor) {
+  return resolveFloodZoneForCorridor(zoneMatches, corridor);
+}
+
+function windZoneForCorridor(zoneMatches, corridor) {
   return (zoneMatches || []).find((z) => (z.linkedCorridors || []).includes(corridor));
 }
 
@@ -20,10 +26,37 @@ function compositeRisk(hazardCount, hasRouting) {
   return "elevated";
 }
 
-function briefingLine(trip, hazardTypes, routing) {
+function floodSourceLabel(floodZone) {
+  if (!floodZone) return null;
+  if (floodZone.confidence === "agency_confirmed") return "agency_confirmed";
+  if (floodZone.confidence === "commercial_model") return "commercial_model";
+  if (floodZone.source === "glofas" || floodZone.confidence === "model_estimated") {
+    return "model_estimated";
+  }
+  return floodZone.confidence || floodZone.source || null;
+}
+
+function floodExposurePayload(floodZone) {
+  if (!floodZone) return null;
+  const sourceLabel = floodSourceLabel(floodZone);
+  return {
+    zoneId: floodZone.zoneId,
+    depthBand: floodZone.depthBand,
+    depthInches: floodZone.depthInches,
+    source: floodZone.source || (sourceLabel === "model_estimated" ? "glofas" : sourceLabel === "commercial_model" ? "commercial" : "agency"),
+    confidence: floodZone.confidence || sourceLabel,
+    sourceLabel,
+    returnPeriodYears: floodZone.returnPeriodYears ?? null,
+  };
+}
+
+function briefingLine(trip, hazardTypes, routing, floodZone) {
   const hazards = hazardTypes.length ? hazardTypes.join("+") : "corridor";
   const alt = routing?.alternateName ? ` · alt: ${routing.alternateName}` : "";
-  return `${trip.id} ${trip.priority} · ${trip.corridor} · ${hazards}${alt}`;
+  const floodSrc = floodZone && hazardTypes.includes("flood")
+    ? ` · flood:${floodSourceLabel(floodZone)}`
+    : "";
+  return `${trip.id} ${trip.priority} · ${trip.corridor} · ${hazards}${floodSrc}${alt}`;
 }
 
 /** Fuse flood, wind, and routing layers into per-trip EOC briefing chips. */
@@ -51,8 +84,8 @@ export function buildMultiHazardCrossRef(level = 2) {
       const routingAdvisory = routingByTrip[trip.id] || null;
       if (!hazardTypes.length && !routingAdvisory) return null;
 
-      const floodZone = zoneForCorridor(flood.zoneMatches, trip.corridor);
-      const windZone = zoneForCorridor(wind.zoneMatches, trip.corridor);
+      const floodZone = floodZoneForCorridor(flood.zoneMatches, trip.corridor);
+      const windZone = windZoneForCorridor(wind.zoneMatches, trip.corridor);
 
       return {
         tripId: trip.id,
@@ -62,13 +95,7 @@ export function buildMultiHazardCrossRef(level = 2) {
         corridor: trip.corridor,
         hazardTypes,
         compositeRisk: compositeRisk(hazardTypes.length, Boolean(routingAdvisory)),
-        floodExposure: floodTripIds.has(trip.id)
-          ? {
-              zoneId: floodZone?.zoneId,
-              depthBand: floodZone?.depthBand,
-              depthInches: floodZone?.depthInches,
-            }
-          : null,
+        floodExposure: floodTripIds.has(trip.id) ? floodExposurePayload(floodZone) : null,
         windExposure: windTripIds.has(trip.id)
           ? {
               zoneId: windZone?.zoneId,
@@ -99,7 +126,7 @@ export function buildMultiHazardCrossRef(level = 2) {
               corridorStatus: avoidanceByTrip[trip.id].corridorStatus,
             }
           : null,
-        briefingLine: briefingLine(trip, hazardTypes, routingAdvisory),
+        briefingLine: briefingLine(trip, hazardTypes, routingAdvisory, floodZone),
       };
     })
     .filter(Boolean)
@@ -108,11 +135,34 @@ export function buildMultiHazardCrossRef(level = 2) {
       return (rank[a.compositeRisk] ?? 9) - (rank[b.compositeRisk] ?? 9);
     });
 
+  const agencyFloodTrips = tripBriefings.filter(
+    (t) => t.floodExposure?.confidence === "agency_confirmed"
+  ).length;
+  const commercialFloodTrips = tripBriefings.filter(
+    (t) => t.floodExposure?.confidence === "commercial_model"
+  ).length;
+  const modelFloodTrips = tripBriefings.filter(
+    (t) => t.floodExposure?.confidence === "model_estimated"
+  ).length;
+
+  const urbanOn = isUrbanFloodEnabled();
+  const glofasOn = isGlofasEnabled();
+
   return {
     ok: true,
-    phase: "phase-2-day-14",
+    phase: urbanOn ? "phase-3b-day-7" : glofasOn ? "phase-3-day-10" : "phase-2-day-14",
     level,
     mode: "multi_hazard_fusion",
+    floodMergeRule: flood.mergeRule,
+    floodAgencyZoneCount: flood.agencyZoneCount,
+    floodCommercialGapZoneCount: flood.commercialGapZoneCount ?? 0,
+    floodGlofasGapZoneCount: flood.glofasGapZoneCount,
+    floodSuppressedCommercialZoneCount: flood.suppressedCommercialZoneCount ?? 0,
+    floodSuppressedGlofasZoneCount: flood.suppressedGlofasZoneCount ?? 0,
+    floodBadgeLabel: flood.floodBadgeLabel ?? null,
+    agencyFloodTripCount: agencyFloodTrips,
+    commercialFloodTripCount: commercialFloodTrips,
+    modelFloodTripCount: modelFloodTrips,
     floodActiveZones: flood.activeZoneCount,
     windActiveZones: wind.activeZoneCount,
     routingTripAdvisories: routing.tripAdvisoryCount,
@@ -129,11 +179,17 @@ export function buildMultiHazardCrossRef(level = 2) {
 
 export function buildMultiHazardSummary(level = 2) {
   const crossRef = buildMultiHazardCrossRef(level);
+  const urbanOn = isUrbanFloodEnabled();
+  const glofasOn = isGlofasEnabled();
 
   return {
     ok: true,
-    phase: "phase-2-day-14",
-    headline: "Combined hazard + routing fusion — per-trip EOC briefing advisories",
+    phase: crossRef.phase,
+    headline: urbanOn
+      ? "Combined hazard + routing fusion — per-trip EOC briefing with agency/commercial/glofas flood attribution"
+      : glofasOn
+        ? "Combined hazard + routing fusion — per-trip EOC briefing with flood source attribution"
+        : "Combined hazard + routing fusion — per-trip EOC briefing advisories",
     ...crossRef,
   };
 }
@@ -144,10 +200,15 @@ export function getMultiHazardStatus() {
 
   return {
     ok: true,
-    phase: "phase-2-day-14",
+    phase: crossRef.phase,
     fusedTripCount: crossRef.fusedTripCount,
     criticalTripCount: crossRef.criticalTripCount,
     highTripCount: crossRef.highTripCount,
+    agencyFloodTripCount: crossRef.agencyFloodTripCount,
+    commercialFloodTripCount: crossRef.commercialFloodTripCount ?? 0,
+    modelFloodTripCount: crossRef.modelFloodTripCount,
+    floodMergeRule: crossRef.floodMergeRule,
+    floodBadgeLabel: crossRef.floodBadgeLabel,
     floodActiveZones: crossRef.floodActiveZones,
     windActiveZones: crossRef.windActiveZones,
     routingTripAdvisories: crossRef.routingTripAdvisories,
@@ -156,8 +217,20 @@ export function getMultiHazardStatus() {
       tripId: t.tripId,
       compositeRisk: t.compositeRisk,
       hazardTypes: t.hazardTypes,
+      floodSource: t.floodExposure?.sourceLabel,
+      floodSourceTag: t.floodExposure?.sourceLabel
+        ? `flood:${t.floodExposure.sourceLabel}`
+        : null,
       briefingLine: t.briefingLine,
     })),
+    commercialFloodSourceTags: crossRef.tripBriefings
+      ?.filter((t) => t.floodExposure?.sourceLabel === "commercial_model")
+      .slice(0, 4)
+      .map((t) => ({
+        tripId: t.tripId,
+        tag: "flood:commercial_model",
+        corridor: t.corridor,
+      })),
     scopeGuard: MULTI_HAZARD_SCOPE_GUARD,
   };
 }

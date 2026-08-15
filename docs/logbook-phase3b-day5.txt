@@ -1,0 +1,102 @@
+Phase 3b Day 5 Logbook — Map + Legend Styling (Commercial Urban Flood)
+
+Date: 2026-08-15
+Focus: Three-source flood map styling (agency solid · GloFAS dashed · commercial dotted violet), flood stack badge chip, satellite basemap, named street overlays, map viewport shift so legend clears island — verified via map overlay tests + live L2 Alma demo
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/hazards.js — commercial map styling
+   - commercialDepthStyle() — violet fill/stroke by depth band
+   - buildFloodMapOverlay(level, { features }) — dotted stroke 1 3 for commercial_model
+   - Flood callout cards + leader lines · label kind metadata per source
+   - Label: depth inches when known · "urban model" when depth absent
+   - Fix: style spread no longer overwrites commercial stroke (Day 4 bug)
+
+2. src/geo/index.js — map payload + street overlay
+   - floodAgencyZoneCount · floodGlofasGapZoneCount · floodUrbanZoneCount · floodBadgeLabel
+   - buildStreetOverlay() — brighter/thicker paths for Bay · Eastern · Shirley + labeled streets
+   - MAP.viewBox.padLeft = 110 · mapViewBoxString() → "0 0 910 480" · mapPadLeft on layer payload
+   - nassau-basemap.jpg attached to map layers (Esri World Imagery mosaic)
+
+3. src/ui/public/index.html — command map polish
+   - Legend toggle: flood-commercial · "Dotted violet = urban commercial model"
+   - #floodStackBadge chip (top-left) · N agency + M glofas + K urban zone(s)
+   - Satellite underlay + dark tint · SVG glow filters per flood source
+   - streetPathMarkup() halo strokes · streetLabelMarkup() readable halo text
+   - Named streets always visible (line + label toggle: street-labels)
+   - paintMap() translate(110,0) — map shifted right; legend sits over ocean margin
+   - Map chrome: Nassau · New Providence · Phase pill: Phase 3b · Day 5
+
+4. data/geo/urban-flood-grid-nassau-demo.json
+   - Shirley Street cells linked to CORR-04 for visible commercial gap-fill where agency GIS silent
+
+5. Tests + CLI
+   - tests/urban-flood-map-overlay.test.mjs · npm run test:urban-flood-map-overlay
+   - npm run test:glofas-map-overlay · npm run test:urban-flood-merge
+
+6. Phase bump: server · orchestrator · urban-flood · multi-hazard · hazards · geo index
+
+7. docs/phase3b-roadmap.md — Day 5 marked complete
+
+================================================================================
+
+MAP LEGEND (THREE SOURCE TYPES)
+
+| Layer            | Stroke        | Label              |
+|------------------|---------------|--------------------|
+| Agency confirmed | Solid cyan    | Depth inches       |
+| GloFAS model     | Dashed cyan   | ~Nyr or "model"    |
+| Commercial urban | Dotted violet | Depth or urban model |
+
+Stack badge example (live demo): 2 agency + 1 glofas + 2 urban zone(s)
+Viewport: 910×480 SVG · 110px left pad · island content at x≥110
+
+================================================================================
+
+SCOPE GUARD
+
+- Commercial urban layer is licensed model guidance — not NEMA / Water & Sewerage authority
+- GloFAS + commercial labels never imply field-confirmed inch depth when unknown
+- Map styling is visual provenance only — HITL mandatory before outbound COMMS
+- Basemap © Esri World Imagery · Streets © OpenStreetMap (attribution in legend)
+
+================================================================================
+
+QUICK VERIFY
+
+set URBAN_FLOOD_ENABLED=true
+set GLOFAS_ENABLED=true
+set URBAN_FLOOD_DEMO=true
+npm run geo:urban-flood-convert
+npm run test:urban-flood-map-overlay
+npm run test:urban-flood-merge
+npm run test:glofas-map-overlay
+npm start
+# Hard refresh (Ctrl+Shift+R): satellite map · violet Shirley zones · flood stack badge
+# · named street labels · legend over left ocean margin not Bay Street
+
+Eval: 8/8 · Phase: phase-3b-day-5
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3b-day5-map-legend.jpg
+  74 KB · Phase 3b · Day 5 pill · L2 Alma tropical storm demo
+  · satellite command map · flood stack badge · agency + GloFAS + commercial legend toggles
+  · CORR-01 OPEN · CORR-02 RESTRICTED · BEDS 87%/72% · named street labels · map shifted right
+  · extended HITL pending · action pack 9 checklist items
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 5: CCOC styles the three-layer flood stack on the command map — solid agency, dashed GloFAS, dotted violet commercial urban — with a flood stack badge, Esri satellite basemap, named street overlays, and a right-shifted viewport so the layers legend no longer covers downtown Nassau.
+
+================================================================================
+
+NEXT (Day 6)
+
+Full urban_flood_sync pipeline payload · EOC export urbanFlood block · fused briefing commercial source tag polish.

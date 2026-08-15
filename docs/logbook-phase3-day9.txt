@@ -1,0 +1,88 @@
+Phase 3 Day 9 Logbook — Sovereign + Air-Gap GloFAS Bundle
+
+Date: 2026-08-14
+Focus: Pre-downloaded glofas-nassau-latest.json offline clip, sovereign deploy check, pipeline glofas_airgap_sync — verified via unit tests + eval suite
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/glofas-sovereign.js — air-gap bundle profile
+   - buildGlofasAirGapProfile() — clipReady · fetchPolicy offline_clip_only · bundle file inventory
+   - buildGlofasAirGapPipelineStep() — step glofas_airgap_sync · airGapBadgeLabel
+
+2. src/deploy/sovereign.js — sovereign profile integration
+   - Check glofas_airgap_clip when GLOFAS_ENABLED
+   - dataResidency.glofasClip · recommendedEnv GLOFAS_AIRGAP vars
+   - glofasAirGap block on /api/deploy/sovereign
+
+3. GET /api/geo/hazards/glofas/air-gap — bundle status JSON
+4. npm run geo:glofas-airgap · npm run test:glofas-airgap
+
+5. src/orchestrator/index.js — glofas_airgap_sync pipeline step (after glofas_validation_sync)
+
+6. src/audit/index.js — summary + green audit chip glofas_airgap_sync·air-gap-clip·N-feature(s)
+
+7. src/audit/eoc-export.js — glofasAirGap operating picture block
+
+8. docs/sovereign-deploy.md — GloFAS air-gap bundle section (pre-download workflow)
+9. .env.sovereign.example — GLOFAS_AIRGAP · GLOFAS_LIVE=false · GLOFAS_CLIP_PATH
+
+10. src/ui/public/index.html — sovereign strip GloFAS clip line · formatGlofasAirGapAuditChip · Day 9 pill
+
+================================================================================
+
+SOVEREIGN ENV (AIR-GAP)
+
+GLOFAS_ENABLED=true
+GLOFAS_AIRGAP=true
+GLOFAS_LIVE=false
+GLOFAS_DEMO=false
+GLOFAS_CLIP_PATH=data/geo/glofas-nassau-latest.json
+
+Runtime fetchPolicy: offline_clip_only — no CDS/EWDS outbound on edge
+
+================================================================================
+
+SCOPE GUARD
+
+- Pre-downloaded clip is model_estimated gap-fill — not agency hydrology authority
+- Air-gap bundle does not replace agency flood GIS webhook
+- Refresh worker on connected LAN only — see docs/glofas-sovereign-cron.md
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-airgap
+npm run geo:glofas-airgap
+curl.exe http://127.0.0.1:8787/api/geo/hazards/glofas/air-gap
+curl.exe http://127.0.0.1:8787/api/deploy/sovereign
+set GLOFAS_ENABLED=true && npm run pipeline:run
+npm run eval:run
+
+clipReady: true · fetchPolicy: offline_clip_only · 2 feature(s)
+Pipeline AUD (L2 extended HITL):
+  summary glofas_airgap_sync · air-gap clip · 2 feature(s)
+  chips glofas_flood_sync·escalation_refresh·cds_grid_converted (cyan)
+        glofas_validation_sync·continue-glofas-urban-caveat (purple)
+        glofas_airgap_sync·air-gap-clip·2-feature(s) (green)
+Sovereign check: glofas_airgap_clip OK · 9/9 deploy checks
+Eval: 8/8 · Phase: phase-3-day-9
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day9-airgap-bundle.jpg
+  88 KB · Phase 3 Day 9 pill · audit triple chips
+  · glofas_flood_sync·escalation_refresh·cds_grid_converted (cyan)
+  · glofas_validation_sync·continue-glofas-urban-caveat (purple)
+  · glofas_airgap_sync·air-gap-clip·2-feature(s) (green)
+  · sovereign 9/9 deploy checks · extended HITL 5-role gate · L2 Alma command map
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 9: CCOC ships a sovereign air-gap GloFAS bundle around pre-downloaded glofas-nassau-latest.json so offline edge hosts run flood gap-fill without CDS calls, verifies the clip in sovereign deploy checks + glofas_airgap_sync pipeline audit, and documents the staging→edge copy workflow in docs/sovereign-deploy.md.

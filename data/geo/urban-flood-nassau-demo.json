@@ -1,0 +1,69 @@
+{
+  "scopeGuard": "Commercial urban flood demo — fine-resolution pluvial guidance for downtown Nassau; commercial_model confidence only; not agency field hydrology.",
+  "source": "urban_flood_demo",
+  "serviceName": "fathom-global-demo",
+  "provider": "Fathom Global (demo clip)",
+  "vendor": "demo",
+  "updatedAt": "2026-08-14T21:00:00Z",
+  "clipBbox": { "minLon": -77.34, "maxLon": -77.30, "minLat": 25.04, "maxLat": 25.08 },
+  "gridResolutionDeg": 0.001,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-01",
+        "name": "Bay Street urban pluvial ponding (commercial)",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "demo",
+        "depthInches": 12,
+        "depthBand": "moderate",
+        "returnPeriodYears": 10,
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2,
+        "notes": "Aligns Dorian FLOOD-04 urban pluvial — finer mesh than GloFAS 0.05°"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.330, 25.060],
+            [-77.322, 25.060],
+            [-77.322, 25.066],
+            [-77.330, 25.066],
+            [-77.330, 25.060]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-02",
+        "name": "Shirley Street cul-de-sac ponding (commercial)",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "demo",
+        "depthInches": 8,
+        "depthBand": "minor",
+        "returnPeriodYears": 5,
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2,
+        "notes": "Street-level pluvial gap — GloFAS network layer typically silent here"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.328, 25.052],
+            [-77.324, 25.052],
+            [-77.324, 25.056],
+            [-77.328, 25.056],
+            [-77.328, 25.052]
+          ]
+        ]
+      }
+    }
+  ]
+}

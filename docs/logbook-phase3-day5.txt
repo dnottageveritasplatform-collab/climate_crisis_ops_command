@@ -1,0 +1,69 @@
+Phase 3 Day 5 Logbook — Map + Legend Styling (Agency Solid / GloFAS Dashed)
+
+Date: 2026-08-14
+Focus: Split flood map badge, GloFAS model labels without fake inch depth, dashed vs solid styling on command map — verified on overlay tests, pipeline audit, and command-center UI
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/hazards.js — flood map overlay labels + badge helper
+   - floodZoneMapLabel() — agency depth inches · GloFAS return period or "model"
+   - buildFloodMapBadge() — badgeLabel: "N agency + M glofas zone(s)" when GLOFAS_ENABLED
+   - buildFloodMapOverlay() — omits depthInches on model_estimated zones · label.kind metadata
+
+2. src/geo/index.js — map payload flood counts
+   - floodAgencyZoneCount · floodGlofasGapZoneCount · floodBadgeLabel · glofasFloodEnabled
+
+3. src/ui/public/index.html — map badge + flood label styling
+   - Map badge: · 2 agency + 1 glofas zone(s) (when GLOFAS enabled)
+   - Agency flood labels: bold · depth inches · solid cyan fill/stroke
+   - GloFAS flood labels: italic · "model" or ~Nyr · dashed cyan stroke
+   - Legend note: Agency label = depth inches · GloFAS label = return period or model
+   - Phase pill → Phase 3 · Day 5
+
+4. src/geo/glofas.js — GloFAS-only overlay label fallback → "model" (not depthBand)
+
+5. Phase bump — phase-3-day-5 (server, orchestrator, defensibility, EOC export, multi-hazard, glofas-cds)
+
+6. Tests + CLI
+   - tests/glofas-map-overlay.test.mjs — 12 asserts on labels, dasharray, badge format
+   - npm run test:glofas-map-overlay
+
+================================================================================
+
+SCOPE GUARD
+
+- GloFAS map labels never imply field-confirmed inch depth when unknown
+- Agency solid / GloFAS dashed styling is visual guidance only — not hydrology authority
+- Map badge split appears when GLOFAS_ENABLED=true
+- HITL mandatory before outbound COMMS
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-map-overlay
+npm run test:glofas-merge
+set GLOFAS_ENABLED=true && node -e "import('./src/geo/index.js').then(m=>console.log(m.buildMapLayers(2).floodBadgeLabel))"
+npm run pipeline:run
+npm run eval:run
+
+Map badge: 2 agency + 1 glofas zone(s)
+Agency zone label: 14" (solid) · GloFAS gap label: ~2yr (dashed italic)
+UI: command map badge shows split count after triage sync · L2 Alma · extended HITL pending
+Eval: 8/8 · Phase: phase-3-day-5
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day5-map-badge.jpg
+  82 KB · Phase 3 Day 5 pill · map badge 2 agency + 1 glofas zone(s) · dashed GloFAS zone on map
+  · solid agency flood labels · L2 Alma · extended HITL pending · action pack 9 checklist items
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 5: CCOC styles agency flood zones solid cyan with depth-inch labels and GloFAS gap-fill dashed cyan with honest "model" or return-period labels — the command map badge now reads N agency + M glofas zone(s) so operators can read layer provenance at a glance.

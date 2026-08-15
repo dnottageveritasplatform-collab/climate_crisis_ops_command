@@ -89,6 +89,11 @@ function planAfterThreshold(signal) {
   if (level >= 2) steps.push({ tool: "get_public_safety_status", args: {} });
   if (level >= 2) steps.push({ tool: "get_corridor_layers", args: { level } });
   if (level >= 2) steps.push({ tool: "get_shelter_fleet_status", args: {} });
+  if (level >= 2) steps.push({ tool: "get_flood_hazard_status", args: {} });
+  if (level >= 2) steps.push({ tool: "get_glofas_flood_status", args: { level } });
+  if (level >= 2) steps.push({ tool: "get_urban_flood_status", args: { level } });
+  if (level >= 2) steps.push({ tool: "get_glofas_runbook_status", args: { level } });
+  if (level >= 2) steps.push({ tool: "get_flood_stack_runbook_status", args: { level } });
   if (level >= 3) steps.splice(2, 0, { tool: "query_sop", args: { query: "COMMS-03" } });
   return steps;
 }
@@ -100,6 +105,11 @@ function buildThresholdBrief(toolResults) {
   const publicSafety = findResult(toolResults, "get_public_safety_status");
   const corridorLayers = findResult(toolResults, "get_corridor_layers");
   const shelterFleet = findResult(toolResults, "get_shelter_fleet_status");
+  const floodHazard = findResult(toolResults, "get_flood_hazard_status");
+  const glofasFlood = findResult(toolResults, "get_glofas_flood_status");
+  const urbanFlood = findResult(toolResults, "get_urban_flood_status");
+  const glofasRunbook = findResult(toolResults, "get_glofas_runbook_status");
+  const floodStackRunbook = findResult(toolResults, "get_flood_stack_runbook_status");
   const sopResults = toolResults.filter((t) => t.tool === "query_sop").map((t) => t.result);
 
   const citations = dedupeCitations(sopResults.flatMap((s) => s.citations || []));
@@ -110,17 +120,62 @@ function buildThresholdBrief(toolResults) {
     level,
     event: signal.event,
     geography: signal.serviceArea,
-    summary: buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLayers, shelterFleet),
+    summary: buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLayers, shelterFleet, floodHazard, glofasFlood, urbanFlood, glofasRunbook, floodStackRunbook),
     sopCitations: citations,
-    recommendedActions: deriveActions(citations, dispatch, level, transportDesk, publicSafety, corridorLayers, shelterFleet),
+    recommendedActions: deriveActions(citations, dispatch, level, transportDesk, publicSafety, corridorLayers, shelterFleet, floodHazard, glofasFlood, urbanFlood, glofasRunbook, floodStackRunbook),
     institutionalSignals: signal.institutionalHeadlines || [],
     transportDesk: transportDesk || null,
     publicSafety: publicSafety || null,
     corridorLayers: corridorLayers || null,
     shelterFleet: shelterFleet || null,
+    floodHazard: floodHazard || null,
+    glofasFlood: glofasFlood || null,
+    urbanFlood: urbanFlood || null,
+    glofasRunbook: glofasRunbook || null,
+    floodStackRunbook: floodStackRunbook || null,
     affectedCorridors: corridorLayers?.corridorStatus || dispatch.corridorStatus || {},
     confidence: computeConfidence(signal),
   };
+}
+
+function formatUrbanFloodSyncHint(urbanFlood) {
+  if (!urbanFlood) return "sync unknown";
+  if (urbanFlood.staleWarning) {
+    return `stale ${urbanFlood.staleHours}h — prefer agency GIS`;
+  }
+  if (urbanFlood.refreshPolicy === "urban_flood_disabled") {
+    return "layer disabled";
+  }
+  if (urbanFlood.skippedRefresh || urbanFlood.refreshPolicy === "skipped_below_L2") {
+    return "cache-only — refresh skipped below L2";
+  }
+  if (urbanFlood.refreshPolicy === "escalation_refresh" || urbanFlood.refreshed) {
+    const age =
+      urbanFlood.staleHours != null
+        ? `vendor fresh ${urbanFlood.staleHours}h`
+        : "refreshed on pipeline";
+    return `escalation_refresh · ${age}`;
+  }
+  if (urbanFlood.conversionPending) {
+    return "vendor probe OK — run geo:urban-flood-convert if grid export available";
+  }
+  return urbanFlood.refreshPolicy || "sync";
+}
+
+function formatGlofasSyncHint(glofasFlood) {
+  if (!glofasFlood) return "sync unknown";
+  if (glofasFlood.staleWarning) {
+    return `stale ${glofasFlood.staleHours}h — prefer agency GIS`;
+  }
+  if (glofasFlood.skippedRefresh || glofasFlood.refreshPolicy === "skipped_below_L2") {
+    return "cache-only — refresh skipped below L2";
+  }
+  if (glofasFlood.refreshPolicy === "escalation_refresh" || glofasFlood.refreshed) {
+    const age =
+      glofasFlood.staleHours != null ? `EWDS fresh ${glofasFlood.staleHours}h` : "EWDS refreshed on pipeline";
+    return `escalation_refresh · ${age}`;
+  }
+  return glofasFlood.refreshPolicy || "sync";
 }
 
 function dedupeCitations(citations) {
@@ -133,7 +188,7 @@ function dedupeCitations(citations) {
   });
 }
 
-function buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLayers, shelterFleet) {
+function buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLayers, shelterFleet, floodHazard, glofasFlood, urbanFlood, glofasRunbook, floodStackRunbook) {
   const inst = signal.institutionalCount || 0;
   const atRisk = dispatch.atRiskTrips ?? dispatch.p1Trips ?? 0;
   const corridors = (dispatch.corridors || []).join(", ");
@@ -182,6 +237,25 @@ function buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLay
   if (shelterFleet?.shelterCount) {
     deskHint += ` Shelter/fleet: ${shelterFleet.acceptingShelters}/${shelterFleet.shelterCount} shelters accepting · ${shelterFleet.availableFleetAssets}/${shelterFleet.fleetCount} fleet available (extended HITL).`;
   }
+  if (floodHazard?.activeZoneCount) {
+    deskHint += ` Flood GIS: ${floodHazard.activeZoneCount} active zone(s) · ${floodHazard.tripExposureCount || 0} trip exposure(s).`;
+  }
+  if (glofasFlood?.enabled && glofasFlood.floodBadgeLabel) {
+    deskHint += ` GloFAS gap-fill: ${glofasFlood.floodBadgeLabel} (${glofasFlood.fetchMode || "demo"} · ${formatGlofasSyncHint(glofasFlood)}).`;
+  } else if (glofasFlood?.activeZoneCount) {
+    deskHint += ` GloFAS: ${glofasFlood.activeZoneCount} model zone(s) · ${glofasFlood.fetchMode || "demo"} · ${formatGlofasSyncHint(glofasFlood)}.`;
+  }
+  if (glofasRunbook?.enabled && glofasRunbook.runbookBadgeLabel) {
+    deskHint += ` Runbook: ${glofasRunbook.runbookBadgeLabel.replace(/-/g, " ")}.`;
+  }
+  if (floodStackRunbook?.enabled && floodStackRunbook.runbookBadgeLabel) {
+    deskHint += ` Flood stack: ${floodStackRunbook.runbookBadgeLabel.replace(/-/g, " ")}.`;
+  }
+  if (urbanFlood?.enabled && urbanFlood.floodBadgeLabel) {
+    deskHint += ` Urban flood stack: ${urbanFlood.floodBadgeLabel} (${urbanFlood.vendor || "demo"} · ${formatUrbanFloodSyncHint(urbanFlood)}).`;
+  } else if (urbanFlood?.enabled && urbanFlood.activeZoneCount) {
+    deskHint += ` Urban flood: ${urbanFlood.activeZoneCount} commercial zone(s) · ${urbanFlood.vendor || "demo"} · ${formatUrbanFloodSyncHint(urbanFlood)}.`;
+  }
   return (
     `Level ${signal.level} ${signal.label} — multi-agency coordination for ${geo}. ` +
     `${inst} institutional signal(s) (OCHA + GFDRR demo feeds). ` +
@@ -190,7 +264,7 @@ function buildSummary(signal, dispatch, transportDesk, publicSafety, corridorLay
   );
 }
 
-function deriveActions(citations, dispatch, level, transportDesk, publicSafety, corridorLayers, shelterFleet) {
+function deriveActions(citations, dispatch, level, transportDesk, publicSafety, corridorLayers, shelterFleet, floodHazard, glofasFlood, urbanFlood, glofasRunbook, floodStackRunbook) {
   const levelSection = `Level ${level}`;
   const fromSop = citations
     .filter((c) => c.section?.startsWith(levelSection) || c.section?.includes("Restrict"))
@@ -238,6 +312,50 @@ function deriveActions(citations, dispatch, level, transportDesk, publicSafety, 
   }
   if (level >= 2 && shelterFleet?.fleetCount) {
     actions.push("Stage fleet allocation draft for logistics lead extended HITL approval");
+  }
+  if (floodHazard?.tripExposureCount) {
+    actions.push(
+      `Cross-check ${floodHazard.tripExposureCount} flood-exposed trip(s) against agency GIS zones before dispatch`
+    );
+  }
+  if (glofasFlood?.enabled && glofasFlood.glofasGapZoneCount) {
+    actions.push(
+      `Review ${glofasFlood.glofasGapZoneCount} GloFAS gap-fill zone(s) — model_estimated only; agency GIS wins on overlap`
+    );
+  }
+  if (glofasFlood?.skippedRefresh || glofasFlood?.refreshPolicy === "skipped_below_L2") {
+    actions.push(
+      `GloFAS cache-only below L${glofasFlood.escalationMinLevel || 2} — no EWDS refresh until escalation`
+    );
+  }
+  if (glofasFlood?.staleWarning) {
+    actions.push("GloFAS EWDS feed stale — prefer agency flood GIS until refresh completes");
+  }
+  if (glofasRunbook?.enabled) {
+    actions.push(
+      `Follow GloFAS pilot runbook — ${glofasRunbook.primaryTrust?.replace(/_/g, " ") || "agency-first"}; no auto-COMMS from model zones`
+    );
+  }
+  if (floodStackRunbook?.enabled) {
+    actions.push(
+      `Follow flood stack runbook — ${floodStackRunbook.primaryTrust?.replace(/_/g, " ") || "agency-first"}; three-layer merge agency → commercial → GloFAS`
+    );
+  }
+  if (urbanFlood?.enabled && urbanFlood.commercialGapZoneCount) {
+    actions.push(
+      `Review ${urbanFlood.commercialGapZoneCount} commercial urban gap zone(s) — commercial_model only; agency GIS wins on overlap`
+    );
+  }
+  if (urbanFlood?.staleWarning) {
+    actions.push("Commercial urban flood vendor feed stale — prefer agency flood GIS until refresh completes");
+  }
+  if (urbanFlood?.skippedRefresh || urbanFlood?.refreshPolicy === "skipped_below_L2") {
+    actions.push(
+      `Urban flood cache-only below L${urbanFlood.escalationMinLevel || 2} — no vendor refresh until escalation`
+    );
+  }
+  if (urbanFlood?.conversionPending) {
+    actions.push("Run geo:urban-flood-convert when vendor grid export is available — polygon clip pending");
   }
 
   return [...new Set(actions)].slice(0, 10);

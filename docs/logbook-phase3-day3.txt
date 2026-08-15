@@ -1,0 +1,80 @@
+Phase 3 Day 3 Logbook — GloFAS Grid → Polygon Conversion + Interactive Map Legend
+
+Date: 2026-08-14
+Focus: Discharge grid → Nassau clip GeoJSON, depthBand thresholds, CDS sync writes glofas-nassau-latest.json, and click-to-toggle map legend — verified on pipeline audit GloFAS CDS cds_grid_converted
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/glofas-convert.js — grid conversion module
+   - dischargeToDepthBand() — minor ≥75 · moderate ≥120 · major ≥180 m³/s
+   - convertGlofasGridToFeatures() — grid cell → polygon + corridor link inference
+   - convertGlofasGridFile() — writes data/geo/glofas-nassau-latest.json · fetchMode: cds_grid_converted
+
+2. data/geo/glofas-grid-nassau-demo.json — 3 demo discharge cells (2 above threshold, 1 filtered)
+
+3. attachGridConversion() in src/geo/glofas-cds.js
+   - Runs after successful CDS mock/metadata probe
+   - Updates cache with clipPath, featureCount, conversionPending: false
+
+4. Layer priority in src/geo/glofas.js
+   - Prefers GLOFAS_CLIP_PATH (glofas-nassau-latest.json) over demo when clip exists
+   - Agency-wins merge unchanged — GloFAS on CORR-02 suppressed when agency covers corridor
+
+5. Interactive map legend — src/ui/public/index.html
+   - Header: LAYERS - CLICK TO TOGGLE (bold, all caps)
+   - 13 toggleable layer rows: hospitals, NEMT, CAD, fire/police EOC, at-risk trips, corridors, agency flood, GloFAS model, wind tiers (hurricane / strong / tropical)
+   - Click legend row → show/hide matching SVG layer group; off state dimmed + strikethrough
+   - Zoom preserved on toggle · double-click on legend does not reset map view
+
+6. Tests + CLI
+   - tests/glofas-convert.test.mjs — 10 asserts on demo grid slice
+   - npm run test:glofas-convert · npm run geo:glofas-convert
+
+7. Optional sidecar — scripts/glofas-grid-from-nc.py (NetCDF → grid JSON stub for future live GRIB)
+
+8. Phase bump — phase-3-day-3 (server, orchestrator, hazards, defensibility, EOC export, UI pill)
+
+9. .env.example — GLOFAS_GRID_PATH, GLOFAS_CLIP_PATH
+
+================================================================================
+
+SCOPE GUARD
+
+- Day 3 converts demo grid JSON — not live GRIB retrieve yet (Day 3 MVP per roadmap)
+- Every converted feature: source: glofas · confidence: model_estimated · dashed map styling
+- Legend toggles are view-only — do not change hazard authority or pipeline data
+- CDS key never committed (.env gitignored)
+- HITL mandatory before outbound COMMS
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-convert
+npm run geo:glofas-convert
+npm run geo:glofas
+npm run geo:glofas-fetch
+npm run pipeline:run
+npm run eval:run
+curl.exe http://127.0.0.1:8787/api/geo/hazards/glofas/status
+
+UI: open command map → click legend rows (e.g. hide wind tiers + GloFAS to isolate agency flood + corridors)
+Eval: 8/8 · pipeline steps include glofas_flood_sync
+Convert: 2 features written · 1 cell filtered below discharge threshold
+Live CDS + convert: fetchMode: cds_grid_converted · audit · GloFAS CDS cds_grid_converted
+Phase: phase-3-day-3
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day3-grid-converted.jpg
+  64 KB · Phase 3 Day 3 pill · LAYERS - CLICK TO TOGGLE legend · audit GloFAS CDS cds_grid_converted · L2 Alma · hazard fusion + flood/wind zones
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 3: CCOC converts GloFAS discharge grid to Nassau clip polygons with depth-band thresholds, surfaces cds_grid_converted in the pipeline audit, and adds a click-to-toggle map legend so operators can hide flood, wind, CAD, or model layers to read the command map faster — agency-wins merge unchanged.

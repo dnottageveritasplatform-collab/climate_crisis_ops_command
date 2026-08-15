@@ -1,0 +1,110 @@
+Phase 3b Day 7 Logbook — Escalation-Gated Urban Flood Refresh + Stale Vendor Warning
+
+Date: 2026-08-15
+Focus: L2+ pipeline urban_flood_sync refresh, L1 cache-only, stale vendor warning >24h, visible Monitor + audit sync states — verified on pipeline + Monitor brief + escalation refresh tests
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/urban-flood.js — escalation refresh policy
+   - shouldRefreshUrbanFloodOnPipeline(level) — URBAN_FLOOD_ENABLED + level >= URBAN_FLOOD_ESCALATION_MIN_LEVEL
+   - buildUrbanFloodStatusOnlyStep() — cache-only path when refresh skipped (mode urban_flood_status_only)
+   - buildUrbanFloodPipelineSyncStep() — refreshed · skippedRefresh · refreshPolicy · stale metadata · escalationMinLevel
+   - getUrbanFloodStatus() — escalation_refresh / skipped_below_L2 · staleThresholdHours · staleWarning · staleHours
+   - syncUrbanFloodLayer() — L2+ clip reload without outbound vendor probe unless URBAN_FLOOD_LIVE=true
+
+2. src/geo/urban-flood-vendor.js — stale threshold (unchanged Day 2, wired Day 7)
+   - getUrbanFloodStaleThresholdHours() from URBAN_FLOOD_STALE_HOURS (default 24)
+   - staleWarning when staleHours > threshold
+
+3. src/orchestrator/index.js — pipeline uses escalation-gated urban_flood_sync step · phase-3b-day-7
+
+4. src/agents/monitor/brief.js — visible sync states in brief
+   - formatUrbanFloodSyncHint() — cache-only / escalation_refresh / stale text
+   - Summary: Urban flood stack … (vendor_grid_converted · escalation_refresh · vendor fresh Nh)
+   - Recommended actions: cache-only below L2 · stale prefer agency GIS
+
+5. src/agents/runtime/tools.js — get_urban_flood_status Day 7 description
+
+6. src/audit/index.js — audit summary + chips (always show policy)
+   - L2 summary: urban_flood_sync · escalation_refresh · vendor_grid_converted
+   - L1 summary: urban_flood_sync · cache_only · fetchMode
+   - Stale summary: urban_flood_sync · stale Nh · fetchMode
+   - Pipeline step chip: urban_flood_sync · escalation_refresh · mode
+
+7. src/audit/eoc-export.js — urbanFlood block adds escalationMinLevel · refreshPolicy · staleHours · refreshed
+
+8. src/geo/index.js — map payload urbanStaleWarning · urbanStaleHours · urbanStaleThresholdHours
+
+9. src/ui/public/index.html — Monitor + audit visibility
+   - Violet banner: Urban flood L2+ escalation refresh · Nh since last fetch · flood stack badge
+   - Gray banner: cache-only below L2
+   - Amber banner: vendor feed stale >24h
+   - Stat row: L2 refresh / cache-only / stale Nh under Urban sync
+   - Audit chip: urban_flood_sync·escalation_refresh·vendor_grid_converted
+   - Phase pill → Phase 3b · Day 7
+
+10. docs/urban-flood-sovereign-cron.md — cache-only below L2 policy · cron · systemd · Windows Task Scheduler examples
+
+11. docs/urban-flood-vendor-setup.md — URBAN_FLOOD_ESCALATION_MIN_LEVEL · link to sovereign cron doc
+
+12. .env.example — URBAN_FLOOD_ESCALATION_MIN_LEVEL=2
+
+13. Tests + CLI
+    - tests/urban-flood-escalation-refresh.test.mjs — L1 cache-only · L2 refresh · stale cache
+    - npm run test:urban-flood-escalation-refresh
+    - tests/urban-flood-pipeline.test.mjs phase bump · escalation_refresh assert
+
+================================================================================
+
+ENV
+
+URBAN_FLOOD_ENABLED=true
+URBAN_FLOOD_ESCALATION_MIN_LEVEL=2   # default — refresh on pipeline at L2+
+URBAN_FLOOD_STALE_HOURS=24           # default — stale warning threshold
+URBAN_FLOOD_LIVE=false               # L2+ reloads clip; vendor API only when true
+
+================================================================================
+
+CACHE-ONLY BELOW L2 POLICY
+
+| Level | urban_flood_sync policy      | Outbound vendor API        |
+|-------|------------------------------|----------------------------|
+| L1    | skipped_below_L2 · cache_only | No                         |
+| L2+   | escalation_refresh · clip reload | Only if URBAN_FLOOD_LIVE=true |
+
+================================================================================
+
+SCOPE GUARD
+
+- L1 pipeline runs use cached urban clip — no outbound vendor probe
+- Stale commercial urban feed is situational awareness only — agency GIS remains primary
+- Cron/worker doc is operator-run — CCOC does not auto-send COMMS from commercial zones
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:urban-flood-escalation-refresh
+npm run test:urban-flood-pipeline
+set URBAN_FLOOD_ENABLED=true && npm run pipeline:run
+set URBAN_FLOOD_ENABLED=true && npm run brief:monitor
+npm run eval:run
+
+Pipeline summary: urban_flood_sync · escalation_refresh · vendor_grid_converted
+Monitor brief: Urban flood L2+ escalation refresh · vendor fresh Nh · 2 agency + 1 glofas + 2 urban zone(s)
+Audit chip: urban_flood_sync·escalation_refresh·vendor_grid_converted
+Eval: 8/8 · Phase: phase-3b-day-7
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 7: CCOC refreshes the commercial urban flood layer on L2+ pipeline runs while L1 stays cache-only, warns when the vendor feed exceeds 24 hours stale, and surfaces escalation_refresh / cache_only / stale states in the Monitor brief banner, Urban sync stat, and audit urban_flood_sync chips — with sovereign cron guidance for on-prem vendor clip refresh.
+
+================================================================================
+
+NEXT (Day 8)
+
+Dorian re-validation spike — Bay Street / FLOOD-04 IoU vs agency urban pluvial · urban_flood_validation_sync · decision gate urban_layer_acceptable.

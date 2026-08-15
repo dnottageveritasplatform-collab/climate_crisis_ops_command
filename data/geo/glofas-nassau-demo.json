@@ -1,0 +1,68 @@
+{
+  "scopeGuard": "GloFAS gap-fill demo — coarse Copernicus river/discharge guidance clipped to New Providence; model_estimated confidence only.",
+  "source": "glofas_demo",
+  "serviceName": "cems-glofas-forecast-demo",
+  "provider": "Copernicus EMS GloFAS (demo clip)",
+  "updatedAt": "2026-08-14T15:38:00Z",
+  "clipBbox": { "minLon": -77.36, "maxLon": -77.24, "minLat": 25.03, "maxLat": 25.10 },
+  "gridResolutionDeg": 0.05,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-01",
+        "name": "GloFAS · Eastern Road basin exceedance (coarse)",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "dischargeM3s": 142,
+        "returnPeriodYears": 5,
+        "depthBand": "moderate",
+        "depthInches": null,
+        "linkedCorridors": ["CORR-02"],
+        "activeAtLevel": 2,
+        "notes": "Snapped to FLOOD-01 Eastern Road envelope — hidden when agency layer active"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.320, 25.042],
+            [-77.300, 25.042],
+            [-77.300, 25.055],
+            [-77.320, 25.055],
+            [-77.320, 25.042]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-02",
+        "name": "GloFAS · Western New Providence elevated discharge",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "dischargeM3s": 88,
+        "returnPeriodYears": 2,
+        "depthBand": "minor",
+        "depthInches": null,
+        "linkedCorridors": ["CORR-01"],
+        "activeAtLevel": 2,
+        "notes": "Coarse 0.05° grid — not street-level ponding"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.345, 25.048],
+            [-77.328, 25.048],
+            [-77.328, 25.058],
+            [-77.345, 25.058],
+            [-77.345, 25.048]
+          ]
+        ]
+      }
+    }
+  ]
+}

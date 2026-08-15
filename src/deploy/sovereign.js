@@ -6,6 +6,8 @@ import { fileURLToPath } from "url";
 import { config } from "../config.js";
 import { getAuditPersistStatus } from "../audit/store.js";
 import { buildDeployChecklist } from "./index.js";
+import { buildGlofasAirGapProfile } from "../geo/glofas-sovereign.js";
+import { buildUrbanFloodAirGapProfile } from "../geo/urban-flood-sovereign.js";
 
 export const SOVEREIGN_SCOPE_GUARD =
   "Sovereign on-prem deploy profile — operator-controlled data residency; not multi-tenant cloud SaaS or 911 dispatch authority.";
@@ -29,6 +31,8 @@ function envFlag(name, { preferTruthy = true } = {}) {
 export function buildSovereignDeployProfile({ baseUrl } = {}) {
   const staging = buildDeployChecklist(baseUrl);
   const auditPersist = getAuditPersistStatus();
+  const glofasAirGap = buildGlofasAirGapProfile();
+  const urbanFloodAirGap = buildUrbanFloodAirGapProfile();
 
   const checks = [
     {
@@ -74,6 +78,26 @@ export function buildSovereignDeployProfile({ baseUrl } = {}) {
       ok: staging.ok,
       detail: staging.summary,
     },
+    {
+      name: "glofas_airgap_clip",
+      ok: !glofasAirGap.enabled || glofasAirGap.clipReady,
+      recommended: glofasAirGap.enabled,
+      detail: glofasAirGap.enabled
+        ? glofasAirGap.clipReady
+          ? `${glofasAirGap.clipPath} · ${glofasAirGap.clipFeatureCount ?? "?"} feature(s) offline`
+          : "Pre-download glofas-nassau-latest.json for air-gap edge — see docs/sovereign-deploy.md"
+        : "Set GLOFAS_ENABLED=true to require offline clip bundle",
+    },
+    {
+      name: "urban_flood_airgap_clip",
+      ok: !urbanFloodAirGap.enabled || urbanFloodAirGap.clipReady,
+      recommended: urbanFloodAirGap.enabled,
+      detail: urbanFloodAirGap.enabled
+        ? urbanFloodAirGap.clipReady
+          ? `${urbanFloodAirGap.clipPath} · ${urbanFloodAirGap.clipFeatureCount ?? "?"} feature(s) offline`
+          : "Pre-download urban-flood-nassau-latest.json for air-gap edge — see docs/sovereign-deploy.md"
+        : "Set URBAN_FLOOD_ENABLED=true to require offline urban clip bundle",
+    },
   ];
 
   const passed = checks.filter((c) => c.ok).length;
@@ -85,17 +109,47 @@ export function buildSovereignDeployProfile({ baseUrl } = {}) {
     auditTrail: auditPersist.storePath || "data/audit-trail.jsonl",
     sopCorpus: "docs/sops/*.txt (local filesystem)",
     geoLayers: "data/geo/*.json (agency GIS ingest via webhook)",
+    glofasClip: glofasAirGap.enabled
+      ? glofasAirGap.clipReady
+        ? `${glofasAirGap.clipPath} (${glofasAirGap.clipFeatureCount ?? "?"} features · offline)`
+        : "missing — pre-download glofas-nassau-latest.json"
+      : "disabled (GLOFAS_ENABLED=false)",
+    urbanFloodClip: urbanFloodAirGap.enabled
+      ? urbanFloodAirGap.clipReady
+        ? `${urbanFloodAirGap.clipPath} (${urbanFloodAirGap.clipFeatureCount ?? "?"} features · offline)`
+        : "missing — pre-download urban-flood-nassau-latest.json"
+      : "disabled (URBAN_FLOOD_ENABLED=false)",
     llmCalls: config.demoMode ? "none (demo mode)" : "optional outbound — disable for air-gap",
     nhcFeed: nhcLive === false ? "disabled (demo signals)" : "optional outbound weather XML",
   };
 
   return {
     ok: failed.length === 0,
-    phase: "phase-2-day-15",
+    phase: "phase-3b-day-9",
     profile: "sovereign_on_prem",
     headline: "Sovereign on-prem deploy — Caribbean operator data residency",
     regionNote: "New Providence pilot · extensible to Bahamas/Caribbean operator-controlled VM or edge appliance",
     dataResidency,
+    glofasAirGap: glofasAirGap.enabled
+      ? {
+          clipReady: glofasAirGap.clipReady,
+          clipPath: glofasAirGap.clipPath,
+          clipFeatureCount: glofasAirGap.clipFeatureCount,
+          fetchPolicy: glofasAirGap.fetchPolicy,
+          bundleFileCount: glofasAirGap.bundleFileCount,
+          recommendedEnv: glofasAirGap.recommendedEnv,
+        }
+      : null,
+    urbanFloodAirGap: urbanFloodAirGap.enabled
+      ? {
+          clipReady: urbanFloodAirGap.clipReady,
+          clipPath: urbanFloodAirGap.clipPath,
+          clipFeatureCount: urbanFloodAirGap.clipFeatureCount,
+          fetchPolicy: urbanFloodAirGap.fetchPolicy,
+          bundleFileCount: urbanFloodAirGap.bundleFileCount,
+          recommendedEnv: urbanFloodAirGap.recommendedEnv,
+        }
+      : null,
     deploymentOptions: [
       {
         id: "docker-edge",
@@ -120,6 +174,16 @@ export function buildSovereignDeployProfile({ baseUrl } = {}) {
       DEMO_MODE: "true",
       AUDIT_PERSIST: "true",
       NHC_LIVE: "false",
+      GLOFAS_ENABLED: "true",
+      GLOFAS_AIRGAP: "true",
+      GLOFAS_LIVE: "false",
+      GLOFAS_DEMO: "false",
+      GLOFAS_CLIP_PATH: "data/geo/glofas-nassau-latest.json",
+      URBAN_FLOOD_ENABLED: "true",
+      URBAN_FLOOD_AIRGAP: "true",
+      URBAN_FLOOD_LIVE: "false",
+      URBAN_FLOOD_DEMO: "false",
+      URBAN_FLOOD_CLIP_PATH: "data/geo/urban-flood-nassau-latest.json",
       PORT: "8787",
       NODE_ENV: "production",
     },
@@ -149,13 +213,17 @@ export function getSovereignDeployStatus({ baseUrl } = {}) {
   const profile = buildSovereignDeployProfile({ baseUrl });
   return {
     ok: profile.ok,
-    phase: "phase-2-day-15",
+    phase: "phase-3b-day-9",
     profile: profile.profile,
     checksPassed: profile.checks.filter((c) => c.ok).length,
     checksTotal: profile.checks.length,
     summary: profile.summary,
     demoMode: config.demoMode,
     auditPersistPath: profile.dataResidency.auditTrail,
+    glofasClipReady: profile.glofasAirGap?.clipReady ?? null,
+    glofasAirGapFetchPolicy: profile.glofasAirGap?.fetchPolicy ?? null,
+    urbanClipReady: profile.urbanFloodAirGap?.clipReady ?? null,
+    urbanAirGapFetchPolicy: profile.urbanFloodAirGap?.fetchPolicy ?? null,
     llmOutbound: profile.dataResidency.llmCalls,
     deploymentOptionCount: profile.deploymentOptions.length,
     scopeGuard: SOVEREIGN_SCOPE_GUARD,

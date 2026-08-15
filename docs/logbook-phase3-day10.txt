@@ -1,0 +1,94 @@
+Phase 3 Day 10 Logbook — Pilot Runbook + Scope Guard Review
+
+Date: 2026-08-14
+Focus: Agency-first GloFAS trust matrix, operator runbook, defensibility gap-fill narrative, pipeline glofas_runbook_sync — verified via unit tests + eval suite (Phase 3 sprint close-out)
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/glofas-runbook.js — pilot runbook engine
+   - GLOFAS_TRUST_RULES — 6-rule matrix (agency fresh · stale · EWDS stale · urban pluvial · validation caveat · air-gap)
+   - buildGlofasRunbookSummary() — currentPosture · scopeGuardReview · operatorChecklist
+   - buildGlofasRunbookPipelineStep() — step glofas_runbook_sync · runbookBadgeLabel
+
+2. docs/glofas-pilot-runbook.md — operator guide when to trust model vs wait for agency
+
+3. GET /api/geo/hazards/glofas/runbook · ?level=2
+4. npm run geo:glofas-runbook · npm run test:glofas-runbook
+
+5. src/orchestrator/index.js — glofas_runbook_sync pipeline step (after glofas_airgap_sync)
+
+6. src/audit/index.js — summary + gold audit chip glofas_runbook_sync·agency-first-6rules·primary-trust
+
+7. src/audit/eoc-export.js — glofasRunbook operating picture block
+
+8. src/defensibility/index.js — 6th pillar glofas_gap_fill · GLOFAS_DEFENSIBILITY · Phase 3 pitch slide
+9. src/agents/runtime/tools.js — Monitor tool get_glofas_runbook_status
+10. src/agents/monitor/brief.js — runbook line in brief + recommended action
+
+11. src/ui/public/index.html — formatGlofasRunbookAuditChip · Phase 3 · Day 10 pill
+
+12. data/eval/scenarios.json — glofas_runbook_sync in eval-l2-pipeline-audit steps
+
+================================================================================
+
+TRUST MATRIX (6 RULES)
+
+agency_fresh          → agency_confirmed — prefer agency depth; GloFAS only where silent
+agency_stale_or_empty → model_estimated_gap_fill — dashed zones; verify with EOC/field
+ewds_stale            → wait_for_agency — prefer agency webhook until refresh
+urban_pluvial         → agency_or_commercial — do not trust coarse GloFAS alone
+validation_urban_caveat → model_with_caveat — continue network gap-fill; urban flag
+airgap_offline        → offline_clip_only — pre-downloaded clip; LAN refresh worker only
+
+Scope guard review verdict: agency_first_model_gap_fill
+Headline: Gap-fill not replacement hydrology
+
+================================================================================
+
+SCOPE GUARD
+
+- GloFAS gap-fill is model guidance — not Water & Sewerage / NEMA authority
+- Agency wins on corridor overlap — never auto-COMMS from model zones alone
+- Extended HITL (5 roles) mandatory before outbound messaging
+- Defensibility is honest labeling + agency-wins merge — not claiming Copernicus replaces field hydrology
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-runbook
+npm run geo:glofas-runbook
+curl.exe http://127.0.0.1:8787/api/geo/hazards/glofas/runbook
+curl.exe http://127.0.0.1:8787/api/defensibility/narrative
+set GLOFAS_ENABLED=true && npm run pipeline:run
+npm run eval:run
+
+primaryTrust: agency-or-commercial (urban pluvial + validation caveat active)
+Pipeline AUD-1452 (L2 extended HITL):
+  summary glofas_runbook_sync · agency-first-6rules-agency-or-commercial
+  chips glofas_flood_sync·escalation_refresh·cds_grid_converted (cyan)
+        glofas_validation_sync·continue-glofas-urban-caveat (purple)
+        glofas_airgap_sync·air-gap-clip·2-feature(s) (green)
+        glofas_runbook_sync·agency-first-6rules-agency-or-commercial (gold)
+Defensibility: 6 pillars · Phase 3 GloFAS 10d · Phase 2 17d
+Eval: 8/8 · Phase: phase-3-day-10 · Sprint complete
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day10-runbook-review.jpg
+  16 KB · Phase 3 Day 10 pill · audit quad chips (AUD-1452)
+  · glofas_flood_sync·escalation_refresh·cds_grid_converted (cyan)
+  · glofas_validation_sync·continue-glofas-urban-caveat (purple)
+  · glofas_airgap_sync·air-gap-clip·2-feature(s) (green)
+  · glofas_runbook_sync·agency-first-6rules-agency-or-commercial (gold)
+  · defensibility 6 pillars · sovereign 9/9 deploy checks
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 10: CCOC closes the GloFAS sprint with an operator pilot runbook (6-rule agency-first trust matrix + scope guard review), updates defensibility to position Copernicus as labeled gap-fill not replacement hydrology, and surfaces the rollup in pipeline glofas_runbook_sync audit + EOC export — Phase 3 complete (10/10 days).

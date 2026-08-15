@@ -1,0 +1,121 @@
+Phase 3b Day 8 Logbook — Dorian FLOOD-04 Re-Validation Spike + urban_flood_validation_sync
+
+Date: 2026-08-15
+Focus: Bay Street / FLOOD-04 IoU re-check with commercial urban clip enabled · decision gate urban_layer_acceptable vs stay_agency_only · pipeline urban_flood_validation_sync purple audit chip · verified on Dorian demo JSON + L2 pipeline audit trail
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/urban-flood-validation.js — Dorian re-validation module
+   - getUrbanFloodValidationCatalog() — data/geo/urban-flood-validation-catalog.json
+   - buildUrbanFloodValidationReport(eventId) — agency vs commercial vs GloFAS baseline IoU
+   - buildUrbanFloodValidationSummary() — rollup verdict across catalog events
+   - buildUrbanFloodValidationPipelineStep() — step: urban_flood_validation_sync · badge urban-layer-acceptable
+   - Decision gate: urban_layer_acceptable when commercial IoU >= 0.5 on focus urban zones; else stay_agency_only
+   - Dorian demo: FLOOD-04 (Bay Street urban pluvial) vs URBAN-01 commercial clip · commercial IoU 1.0
+   - GloFAS baseline IoU 0.055 on same zone — glofasImprovement: true (documents Phase 3 Day 8 misfit fix)
+
+2. data/geo/urban-flood-validation-catalog.json
+   - Event dorian-2019 · focusAgencyZoneId FLOOD-04 · pilotScenario Bay Street ponding
+   - agencyPath flood-depth-dorian-demo.json · commercialPath urban-flood-nassau-demo.json
+   - glofasHistoricalPath glofas-historical-dorian-demo.json
+
+3. src/orchestrator/index.js — urban_flood_validation_sync after urban_flood_sync · phase-3b-day-8
+
+4. src/audit/index.js — validation audit visibility
+   - Summary note: urban_flood_validation_sync · urban-layer-acceptable
+   - Meta chip urbanFloodValidationSync · pipeline step chip in steps array
+   - buildAuditTrail urbanFloodValidationSync row (verdict · badge · stayAgencyOnly)
+
+5. src/audit/eoc-export.js — operatingPicture.urbanFloodValidation block
+   - step · eventCount · verdict · stayAgencyOnlyRecommended · rationale · reports · scopeGuard
+
+6. src/routes/geo.js — GET /hazards/urban-flood/validation (+ ?event=dorian-2019)
+
+7. src/ui/public/index.html — purple urban-flood-validation audit chip
+   - formatUrbanFloodValidationAuditChip() — urban_flood_validation_sync·urban-layer-acceptable
+   - Latest audit header + trail meta row show urban validation chip alongside glofas validation
+   - Phase pill → Phase 3b · Day 8
+
+8. src/server.js — phase-3b-day-8 · phase3bDay8Complete: true
+
+9. package.json — npm run geo:urban-flood-validation · npm run test:urban-flood-validation
+
+10. data/eval/scenarios.json — eval-l2-pipeline-audit adds urban_flood_validation_sync step
+
+11. Tests + CLI
+    - tests/urban-flood-validation.test.mjs — 16 asserts · Dorian verdict urban_layer_acceptable
+    - npm run test:urban-flood-validation
+    - npm run eval:run — 8/8
+
+================================================================================
+
+DORIAN FLOOD-04 RE-VALIDATION (DEMO)
+
+| Layer              | Zone        | IoU vs FLOOD-04 | Notes                                      |
+|--------------------|-------------|-----------------|--------------------------------------------|
+| Agency GIS         | FLOOD-04    | 1.0 (ref)       | Bay Street urban pluvial · agency authority  |
+| Commercial urban   | URBAN-01    | 1.0             | Fine mesh clip aligns FLOOD-04 bbox exactly |
+| GloFAS historical  | (baseline)  | 0.055           | Under-resolved vs urban pluvial (Phase 3 D8) |
+
+Decision gate: urban_layer_acceptable — commercial layer improves Dorian urban fit vs GloFAS-only baseline.
+Posture: three-way merge pilot may include commercial urban clip; agency GIS remains primary on overlap.
+
+================================================================================
+
+ENV
+
+URBAN_FLOOD_ENABLED=true
+GLOFAS_ENABLED=true
+URBAN_FLOOD_DEMO=true
+URBAN_FLOOD_VALIDATION_CATALOG_PATH=   # optional override for catalog JSON
+
+================================================================================
+
+SCOPE GUARD
+
+- urban_flood_validation_sync is a decision gate spike — not hydrology authority
+- IoU uses bbox overlap on demo GeoJSON — field GIS may differ; HITL before COMMS
+- stay_agency_only verdict would suppress commercial urban merge until vendor clip improves
+- GloFAS baseline comparison documents why commercial urban was added (Phase 3 Day 8 misfit)
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:urban-flood-validation
+npm run geo:urban-flood-validation
+curl.exe http://127.0.0.1:8787/api/geo/hazards/urban-flood/validation
+curl.exe "http://127.0.0.1:8787/api/geo/hazards/urban-flood/validation?event=dorian-2019"
+set URBAN_FLOOD_ENABLED=true && npm run pipeline:run
+npm run audit:eoc-briefing
+npm run eval:run
+
+Pipeline summary: urban_flood_sync · escalation_refresh · vendor_grid_converted · urban_flood_validation_sync · urban-layer-acceptable
+Audit chips: urban_flood_validation_sync·urban-layer-acceptable · glofas_validation_sync·continue-glofas-urban-caveat
+Dorian report: commercialIou 1.0 · glofasBaselineIou 0.055 · verdict urban_layer_acceptable
+Eval: 8/8 · Phase: phase-3b-day-8
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3b-day8-validation-audit.jpg
+  12 KB · Phase 3b · Day 8 · L2 Alma tropical storm demo · Audit Trail panel
+  · Pipeline L2 summary with urban_flood_validation_sync · urban-layer-acceptable
+  · Purple urban_flood_validation_sync chip · glofas_validation_sync · continue-glofas-urban-caveat
+  · urban_flood_sync · escalation_refresh · vendor_grid_converted · glofas_flood_sync chips visible
+  · EOC audit export button · timestamp 15:45:25
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 8: CCOC re-validates Dorian FLOOD-04 Bay Street urban pluvial against the commercial urban clip — commercial IoU 1.0 vs GloFAS baseline 0.055 — gates the three-way merge with urban_layer_acceptable, and surfaces urban_flood_validation_sync as a purple audit chip on every L2 pipeline run alongside the existing GloFAS validation step.
+
+================================================================================
+
+NEXT (Day 9)
+
+Sovereign + air-gap urban bundle — pre-download urban-flood-nassau-latest.json · sovereign.js urban_flood_airgap_clip check · urban_flood_airgap_sync pipeline step · docs/sovereign-deploy.md urban bundle section.

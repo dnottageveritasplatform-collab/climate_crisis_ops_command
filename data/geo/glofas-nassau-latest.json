@@ -1,0 +1,112 @@
+{
+  "type": "FeatureCollection",
+  "scopeGuard": "GloFAS grid slice demo — discharge cells clipped to New Providence (simulates GRIB/NetCDF extract)",
+  "source": "glofas_grid_demo",
+  "serviceName": "cems-glofas-forecast-grid-demo",
+  "provider": "Copernicus EMS GloFAS (grid demo)",
+  "updatedAt": "2026-08-15T20:10:46.328Z",
+  "clipBbox": {
+    "minLon": -77.36,
+    "maxLon": -77.24,
+    "minLat": 25.03,
+    "maxLat": 25.1
+  },
+  "gridResolutionDeg": 0.05,
+  "dischargeThresholdM3s": 70,
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-GRID-01",
+        "name": "GloFAS grid · Eastern Road basin exceedance",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "dischargeM3s": 142,
+        "dischargePercentile": 92,
+        "returnPeriodYears": 5,
+        "depthBand": "moderate",
+        "depthInches": null,
+        "linkedCorridors": [
+          "CORR-02"
+        ],
+        "activeAtLevel": 2,
+        "gridLon": -77.31,
+        "gridLat": 25.048
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.33500000000001,
+              25.023
+            ],
+            [
+              -77.285,
+              25.023
+            ],
+            [
+              -77.285,
+              25.072999999999997
+            ],
+            [
+              -77.33500000000001,
+              25.072999999999997
+            ],
+            [
+              -77.33500000000001,
+              25.023
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-GRID-02",
+        "name": "GloFAS grid · Western New Providence elevated discharge",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "dischargeM3s": 88,
+        "dischargePercentile": 78,
+        "returnPeriodYears": 2,
+        "depthBand": "minor",
+        "depthInches": null,
+        "linkedCorridors": [
+          "CORR-01"
+        ],
+        "activeAtLevel": 2,
+        "gridLon": -77.336,
+        "gridLat": 25.053
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.361,
+              25.028000000000002
+            ],
+            [
+              -77.31099999999999,
+              25.028000000000002
+            ],
+            [
+              -77.31099999999999,
+              25.078
+            ],
+            [
+              -77.361,
+              25.078
+            ],
+            [
+              -77.361,
+              25.028000000000002
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

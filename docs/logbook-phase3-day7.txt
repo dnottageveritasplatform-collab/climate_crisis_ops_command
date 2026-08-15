@@ -1,0 +1,100 @@
+Phase 3 Day 7 Logbook — Escalation-Gated GloFAS Refresh + Stale EWDS Warning
+
+Date: 2026-08-14
+Focus: L2+ pipeline refresh, L1 cache-only, stale EWDS warning >36h, visible Monitor + audit sync states — verified on pipeline AUD-1289 + Monitor brief
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/glofas.js — escalation refresh policy
+   - shouldRefreshGlofasOnPipeline(level) — GLOFAS_ENABLED + level >= GLOFAS_ESCALATION_MIN_LEVEL
+   - buildGlofasStatusOnlyStep() — cache-only path when refresh skipped (mode glofas_status_only)
+   - buildGlofasPipelineSyncStep() — refreshed · skippedRefresh · refreshPolicy · stale metadata
+   - getGlofasFloodStatus() — refreshPolicy · staleThresholdHours · staleWarning · staleHours
+
+2. src/geo/glofas-cds.js — configurable stale threshold
+   - getGlofasStaleThresholdHours() from GLOFAS_STALE_HOURS (default 36)
+   - staleWarning when staleHours > threshold
+
+3. src/orchestrator/index.js — pipeline uses escalation-gated sync step
+
+4. src/agents/monitor/brief.js — visible sync states in brief
+   - Summary: GloFAS gap-fill … (cds_grid_converted · escalation_refresh · EWDS fresh Nh)
+   - formatGlofasSyncHint() — cache-only / escalation_refresh / stale text
+   - Recommended actions: cache-only below L2 · stale prefer agency GIS
+
+5. src/audit/index.js — audit summary + chips (always show policy)
+   - L2 summary: glofas_flood_sync · escalation_refresh · cds_grid_converted
+   - L1 summary: glofas_flood_sync · cache_only · fetchMode
+   - Stale summary: glofas_flood_sync · stale Nh · fetchMode
+   - Pipeline step chip mirrors policy · fetchMode
+
+6. src/audit/eoc-export.js — glofasFlood block adds refreshPolicy · staleHours · refreshed
+
+7. src/ui/public/index.html — Monitor + audit visibility
+   - Cyan banner: GloFAS L2+ escalation refresh · Nh since last fetch · cds_grid_converted
+   - Gray banner: cache-only below L2
+   - Amber banner: EWDS stale >36h
+   - Stat row: L2 refresh / cache-only / stale Nh under GloFAS sync
+   - Audit chip: glofas_flood_sync·escalation_refresh·cds_grid_converted
+   - Phase 3 · Day 7 pill
+
+8. src/geo/index.js — map payload glofasStaleWarning · staleHours · threshold
+
+9. docs/glofas-sovereign-cron.md — cron · systemd · Windows Task Scheduler examples
+
+10. Tests + CLI
+    - tests/glofas-escalation-refresh.test.mjs — L1 cache-only · L2 refresh · stale cache
+    - npm run test:glofas-escalation-refresh
+    - tests/glofas-pipeline.test.mjs phase bump
+
+================================================================================
+
+ENV
+
+GLOFAS_ENABLED=true
+GLOFAS_ESCALATION_MIN_LEVEL=2   # default — refresh on pipeline at L2+
+GLOFAS_STALE_HOURS=36           # default — stale warning threshold
+
+================================================================================
+
+SCOPE GUARD
+
+- L1 pipeline runs use cached clip — no outbound CDS probe
+- Stale GloFAS is situational awareness only — agency GIS remains primary
+- Cron/worker doc is operator-run — CCOC does not auto-send COMMS from model zones
+
+================================================================================
+
+QUICK VERIFY
+
+npm run test:glofas-escalation-refresh
+npm run test:glofas-pipeline
+set GLOFAS_ENABLED=true && npm run pipeline:run
+set GLOFAS_ENABLED=true && npm run brief:monitor
+npm run eval:run
+
+Pipeline AUD-1289:
+  summary glofas_flood_sync · escalation_refresh · cds_grid_converted
+  chip glofas_flood_sync·escalation_refresh·cds_grid_converted
+Monitor brief:
+  banner GloFAS L2+ escalation refresh · 0h since last fetch · cds_grid_converted
+  stat L2 refresh · GloFAS sync
+  merge 2 agency + 1 glofas zone(s)
+Eval: 8/8 · Phase: phase-3-day-7
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3-day7-escalation-refresh.jpg
+  80 KB · Phase 3 Day 7 pill · Monitor L2+ escalation refresh banner + L2 refresh stat
+  · audit AUD-1289 glofas_flood_sync·escalation_refresh·cds_grid_converted chip
+  · extended HITL pending · L2 Alma command map
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3 Day 7: CCOC refreshes GloFAS on L2+ pipeline runs while L1 stays cache-only, warns when EWDS fetch exceeds 36 hours, and surfaces escalation_refresh / cache_only / stale states in the Monitor brief banner, GloFAS sync stat, and audit glofas_flood_sync chips — with sovereign cron guidance for on-prem refresh.

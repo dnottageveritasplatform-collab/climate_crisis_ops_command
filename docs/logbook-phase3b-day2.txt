@@ -1,0 +1,97 @@
+Phase 3b Day 2 Logbook — Vendor Credentials + Fetch Stub
+
+Date: 2026-08-14
+Focus: Fathom/JBA vendor API probe, cache metadata, urban_flood_sync pipeline stub, get_urban_flood_status Monitor tool — verified via unit tests + eval suite
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/urban-flood-vendor.js — vendor API probe + cache
+   - getUrbanFloodVendorConfig() · read/writeUrbanFloodCache()
+   - fetchUrbanFloodFromVendor() — missing key · demo vendor · mock · live probe
+   - getUrbanFloodVendorStatus() — staleHours · staleWarning · conversionPending
+   - URBAN_FLOOD_STALE_HOURS default 24h
+
+2. src/geo/urban-flood.js — Day 2 extensions
+   - syncUrbanFloodLayer() · getUrbanFloodStatus()
+   - buildUrbanFloodPipelineSyncStep() — urban_flood_sync stub
+   - mergeRule: standalone_day2 · conversionPending until Day 3
+
+3. GET /api/geo/hazards/urban-flood/status · POST /hazards/urban-flood/fetch
+
+4. Pipeline + Monitor
+   - orchestrator urban_flood_sync step after glofas_flood_sync
+   - Monitor tool get_urban_flood_status (L2+)
+   - audit trail urban_flood_sync chip + summary note
+
+5. docs/urban-flood-vendor-setup.md — Fathom/JBA registration guide
+
+6. npm run geo:urban-flood-vendor · geo:urban-flood-fetch
+   npm run test:urban-flood-vendor · test:urban-flood-pipeline
+
+7. .env.example — URBAN_FLOOD_LIVE · URBAN_FLOOD_API_* · URBAN_FLOOD_CACHE_PATH · URBAN_FLOOD_STALE_HOURS
+
+8. src/server.js · index.html — phase phase-3b-day-2 · pill Phase 3b · Day 2
+
+9. docs/phase3b-roadmap.md — Day 2 marked complete
+
+================================================================================
+
+VENDOR PROBE BEHAVIOUR
+
+Without key (URBAN_FLOOD_VENDOR=demo):
+  → reason: demo_vendor · fallback: demo_json · Bay Street demo clip still loads
+
+Without key (URBAN_FLOOD_VENDOR=fathom|jba):
+  → reason: missing_api_key · graceful demo fallback
+
+URBAN_FLOOD_API_MOCK=true:
+  → vendor_metadata_mock · cache lastSuccessfulFetchAt · conversionPending: true
+
+With live key + URBAN_FLOOD_LIVE=true:
+  → probe vendor health/catalogue endpoints · cache metadata
+  → polygon conversion ships Day 3 (convertUrbanFloodExport)
+
+================================================================================
+
+DAY 2 LIMITS (NOT YET WIRED)
+
+- Not on command map overlay (Phase 3b Day 5 — dotted violet urban model styling)
+- Not merged into GET /api/geo/hazards/flood (Phase 3b Day 4 — three-way merge)
+- Not in hazard fusion briefing (Phase 3b Day 6 — commercial source tag)
+- Escalation-gated refresh policy (Phase 3b Day 7 — mirror GloFAS L2 refresh)
+- Extended HITL still mandatory — never auto-send COMMS from commercial zones alone
+
+================================================================================
+
+SCOPE GUARD
+
+- Day 2 vendor metadata probe ≠ field-confirmed flood depth
+- Agency GIS still wins when present — commercial fills urban pluvial gap when agency silent
+- Vendor licensing + API cost are design-partner decisions — demo clip proves path without contract
+
+================================================================================
+
+QUICK VERIFY
+
+set URBAN_FLOOD_ENABLED=true
+set URBAN_FLOOD_API_MOCK=true
+set URBAN_FLOOD_VENDOR=fathom
+set URBAN_FLOOD_API_KEY=test-key
+npm run test:urban-flood-vendor
+npm run test:urban-flood-pipeline
+npm run geo:urban-flood-vendor
+npm run geo:urban-flood-fetch
+curl.exe http://127.0.0.1:8787/api/geo/hazards/urban-flood/status?level=2
+curl.exe -X POST http://127.0.0.1:8787/api/geo/hazards/urban-flood/fetch
+npm run pipeline:run
+npm run eval:run
+
+Eval: 8/8 · Phase: phase-3b-day-2 · pipeline includes urban_flood_sync
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 2: CCOC adds commercial urban flood vendor credential probe (Fathom/JBA), caches last fetch metadata with stale warning, exposes /status + /fetch endpoints, wires urban_flood_sync pipeline stub and get_urban_flood_status Monitor tool — polygon conversion and three-way merge ship Day 3–4.

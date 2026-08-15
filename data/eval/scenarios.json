@@ -101,7 +101,7 @@
       "level": 2,
       "expect": {
         "threshold": 2,
-        "pipelineSteps": ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "sop_corpus_sync", "routing_preview_sync", "flood_hazard_sync", "wind_hazard_sync", "multi_hazard_sync", "sovereign_deploy_sync", "road_network_sync", "demo_rehearsal_sync", "defensibility_sync", "audit_persist"],
+        "pipelineSteps": ["monitor", "triage", "action", "cad_cross_ref", "handoff_cross_ref", "public_safety_cross_ref", "cad_dispatch_enrich", "esri_corridor_sync", "shelter_fleet_cross_ref", "signal_multi_feed_sync", "sop_corpus_sync", "routing_preview_sync", "flood_hazard_sync", "glofas_flood_sync", "urban_flood_sync", "urban_flood_validation_sync", "urban_flood_airgap_sync", "glofas_validation_sync", "glofas_airgap_sync", "glofas_runbook_sync", "flood_stack_runbook_sync", "wind_hazard_sync", "multi_hazard_sync", "sovereign_deploy_sync", "road_network_sync", "demo_rehearsal_sync", "defensibility_sync", "audit_persist"],
         "auditType": "pipeline_run",
         "hitlStaged": true,
         "minRankedTrips": 8

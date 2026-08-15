@@ -51,6 +51,12 @@ export const DEFENSIBILITY_PILLARS = [
     detail:
       "Broward County IT multi-agency weather GIS experience + KnightRoad Veritas command-center architecture.",
   },
+  {
+    id: "glofas_gap_fill",
+    title: "GloFAS gap-fill discipline (Phase 3)",
+    detail:
+      "Agency-first merge with labeled model_estimated zones, Alma/Dorian validation gate, sovereign air-gap bundle, and operator runbook — gap-fill not replacement hydrology.",
+  },
 ];
 
 export const PHASE2_ROADMAP = {
@@ -286,6 +292,38 @@ export const PHASE2_ROADMAP = {
   ],
 };
 
+export const FLOOD_STACK_DEFENSIBILITY = {
+  headline: "Three-layer honest flood stack — agency · GloFAS · commercial urban",
+  phase3bDaysDelivered: 10,
+  scopeGuard:
+    "CCOC merges agency GIS, licensed commercial urban pluvial, and Copernicus GloFAS as honestly labeled guidance layers — not replacement hydrology or NEMA authority.",
+  proof: [
+    "Agency wins on corridor overlap — three-way merge agency_wins_then_commercial_then_glofas",
+    "Map styling: solid agency · dashed GloFAS · dotted violet commercial",
+    "Dorian FLOOD-04 validation gate urban_layer_acceptable before commercial merge",
+    "Extended HITL mandatory — no auto-COMMS from model or commercial zones alone",
+    "Sovereign air-gap bundles for glofas + urban offline edge hosts",
+    "8-rule flood stack runbook documents when to trust each layer",
+  ],
+  docs: "docs/flood-stack-runbook.md",
+};
+
+export const GLOFAS_DEFENSIBILITY = {
+  headline: "Agency-first flood gap-fill — model guidance, not hydrology authority",
+  phase3DaysDelivered: 10,
+  scopeGuard:
+    "GloFAS integrates Copernicus EWDS as labeled gap-fill when Bahamian agency GIS is missing or stale — CCOC does not claim it replaces field hydrology or NEMA authority.",
+  proof: [
+    "Agency wins on corridor overlap — merge rule agency_wins_corridor",
+    "Dashed map styling + model_estimated confidence on every GloFAS zone",
+    "Extended HITL mandatory — no auto-COMMS from model zones alone",
+    "Alma/Dorian validation gate with urban pluvial caveat documented",
+    "Sovereign air-gap pre-download bundle for offline edge hosts",
+    "Operator runbook: 6-rule trust matrix when to wait for agency",
+  ],
+  docs: "docs/glofas-pilot-runbook.md",
+};
+
 function liveProofStats() {
   const evalRun = getLastEvalRun();
   const scenarios = loadScenarios();
@@ -301,6 +339,7 @@ function liveProofStats() {
     pillarCount: DEFENSIBILITY_PILLARS.length,
     phase2TrackCount: PHASE2_ROADMAP.tracks.length,
     phase2DaysDelivered: 17,
+    phase3DaysDelivered: GLOFAS_DEFENSIBILITY.phase3DaysDelivered,
   };
 }
 
@@ -308,9 +347,11 @@ export function buildDefensibilitySummary() {
   const proof = liveProofStats();
   return {
     ok: true,
-    phase: "phase-2-day-18",
+    phase: "phase-3b-day-10",
     founder: FOUNDER_CREDIBILITY,
     pillars: DEFENSIBILITY_PILLARS,
+    glofas: GLOFAS_DEFENSIBILITY,
+    floodStack: FLOOD_STACK_DEFENSIBILITY,
     phase2: {
       headline: PHASE2_ROADMAP.headline,
       trackCount: PHASE2_ROADMAP.tracks.length,
@@ -323,6 +364,8 @@ export function buildDefensibilitySummary() {
     docs: {
       slide: "docs/defensibility-slide.md",
       phase2: "docs/phase2-roadmap.md",
+      glofasRunbook: GLOFAS_DEFENSIBILITY.docs,
+      floodStackRunbook: FLOOD_STACK_DEFENSIBILITY.docs,
     },
   };
 }
@@ -341,6 +384,8 @@ export function buildDefensibilityNarrative() {
     bullets: [
       ...DEFENSIBILITY_PILLARS.map((p) => `${p.title}: ${p.detail}`),
       `Phase 2 (${proof.phase2DaysDelivered} days): ${PHASE2_ROADMAP.tracks.map((t) => t.title).join(" · ")}.`,
+      `Phase 3 GloFAS (${proof.phase3DaysDelivered} days): ${GLOFAS_DEFENSIBILITY.headline}.`,
+      `Phase 3b flood stack (${FLOOD_STACK_DEFENSIBILITY.phase3bDaysDelivered} days): ${FLOOD_STACK_DEFENSIBILITY.headline}.`,
       `Proof: ${evalLine}${proof.evalSuiteMs ? ` in ${proof.evalSuiteMs} ms` : ""}.`,
     ],
     rubric: {
@@ -384,6 +429,20 @@ export function buildDefensibilityPitch() {
       notInScope: PHASE2_ROADMAP.notInScope,
     },
     {
+      id: "glofas",
+      title: "Phase 3 GloFAS — gap-fill not replacement",
+      headline: GLOFAS_DEFENSIBILITY.headline,
+      bullets: GLOFAS_DEFENSIBILITY.proof,
+      scopeGuard: GLOFAS_DEFENSIBILITY.scopeGuard,
+    },
+    {
+      id: "flood-stack",
+      title: "Phase 3b — three-layer honest flood stack",
+      headline: FLOOD_STACK_DEFENSIBILITY.headline,
+      bullets: FLOOD_STACK_DEFENSIBILITY.proof,
+      scopeGuard: FLOOD_STACK_DEFENSIBILITY.scopeGuard,
+    },
+    {
       id: "proof",
       title: "Measured proof",
       headline: evalProof,
@@ -399,11 +458,11 @@ export function buildDefensibilityPitch() {
 
   return {
     ok: true,
-    phase: "phase-2-day-18",
+    phase: "phase-3-day-10",
     title: "Climate & Crisis Ops Command — defensibility pitch (slides 7–8)",
     slides,
     talkTrack30s:
-      "I helped build multi-agency GIS coordination at Broward County IT after weather events. CCOC applies that pattern to Caribbean NEMT and hospital partners: agents orchestrate, humans approve, audit captures everything. Phase 2 added CAD read-only, transport desk, EOC feeds, hazard fusion, and sovereign deploy — defensibility is the workflow and SOP moat, not the LLM.",
+      "I helped build multi-agency GIS coordination at Broward County IT after weather events. CCOC applies that pattern to Caribbean NEMT and hospital partners: agents orchestrate, humans approve, audit captures everything. Phase 2 added CAD read-only, transport desk, EOC feeds, hazard fusion, and sovereign deploy. Phase 3 adds honest GloFAS gap-fill — agency-first, labeled model zones, operator runbook — not claiming Copernicus replaces Bahamian hydrology. Defensibility is the workflow and SOP moat, not the LLM.",
     scopeGuard: DEFENSIBILITY_SCOPE_GUARD,
     docs: ["docs/defensibility-slide.md", "docs/phase2-roadmap.md"],
     api: {
@@ -438,11 +497,14 @@ export function getDefensibilityStatus() {
   const pitch = buildDefensibilityPitch();
   return {
     ok: true,
-    phase: "phase-2-day-18",
+    phase: "phase-3b-day-10",
     pillarCount: summary.proof.pillarCount,
     phase2TrackCount: summary.proof.phase2TrackCount,
     phase2DaysDelivered: summary.proof.phase2DaysDelivered,
+    phase3DaysDelivered: summary.proof.phase3DaysDelivered,
+    phase3bDaysDelivered: FLOOD_STACK_DEFENSIBILITY.phase3bDaysDelivered,
     phase2Complete: true,
+    phase3bComplete: true,
     evalPassed: summary.proof.evalPassed,
     evalTotal: summary.proof.evalTotal,
     evalSuiteMs: summary.proof.evalSuiteMs,
@@ -450,7 +512,9 @@ export function getDefensibilityStatus() {
     slideCount: pitch.slides.length,
     founder: FOUNDER_CREDIBILITY.organization,
     scopeGuard: DEFENSIBILITY_SCOPE_GUARD,
-    summary: `${summary.proof.pillarCount} pillars · Phase 2 ${summary.proof.phase2DaysDelivered} days · ${summary.proof.evalPassed ?? "?"}/${summary.proof.evalTotal} eval`,
+    glofasHeadline: GLOFAS_DEFENSIBILITY.headline,
+    floodStackHeadline: FLOOD_STACK_DEFENSIBILITY.headline,
+    summary: `${summary.proof.pillarCount} pillars · Phase 2 ${summary.proof.phase2DaysDelivered}d · Phase 3 GloFAS ${summary.proof.phase3DaysDelivered}d · Phase 3b flood stack ${FLOOD_STACK_DEFENSIBILITY.phase3bDaysDelivered}d · ${summary.proof.evalPassed ?? "?"}/${summary.proof.evalTotal} eval`,
     docs: summary.docs,
     api: pitch.api,
   };

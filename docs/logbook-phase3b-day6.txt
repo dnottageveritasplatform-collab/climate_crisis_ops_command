@@ -1,0 +1,95 @@
+Phase 3b Day 6 Logbook — Pipeline urban_flood_sync + Monitor Tool + EOC Export
+
+Date: 2026-08-15
+Focus: Full urban_flood_sync pipeline payload, Monitor get_urban_flood_status with three-way merge badge, EOC urbanFlood operating picture block, audit chip + fused briefing commercial source tags — verified on pipeline + Monitor brief + EOC export
+
+================================================================================
+
+WHAT SHIPPED
+
+1. src/geo/hazards.js — buildFloodMergeSnapshot()
+   - Shared merge counts + floodBadgeLabel for urban_flood_sync / Monitor tool
+   - Phase bump when urban on: phase-3b-day-6
+
+2. src/geo/urban-flood.js — pipeline sync step + Monitor status snapshot
+   - buildUrbanFloodPipelineSyncStep() — step: urban_flood_sync · merge metadata · floodBadgeLabel · syncAt
+   - getUrbanFloodStatus(level) — pipelineStep · monitorTool · three-way merge counts · vendor stale/conversion flags · sampleZones
+   - buildUrbanFloodMergeSnapshot() — agency_wins_then_commercial_then_glofas fallback
+
+3. src/orchestrator/index.js — urban_flood_sync after glofas_flood_sync · phase-3b-day-6
+
+4. src/agents/monitor/brief.js — L2+ tool plan
+   - get_urban_flood_status alongside get_glofas_flood_status
+   - Brief summary: Urban flood stack: 2 agency + 1 glofas + 2 urban zone(s) (vendor_grid_converted)
+   - Recommended actions: commercial gap zone review · stale vendor · conversion pending
+   - Monitor stat row: Urban flood stack badge
+
+5. src/agents/runtime/tools.js — get_urban_flood_status Day 6 description
+
+6. src/audit/eoc-export.js — operatingPicture.urbanFlood block
+   - pipelineStep · monitorTool · mergeRule · agency/commercial/glofas gap counts · floodBadgeLabel · sampleZones
+   - multiHazard: commercialFloodTripCount · floodBadgeLabel · floodSourceTag on briefings
+
+7. src/audit/index.js — pipeline audit + visible audit chips
+   - urbanFloodSync stores floodBadgeLabel · commercialGapZoneCount
+   - Pipeline step chip: urban_flood_sync · 2 agency + 1 glofas + 2 urban zone(s) · vendor_grid_converted
+   - Meta row chip: urban_flood_sync·badge·mode (violet sync badge)
+
+8. src/geo/multi-hazard.js — fused briefing commercial source tag
+   - floodSourceTag on sampleBriefings (flood:agency_confirmed · flood:commercial_model · flood:model_estimated)
+   - commercialFloodSourceTags in getMultiHazardStatus()
+
+9. src/ui/public/index.html — Monitor urban stack banner · formatUrbanFloodAuditChip badge · Day 6 pill
+
+10. Tests + CLI
+    - tests/urban-flood-pipeline.test.mjs — 22 asserts on step, tool, Monitor brief, EOC urbanFlood, multi-hazard tags
+    - npm run test:urban-flood-pipeline
+
+================================================================================
+
+SCOPE GUARD
+
+- urban_flood_sync is read-only licensed model guidance — not NEMA / Water & Sewerage authority
+- Three-way merge badge is provenance only — agency wins on overlap; HITL mandatory before COMMS
+- EOC export urbanFlood block is briefing context — not dispatch authority
+
+================================================================================
+
+QUICK VERIFY
+
+set URBAN_FLOOD_ENABLED=true
+set GLOFAS_ENABLED=true
+set URBAN_FLOOD_DEMO=true
+npm run test:urban-flood-pipeline
+npm run test:urban-flood-merge
+npm run brief:monitor
+npm run pipeline:run
+npm run audit:eoc-briefing
+npm run eval:run
+
+Pipeline summary: urban_flood_sync · cache_only · vendor_grid_converted
+Monitor brief: Urban flood stack: 2 agency + 1 glofas + 2 urban zone(s) · vendor_grid_converted · three-way merge
+EOC export: operatingPicture.urbanFlood.floodBadgeLabel matches command map #floodStackBadge
+Eval: 8/8 · Phase: phase-3b-day-6
+
+================================================================================
+
+ATTACHMENTS
+
+docs/mockups/command-center-phase3b-day6-pipeline-sync.jpg
+  65 KB · Phase 3b · Day 6 pill · L2 Alma tropical storm demo
+  · Monitor brief urban flood stack banner (2 agency + 1 glofas + 2 urban zone(s))
+  · command map flood stack badge · satellite basemap · extended HITL pending
+  · vendor_grid_converted · three-way merge agency → commercial → GloFAS
+
+================================================================================
+
+PORTAL PASTE (ONE-LINER)
+
+Phase 3b Day 6: CCOC wires urban_flood_sync into the pipeline audit with a visible three-part flood stack badge, gives the Monitor agent get_urban_flood_status with merge-aware vendor status, and expands the EOC export urbanFlood block so operators see commercial gap zone counts, floodBadgeLabel, and per-trip commercial source tags in one briefing snapshot.
+
+================================================================================
+
+NEXT (Day 7)
+
+Escalation-gated vendor refresh on pipeline when level >= 2 · URBAN_FLOOD_STALE_HOURS stale warning in Monitor brief · cache-only below L2 policy documented.
