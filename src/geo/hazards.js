@@ -24,18 +24,12 @@ export const FLOOD_HAZARD_SCOPE_GUARD =
 const geoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/geo");
 const defaultDemoPath = path.join(geoRoot, "flood-depth-demo.json");
 
-const MAP = {
-  viewBox: { width: 800, height: 480 },
-  bbox: { minLon: -77.36, maxLon: -77.24, minLat: 25.03, maxLat: 25.10 },
-};
+import { MAP, projectPoint } from "./map-constants.js";
 
 let cachedLayer = null;
 
 function project(lon, lat) {
-  const { bbox, viewBox } = MAP;
-  const x = ((lon - bbox.minLon) / (bbox.maxLon - bbox.minLon)) * viewBox.width;
-  const y = viewBox.height - ((lat - bbox.minLat) / (bbox.maxLat - bbox.minLat)) * viewBox.height;
-  return { x: Math.round(x), y: Math.round(y) };
+  return projectPoint(lon, lat);
 }
 
 function ringToSvgPath(ring) {
@@ -348,6 +342,7 @@ export function buildFloodMapOverlay(level = 2, { features } = {}) {
       depthBand: p.depthBand,
       returnPeriodYears: p.returnPeriodYears ?? null,
       linkedCorridors: p.linkedCorridors || [],
+      ring,
       path: ringToSvgPath(ring),
       label: { x: labelPt.x, y: labelPt.y, text: label.text, kind: label.kind },
       callout: {

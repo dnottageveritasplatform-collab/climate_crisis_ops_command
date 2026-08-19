@@ -64,6 +64,62 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-03",
+        "name": "Southwest coastal pluvial ponding (commercial)",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "demo",
+        "depthInches": 9,
+        "depthBand": "moderate",
+        "returnPeriodYears": 5,
+        "linkedCorridors": [],
+        "activeAtLevel": 2,
+        "notes": "Western district pluvial gap-fill for presentation balance"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.512, 25.024],
+            [-77.498, 25.024],
+            [-77.498, 25.040],
+            [-77.512, 25.040],
+            [-77.512, 25.024]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-04",
+        "name": "Northwest district shallow ponding (commercial)",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "demo",
+        "depthInches": 7,
+        "depthBand": "minor",
+        "returnPeriodYears": 5,
+        "linkedCorridors": [],
+        "activeAtLevel": 2,
+        "notes": "Western district pluvial gap-fill for presentation balance"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.508, 25.064],
+            [-77.488, 25.064],
+            [-77.488, 25.080],
+            [-77.508, 25.080],
+            [-77.508, 25.064]
+          ]
+        ]
+      }
     }
   ]
 }

@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
+    "stop": "node scripts/stop-server.mjs",
+    "dev": "node scripts/stop-server.mjs && node --watch src/server.js",
     "spike:monitor": "node -e \"import('./src/agents/monitor/brief.js').then(m=>m.runMonitorBrief()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
     "brief:monitor": "node -e \"import('./src/agents/monitor/brief.js').then(m=>m.runMonitorBrief()).then(r=>console.log(JSON.stringify(r,null,2)))\"",
     "demo:week1": "node -e \"import('./src/demo/week1.js').then(m=>m.runWeek1Demo()).then(r=>console.log(JSON.stringify({ok:r.ok,exitCriteria:r.exitCriteria,auditId:r.audit?.id,briefLevel:r.monitor?.brief?.level,mapAtRisk:r.map?.atRiskCount},null,2)))\"",
@@ -39,6 +40,7 @@
     "transport-desk:accept-demo": "node -e \"import('./src/transport-desk/index.js').then(m=>{m.ingestTransportDeskFeed();console.log(JSON.stringify(m.acceptNemtHandoffWriteBack([{handoffId:'HO-2201',status:'nemt_assigned',nemtRunId:'RUN-8845',linkedTripId:'T-1004'}],{source:'cli_demo'}),null,2))})\"",
     "cad:enriched-dispatch": "node -e \"import('./src/cad/enrichment.js').then(m=>console.log(JSON.stringify(m.buildEnrichedDispatchSummary(2),null,2)))\"",
     "geo:corridors-esri": "node -e \"import('./src/geo/esri.js').then(m=>console.log(JSON.stringify(m.buildEsriCorridorSummary(2),null,2)))\"",
+    "geo:basemap": "node scripts/fetch-nassau-basemap.mjs",
     "geo:corridors-source": "node -e \"import('./src/geo/esri.js').then(m=>console.log(JSON.stringify(m.getCorridorLayerMeta(),null,2)))\"",
     "geo:routing-preview": "node -e \"import('./src/geo/routing.js').then(m=>console.log(JSON.stringify(m.buildRoutingPreviewSummary(2),null,2)))\"",
     "geo:routing-cross-ref": "node -e \"import('./src/geo/routing.js').then(m=>console.log(JSON.stringify(m.buildRoutingPreviewCrossRef(2),null,2)))\"",

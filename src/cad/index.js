@@ -2,20 +2,13 @@
 
 import { getAtRiskTrips, loadDispatch } from "../dispatch/index.js";
 import { loadCadCsv } from "./adapters/csv.js";
+import { MAP, projectPoint } from "../geo/map-constants.js";
 
 export const CAD_SCOPE_GUARD =
   "CAD overlay — read-only situational feeds; pilot handoff accept links nemtRunId only (Day 4). No PSAP, no full dispatch write-back.";
 
-const MAP = {
-  viewBox: { width: 800, height: 480 },
-  bbox: { minLon: -77.36, maxLon: -77.24, minLat: 25.03, maxLat: 25.10 },
-};
-
 function project(lon, lat) {
-  const { bbox, viewBox } = MAP;
-  const x = ((lon - bbox.minLon) / (bbox.maxLon - bbox.minLon)) * viewBox.width;
-  const y = viewBox.height - ((lat - bbox.minLat) / (bbox.maxLat - bbox.minLat)) * viewBox.height;
-  return { x: Math.round(x), y: Math.round(y) };
+  return projectPoint(lon, lat);
 }
 
 function unitColor(status) {
@@ -166,6 +159,8 @@ export function buildCadMapUnits({ level = 2, atRiskTripIds } = {}) {
       activeRuns: unit.activeRuns,
       atRiskLinked,
       color: unitColor(unit.status),
+      lon: unit.lon,
+      lat: unit.lat,
       svg: { x: pt.x + 14, y: pt.y - 12, r },
     };
   });

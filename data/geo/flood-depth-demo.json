@@ -73,6 +73,52 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-04",
+        "name": "Southwest New Providence coastal low",
+        "depthInches": 11,
+        "depthBand": "moderate",
+        "linkedCorridors": [],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.530, 25.015],
+            [-77.472, 25.015],
+            [-77.472, 25.048],
+            [-77.530, 25.048],
+            [-77.530, 25.015]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FLOOD-05",
+        "name": "West Bay Street drainage basin",
+        "depthInches": 6,
+        "depthBand": "minor",
+        "linkedCorridors": [],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.518, 25.058],
+            [-77.468, 25.058],
+            [-77.468, 25.088],
+            [-77.518, 25.088],
+            [-77.518, 25.058]
+          ]
+        ]
+      }
     }
   ]
 }

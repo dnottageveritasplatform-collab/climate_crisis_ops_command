@@ -11,19 +11,13 @@ import { buildEnrichedDispatchSummary } from "../cad/enrichment.js";
 import { fetchSignals } from "../signals/index.js";
 import { loadPublicSafetyFeed } from "./adapters/json.js";
 
+import { MAP, projectPoint } from "../geo/map-constants.js";
+
 export const PUBLIC_SAFETY_SCOPE_GUARD =
   "Read-only public-safety unit overlay — no dispatch authority, no PSAP replacement.";
 
-const MAP = {
-  viewBox: { width: 800, height: 480 },
-  bbox: { minLon: -77.36, maxLon: -77.24, minLat: 25.03, maxLat: 25.10 },
-};
-
 function project(lon, lat) {
-  const { bbox, viewBox } = MAP;
-  const x = ((lon - bbox.minLon) / (bbox.maxLon - bbox.minLon)) * viewBox.width;
-  const y = viewBox.height - ((lat - bbox.minLat) / (bbox.maxLat - bbox.minLat)) * viewBox.height;
-  return { x: Math.round(x), y: Math.round(y) };
+  return projectPoint(lon, lat);
 }
 
 function unitColor(agency, status) {
@@ -166,6 +160,8 @@ export function buildPublicSafetyMapUnits({ level = 2 } = {}) {
       assignment: u.assignment,
       onRestrictedCorridor: hot,
       color,
+      lon: u.lon,
+      lat: u.lat,
       svg: { x: pt.x - 12, y: pt.y - 12, r, shape: u.agency === "fire" ? "diamond" : "shield" },
     };
   });

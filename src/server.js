@@ -221,7 +221,15 @@ app.get("/api/status", (_req, res) => {
 });
 
 const publicDir = path.join(__dirname, "ui", "public");
-app.use(express.static(publicDir));
+app.use(
+  express.static(publicDir, {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      }
+    },
+  })
+);
 
 app.get("*", (_req, res) => {
   res.sendFile(path.join(publicDir, "index.html"));

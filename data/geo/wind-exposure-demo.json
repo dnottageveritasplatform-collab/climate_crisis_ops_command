@@ -73,6 +73,52 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "WIND-04",
+        "name": "Southwest New Providence coastal fetch",
+        "gustMph": 36,
+        "windBand": "tropical_storm",
+        "linkedCorridors": [],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.542, 24.992],
+            [-77.478, 24.992],
+            [-77.478, 25.038],
+            [-77.542, 25.038],
+            [-77.542, 24.992]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "WIND-05",
+        "name": "Northwest New Providence elevated gust corridor",
+        "gustMph": 48,
+        "windBand": "strong",
+        "linkedCorridors": [],
+        "activeAtLevel": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.528, 25.055],
+            [-77.465, 25.055],
+            [-77.465, 25.092],
+            [-77.528, 25.092],
+            [-77.528, 25.055]
+          ]
+        ]
+      }
     }
   ]
 }

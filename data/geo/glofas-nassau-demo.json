@@ -40,26 +40,54 @@
       "type": "Feature",
       "properties": {
         "id": "GLOFAS-02",
-        "name": "GloFAS · Western New Providence elevated discharge",
+        "name": "GloFAS · Southwest New Providence elevated discharge",
         "source": "glofas",
         "confidence": "model_estimated",
         "dischargeM3s": 88,
         "returnPeriodYears": 2,
         "depthBand": "minor",
         "depthInches": null,
-        "linkedCorridors": ["CORR-01"],
+        "linkedCorridors": [],
         "activeAtLevel": 2,
-        "notes": "Coarse 0.05° grid — not street-level ponding"
+        "notes": "Coarse 0.05° grid — southwest coastal guidance"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [-77.345, 25.048],
-            [-77.328, 25.048],
-            [-77.328, 25.058],
-            [-77.345, 25.058],
-            [-77.345, 25.048]
+            [-77.538, 25.012],
+            [-77.472, 25.012],
+            [-77.472, 25.058],
+            [-77.538, 25.058],
+            [-77.538, 25.012]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "GLOFAS-03",
+        "name": "GloFAS · Northwest New Providence basin exceedance",
+        "source": "glofas",
+        "confidence": "model_estimated",
+        "dischargeM3s": 102,
+        "returnPeriodYears": 3,
+        "depthBand": "moderate",
+        "depthInches": null,
+        "linkedCorridors": [],
+        "activeAtLevel": 2,
+        "notes": "Coarse 0.05° grid — northwest district guidance"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-77.528, 25.058],
+            [-77.468, 25.058],
+            [-77.468, 25.092],
+            [-77.528, 25.092],
+            [-77.528, 25.058]
           ]
         ]
       }

@@ -1,4 +1,9 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import { Router } from "express";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { BASEMAP_REV, esriBasemapExportUrl } from "../geo/map-constants.js";
 import {
   attachCadOverlay,
   buildMapLayers,
@@ -65,6 +70,26 @@ import { formatMultiHazardText, formatRoutingPreviewText } from "../export/forma
 import { respondExport } from "../export/respond.js";
 
 const router = Router();
+
+router.get("/streets", (_req, res) => {
+  res.sendFile(path.join(__dirname, "../../data/geo/streets.json"));
+});
+
+router.get("/basemap", async (_req, res) => {
+  try {
+    const upstream = await fetch(esriBasemapExportUrl());
+    if (!upstream.ok) {
+      return res.status(502).json({ ok: false, error: `Esri basemap ${upstream.status}` });
+    }
+    const bytes = Buffer.from(await upstream.arrayBuffer());
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.set("X-Basemap-Rev", BASEMAP_REV);
+    res.type("jpeg");
+    res.send(bytes);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 function enrichWithCad(layers, { includeCad = true } = {}) {
   if (!includeCad || !layers?.ok || layers.cadOverlay) return layers;

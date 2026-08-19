@@ -11,18 +11,12 @@ import { buildFloodMapOverlay, buildFloodMapBadge } from "./hazards.js";
 import { buildWindMapOverlay } from "./wind.js";
 import { getGlofasCdsStatus, isGlofasEnabled } from "./glofas.js";
 import { getUrbanFloodVendorStatus, isUrbanFloodEnabled } from "./urban-flood.js";
+import { MAP, BASEMAP_REV, mapViewBoxString, projectPoint } from "./map-constants.js";
+import { mainIslandRing } from "./land-mask.js";
+
+export { MAP, mapViewBoxString };
 
 const geoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/geo");
-
-const MAP = {
-  viewBox: { width: 800, height: 480, padLeft: 110 },
-  bbox: { minLon: -77.36, maxLon: -77.24, minLat: 25.03, maxLat: 25.10 },
-};
-
-export function mapViewBoxString() {
-  const pad = MAP.viewBox.padLeft || 0;
-  return `0 0 ${MAP.viewBox.width + pad} ${MAP.viewBox.height}`;
-}
 
 function readGeo(file) {
   return JSON.parse(fs.readFileSync(path.join(geoRoot, file), "utf8"));
@@ -41,10 +35,7 @@ export function loadGeoLayers() {
 export { getActiveCorridorStatus, getCorridorLayerMeta, buildEsriCorridorSummary } from "./esri.js";
 
 function project(lon, lat) {
-  const { bbox, viewBox } = MAP;
-  const x = ((lon - bbox.minLon) / (bbox.maxLon - bbox.minLon)) * viewBox.width;
-  const y = viewBox.height - ((lat - bbox.minLat) / (bbox.maxLat - bbox.minLat)) * viewBox.height;
-  return { x: Math.round(x), y: Math.round(y) };
+  return projectPoint(lon, lat);
 }
 
 function ringToSvgPath(ring) {
@@ -60,20 +51,35 @@ function ringToSvgPath(ring) {
 
 /** Simplified New Providence + Paradise Island landmass for map underlay. */
 export function buildIslandOverlay() {
-  const collection = readGeo("new-providence.json");
-  return collection.features.map((f) => {
-    const labelPt = project(
-      f.properties.id === "NP-PARADISE" ? -77.292 : -77.295,
-      f.properties.id === "NP-PARADISE" ? 25.092 : 25.055
-    );
-    return {
-      id: f.properties.id,
-      name: f.properties.name,
-      kind: f.properties.kind,
-      path: ringToSvgPath(f.geometry.coordinates[0]),
-      label: { x: labelPt.x, y: labelPt.y },
-    };
-  });
+  const mainPath = ringToSvgPath(mainIslandRing());
+  const mainLabel = project(-77.295, 25.055);
+  const paradiseLabel = project(-77.292, 25.092);
+  return [
+    {
+      id: "NP-MAIN",
+      name: "New Providence",
+      kind: "main_island",
+      path: mainPath,
+      label: { x: mainLabel.x, y: mainLabel.y },
+    },
+    {
+      id: "NP-PARADISE",
+      name: "Paradise Island",
+      kind: "island",
+      path: ringToSvgPath([
+        [-77.318, 25.078],
+        [-77.3, 25.076],
+        [-77.278, 25.079],
+        [-77.268, 25.088],
+        [-77.27, 25.097],
+        [-77.288, 25.1],
+        [-77.308, 25.099],
+        [-77.318, 25.092],
+        [-77.318, 25.078],
+      ]),
+      label: { x: paradiseLabel.x, y: paradiseLabel.y },
+    },
+  ];
 }
 
 function lineToSvgPath(coords) {
@@ -101,21 +107,70 @@ function lineMidpoint(coords) {
 }
 
 const STREET_STYLE = {
-  primary: { width: 3.2, opacity: 0.88, color: "#9fb5a8", label: true },
-  trunk: { width: 3.4, opacity: 0.92, color: "#a8c4b4", label: true },
-  secondary: { width: 2.4, opacity: 0.8, color: "#7a9488", label: true },
-  tertiary: { width: 1.2, opacity: 0.45, color: "#4a6358", label: false },
-  motorway: { width: 3.6, opacity: 0.92, color: "#b8cec2", label: true },
+  primary: { width: 1.8, opacity: 0.72, color: "#b8d4c8", label: true },
+  trunk: { width: 2, opacity: 0.78, color: "#c2dccf", label: true },
+  secondary: { width: 1.4, opacity: 0.62, color: "#8aa498", label: false },
+  tertiary: { width: 0.8, opacity: 0.35, color: "#4a6358", label: false },
+  motorway: { width: 2.2, opacity: 0.8, color: "#d0e6da", label: true },
 };
 
 const LABELED_STREET = {
-  color: "#cfe4d9",
-  importantColor: "#effaf4",
-  widthBoost: 1,
-  importantWidthBoost: 1.75,
-  opacity: 0.92,
-  importantOpacity: 0.98,
+  color: "#e8f5ef",
+  importantColor: "#ffffff",
+  widthBoost: 0.5,
+  importantWidthBoost: 1,
+  opacity: 0.88,
+  importantOpacity: 0.95,
 };
+
+const IMPORTANT = /shirley|eastern|bay street|paradise|carmichael|collins|mackey|nassau/i;
+
+function streetOverlayFromCoords(f, coords, seenLabels) {
+  const hw = f.properties.highway;
+  const style = STREET_STYLE[hw] || STREET_STYLE.tertiary;
+  const len = lineLengthPx(coords);
+  if (len < 3) return null;
+
+  const mid = lineMidpoint(coords);
+  const name = f.properties.name;
+  const labelKey = `${name}-${Math.round(mid.x / 16)}-${Math.round(mid.y / 16)}`;
+  const isImportant = Boolean(name && IMPORTANT.test(name));
+  const minLen = isImportant ? 12 : hw === "primary" || hw === "trunk" ? 36 : hw === "secondary" ? 48 : 999;
+  const showLabel =
+    name &&
+    (isImportant || style.label || f.properties.label === true) &&
+    len >= minLen &&
+    !seenLabels.has(labelKey);
+  if (showLabel) seenLabels.add(labelKey);
+
+  const labeled = Boolean(showLabel);
+  const widthBoost = isImportant ? LABELED_STREET.importantWidthBoost : labeled ? LABELED_STREET.widthBoost : 0;
+  const lineColor = labeled
+    ? isImportant
+      ? LABELED_STREET.importantColor
+      : LABELED_STREET.color
+    : f.properties.manual
+      ? "#a8c4b4"
+      : style.color;
+  const lineOpacity = labeled
+    ? isImportant
+      ? LABELED_STREET.importantOpacity
+      : LABELED_STREET.opacity
+    : style.opacity;
+
+  return {
+    name,
+    highway: hw,
+    manual: f.properties.manual === true,
+    important: isImportant,
+    labeled,
+    path: lineToSvgPath(coords),
+    width: (f.properties.manual ? style.width + 0.5 : style.width) + widthBoost,
+    opacity: lineOpacity,
+    color: lineColor,
+    label: showLabel ? { x: mid.x, y: mid.y - 2, text: name } : null,
+  };
+}
 
 /** Real street centerlines + names from OpenStreetMap (Nassau / New Providence bbox). */
 export function buildStreetOverlay() {
@@ -125,60 +180,21 @@ export function buildStreetOverlay() {
   } catch {
     features = [];
   }
-  try {
-    features = features.concat(readGeo("streets-manual.json").features);
-  } catch {
-    /* optional manual corrections */
-  }
 
   const seenLabels = new Set();
-  const IMPORTANT = /shirley|eastern|bay street|paradise|carmichael|collins|mackey|nassau/i;
+  /** @type {ReturnType<typeof streetOverlayFromCoords>[]} */
+  const overlays = [];
 
-  return features.map((f) => {
-    const coords = f.geometry.coordinates;
+  for (const f of features) {
     const hw = f.properties.highway;
-    const style = STREET_STYLE[hw] || STREET_STYLE.tertiary;
-    const len = lineLengthPx(coords);
-    const mid = lineMidpoint(coords);
-    const name = f.properties.name;
-    const labelKey = `${name}-${Math.round(mid.x / 16)}-${Math.round(mid.y / 16)}`;
-    const isImportant = Boolean(name && IMPORTANT.test(name));
-    const minLen = isImportant ? 8 : hw === "primary" || hw === "trunk" ? 22 : hw === "secondary" ? 28 : 999;
-    const showLabel =
-      name &&
-      (isImportant || style.label || f.properties.label === true) &&
-      len >= minLen &&
-      !seenLabels.has(labelKey);
-    if (showLabel) seenLabels.add(labelKey);
+    if (hw === "tertiary" && !IMPORTANT.test(f.properties.name || "")) continue;
+    const coords = f.geometry.coordinates;
+    if (!coords || coords.length < 2) continue;
+    const overlay = streetOverlayFromCoords(f, coords, seenLabels);
+    if (overlay) overlays.push(overlay);
+  }
 
-    const labeled = Boolean(showLabel);
-    const widthBoost = isImportant ? LABELED_STREET.importantWidthBoost : labeled ? LABELED_STREET.widthBoost : 0;
-    const lineColor = labeled
-      ? isImportant
-        ? LABELED_STREET.importantColor
-        : LABELED_STREET.color
-      : f.properties.manual
-        ? "#a8c4b4"
-        : style.color;
-    const lineOpacity = labeled
-      ? isImportant
-        ? LABELED_STREET.importantOpacity
-        : LABELED_STREET.opacity
-      : style.opacity;
-
-    return {
-      name,
-      highway: hw,
-      manual: f.properties.manual === true,
-      important: isImportant,
-      labeled,
-      path: lineToSvgPath(coords),
-      width: (f.properties.manual ? style.width + 0.5 : style.width) + widthBoost,
-      opacity: lineOpacity,
-      color: lineColor,
-      label: showLabel ? { x: mid.x, y: mid.y - 2, text: name } : null,
-    };
-  });
+  return overlays;
 }
 
 function corridorColor(status) {
@@ -298,6 +314,7 @@ export function buildMapLayersFromTriage(ranking) {
       severity: conflict?.severity || (status === "closed" ? "critical" : status === "restricted" ? "high" : "open"),
       atRiskTrips: conflict?.atRiskTrips ?? 0,
       color: corridorColor(status),
+      coords: f.geometry.coordinates,
       svg: {
         x1: coords[0].x,
         y1: coords[0].y,
@@ -324,6 +341,8 @@ export function buildMapLayersFromTriage(ranking) {
       impactScore: impact?.impactScore ?? 0,
       p1Count: impact?.p1Count ?? 0,
       color: facilityDisplayColor(role),
+      lon,
+      lat,
       svg: { x: pt.x, y: pt.y, r: rank === 1 ? baseR + 4 : rank ? baseR + 2 : baseR },
     };
   });
@@ -347,6 +366,8 @@ export function buildMapLayersFromTriage(ranking) {
         conflictScore: rt.conflictScore,
         atRisk: hot,
         color: hot ? "#ffc72c" : "#a78bfa",
+        lon: trip.pickupLon,
+        lat: trip.pickupLat,
         svg: { x: pt.x, y: pt.y, r: hot ? 7 : 5 },
       };
     })
@@ -368,6 +389,9 @@ export function buildMapLayersFromTriage(ranking) {
     viewBox: mapViewBoxString(),
     mapPadLeft: MAP.viewBox.padLeft || 0,
     bbox: MAP.bbox,
+    basemapRev: BASEMAP_REV,
+    basemapUrl: "/api/geo/basemap",
+    basemapSize: `${MAP.viewBox.width}x${MAP.viewBox.height}`,
     zone,
     corridors: projectedCorridors,
     facilities: projectedFacilities,
@@ -397,6 +421,7 @@ export function buildMapLayers(level = 2) {
       name: f.properties.name,
       status,
       color: corridorColor(status),
+      coords: f.geometry.coordinates,
       svg: {
         x1: coords[0].x,
         y1: coords[0].y,
@@ -416,6 +441,8 @@ export function buildMapLayers(level = 2) {
       name: f.properties.name,
       role,
       color: facilityDisplayColor(role),
+      lon,
+      lat,
       svg: { x: pt.x, y: pt.y, r: isHospitalPartner(role) ? 12 : 10 },
     };
   });
@@ -430,6 +457,8 @@ export function buildMapLayers(level = 2) {
       corridor: t.corridor,
       atRisk,
       color: atRisk ? "#ffc72c" : "#7f8f9f",
+      lon: t.pickupLon,
+      lat: t.pickupLat,
       svg: { x: pt.x, y: pt.y, r: atRisk ? 6 : 4 },
     };
   });
@@ -446,6 +475,9 @@ export function buildMapLayers(level = 2) {
     viewBox: mapViewBoxString(),
     mapPadLeft: MAP.viewBox.padLeft || 0,
     bbox: MAP.bbox,
+    basemapRev: BASEMAP_REV,
+    basemapUrl: "/api/geo/basemap",
+    basemapSize: `${MAP.viewBox.width}x${MAP.viewBox.height}`,
     zone,
     corridors: projectedCorridors,
     facilities: projectedFacilities,
@@ -456,5 +488,3 @@ export function buildMapLayers(level = 2) {
     streets: buildStreetOverlay(),
   });
 }
-
-export { MAP };

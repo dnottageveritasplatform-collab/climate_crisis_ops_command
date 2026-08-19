@@ -42,6 +42,26 @@
       "corridor": "CORR-02",
       "lat": 25.044,
       "lon": -77.305
+    },
+    {
+      "unitId": "FP-Engine-7",
+      "agency": "fire",
+      "agencyLabel": "Nassau Fire & Rescue",
+      "status": "staging",
+      "assignment": "Southwest New Providence flood watch — Lyford Cay approach",
+      "corridor": null,
+      "lat": 25.028,
+      "lon": -77.505
+    },
+    {
+      "unitId": "RBPF-318",
+      "agency": "police",
+      "agencyLabel": "Royal Bahamas Police Force",
+      "status": "on_patrol",
+      "assignment": "Western district coastal patrol",
+      "corridor": null,
+      "lat": 25.048,
+      "lon": -77.528
     }
   ]
 }

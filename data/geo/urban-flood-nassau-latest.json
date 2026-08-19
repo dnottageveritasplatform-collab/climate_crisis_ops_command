@@ -5,11 +5,11 @@
   "serviceName": "urban-flood-vendor-grid-demo",
   "provider": "Commercial urban flood (grid demo)",
   "vendor": "jba",
-  "updatedAt": "2026-08-15T19:18:11.393Z",
+  "updatedAt": "2026-08-19T15:35:54.388Z",
   "clipBbox": {
-    "minLon": -77.34,
-    "maxLon": -77.3,
-    "minLat": 25.04,
+    "minLon": -77.55,
+    "maxLon": -77.30,
+    "minLat": 25.01,
     "maxLat": 25.08
   },
   "gridResolutionDeg": 0.001,
@@ -194,6 +194,94 @@
             [
               -77.3255,
               25.052500000000002
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-GRID-05",
+        "name": "Southwest coastal pluvial ponding (commercial)",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "jba",
+        "depthInches": 9,
+        "depthBand": "moderate",
+        "returnPeriodYears": 5,
+        "linkedCorridors": [],
+        "activeAtLevel": 2,
+        "gridLon": -77.505,
+        "gridLat": 25.032
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.512,
+              25.024
+            ],
+            [
+              -77.498,
+              25.024
+            ],
+            [
+              -77.498,
+              25.040
+            ],
+            [
+              -77.512,
+              25.040
+            ],
+            [
+              -77.512,
+              25.024
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "URBAN-GRID-06",
+        "name": "Northwest district shallow ponding (commercial)",
+        "source": "commercial",
+        "confidence": "commercial_model",
+        "vendor": "jba",
+        "depthInches": 7,
+        "depthBand": "minor",
+        "returnPeriodYears": 5,
+        "linkedCorridors": [],
+        "activeAtLevel": 2,
+        "gridLon": -77.498,
+        "gridLat": 25.072
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.508,
+              25.064
+            ],
+            [
+              -77.488,
+              25.064
+            ],
+            [
+              -77.488,
+              25.080
+            ],
+            [
+              -77.508,
+              25.080
+            ],
+            [
+              -77.508,
+              25.064
             ]
           ]
         ]

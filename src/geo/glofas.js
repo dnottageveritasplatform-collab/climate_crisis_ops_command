@@ -13,26 +13,17 @@ import {
   readGlofasCdsCache,
 } from "./glofas-cds.js";
 import { DEFAULT_CLIP_PATH } from "./glofas-convert.js";
+import { MAP, MAP_BBOX, projectPoint } from "./map-constants.js";
 
 export { fetchGlofasFromCds, getGlofasCdsConfig, getGlofasCdsStatus, getGlofasStaleThresholdHours };
+
+export const NASSAU_CLIP_BBOX = MAP_BBOX;
 
 export const GLOFAS_SCOPE_GUARD =
   "GloFAS gap-fill — coarse Copernicus river/discharge guidance clipped to New Providence; model_estimated confidence only; not agency hydrology authority.";
 
 const geoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../data/geo");
 const defaultDemoPath = path.join(geoRoot, "glofas-nassau-demo.json");
-
-export const NASSAU_CLIP_BBOX = {
-  minLon: -77.36,
-  maxLon: -77.24,
-  minLat: 25.03,
-  maxLat: 25.10,
-};
-
-const MAP = {
-  viewBox: { width: 800, height: 480 },
-  bbox: NASSAU_CLIP_BBOX,
-};
 
 let cachedLayer = null;
 
@@ -51,10 +42,7 @@ export function parseGlofasClipBbox(raw = process.env.GLOFAS_CLIP_BBOX) {
 }
 
 function project(lon, lat) {
-  const { bbox, viewBox } = MAP;
-  const x = ((lon - bbox.minLon) / (bbox.maxLon - bbox.minLon)) * viewBox.width;
-  const y = viewBox.height - ((lat - bbox.minLat) / (bbox.maxLat - bbox.minLat)) * viewBox.height;
-  return { x: Math.round(x), y: Math.round(y) };
+  return projectPoint(lon, lat);
 }
 
 function ringToSvgPath(ring) {

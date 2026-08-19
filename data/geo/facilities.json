@@ -8,7 +8,7 @@
         "name": "Princess Margaret Hospital",
         "role": "hospital_partner"
       },
-      "geometry": { "type": "Point", "coordinates": [-77.328, 25.071] }
+      "geometry": { "type": "Point", "coordinates": [-77.336282, 25.074414] }
     },
     {
       "type": "Feature",
@@ -17,7 +17,7 @@
         "name": "Doctor's Hospital",
         "role": "hospital_partner_private"
       },
-      "geometry": { "type": "Point", "coordinates": [-77.326, 25.069] }
+      "geometry": { "type": "Point", "coordinates": [-77.33302, 25.07499] }
     },
     {
       "type": "Feature",
