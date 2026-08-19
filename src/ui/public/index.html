@@ -1468,6 +1468,39 @@
       color: #c8d4de;
     }
     .sms-item strong { color: var(--gold); }
+    .action-trip-head {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.25rem;
+    }
+    .action-trip-pin {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .action-trip-pin-rank {
+      font-size: 8px;
+      font-weight: 700;
+      color: #a78bfa;
+    }
+    .action-trip-pin-dot {
+      display: block;
+    }
+    .action-trip-pin-cad {
+      font-size: 6px;
+      font-weight: 600;
+      color: #38bdf8;
+      white-space: nowrap;
+    }
+    .action-trip-meta {
+      flex: 1;
+      min-width: 0;
+    }
     .hitl-banner {
       font-size: 0.62rem;
       padding: 0.35rem 0.5rem;
@@ -2866,7 +2899,24 @@
       if (result.audit) renderAudit(result.audit);
     }
 
-    function renderAction(result) {
+    function actionTripMarkerHtml(tripId, mapLayers) {
+      const trips = mapLayers?.trips || lastMapPaint.layers?.trips || lastTriageMap?.trips || [];
+      const t = trips.find((x) => x.id === tripId);
+      const rank = t?.rank ?? tripRanks[tripId];
+      const atRisk = t?.atRisk !== false;
+      const fill = atRisk ? "#ffc72c" : "#a78bfa";
+      const size = atRisk ? 14 : 10;
+      const rankHtml = rank ? `<span class="action-trip-pin-rank">#${rank}</span>` : "";
+      let cadHtml = "";
+      if (t?.cadRunId) {
+        const run = t.cadRunId.replace("RUN-", "R");
+        const status = t.unitStatus ? t.unitStatus.replace(/_/g, " ") : "";
+        cadHtml = `<span class="action-trip-pin-cad">${run}${status ? ` · ${status}` : ""}</span>`;
+      }
+      return `<span class="action-trip-pin" title="Same marker as command map">${rankHtml}<span class="cmd-trip-dot action-trip-pin-dot" style="width:${size}px;height:${size}px;background:${fill}"></span>${cadHtml}</span>`;
+    }
+
+    function renderAction(result, mapLayers) {
       const panel = document.getElementById("actionPanel");
       const p = result?.pack;
       if (!p) {
@@ -2883,9 +2933,13 @@
 
       const smsHtml = p.driverComms.map((d) => `
         <div class="sms-item">
-          <strong>${d.tripId}</strong> · ${d.priority} · ${d.corridor}
-          ${d.fusedBriefing ? `<span class="desk-chip warn" style="font-size:0.58rem;margin-left:0.25rem">${d.fusedBriefing.compositeRisk} · ${(d.fusedBriefing.hazardTypes || []).join("+")}${d.fusedBriefing.floodSourceLabel ? ` · flood:${d.fusedBriefing.floodSourceLabel}` : ""}${d.fusedBriefing.alternateRoute ? ` · alt ${d.fusedBriefing.alternateRoute}` : ""}${d.fusedBriefing.turnByTurnSteps ? ` · ${d.fusedBriefing.turnByTurnSteps} seg` : ""}</span>` : ""}
-          <br/>
+          <div class="action-trip-head">
+            ${actionTripMarkerHtml(d.tripId, mapLayers)}
+            <span class="action-trip-meta">
+              <strong>${d.tripId}</strong> · ${d.priority} · ${d.corridor}
+              ${d.fusedBriefing ? `<span class="desk-chip warn" style="font-size:0.58rem;margin-left:0.25rem">${d.fusedBriefing.compositeRisk} · ${(d.fusedBriefing.hazardTypes || []).join("+")}${d.fusedBriefing.floodSourceLabel ? ` · flood:${d.fusedBriefing.floodSourceLabel}` : ""}${d.fusedBriefing.alternateRoute ? ` · alt ${d.fusedBriefing.alternateRoute}` : ""}${d.fusedBriefing.turnByTurnSteps ? ` · ${d.fusedBriefing.turnByTurnSteps} seg` : ""}</span>` : ""}
+            </span>
+          </div>
           ${d.draft}
         </div>
       `).join("");
@@ -2928,7 +2982,7 @@
         if (data.signals) renderAlert(data.signals, { skipMap: true });
         renderBrief(data.monitor, { skipMap: true });
         renderTriage(data.triage);
-        renderAction(data.action);
+        renderAction(data.action, data.map);
         if (data.map) {
           lastTriageMap = data.map;
           renderMap(data.map, tripRanks);
