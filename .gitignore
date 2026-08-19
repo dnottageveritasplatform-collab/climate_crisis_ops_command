@@ -14,6 +14,7 @@ docs/demo-backup-capture.mp4
 *.mp4
 data/geo/streets-raw.json
 data/audit-trail.jsonl
+CCOC.zip
 
 # Logbook entries — submitted via Future Caribbean portal; keep local only
 docs/logbook*.md

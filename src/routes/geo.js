@@ -61,6 +61,8 @@ import {
   buildRoadNetworkSummary,
   ingestRoadNetworkWebhook,
 } from "../geo/road-network.js";
+import { formatMultiHazardText, formatRoutingPreviewText } from "../export/formatters.js";
+import { respondExport } from "../export/respond.js";
 
 const router = Router();
 
@@ -124,7 +126,12 @@ router.post("/corridors/ingest", (req, res) => {
 /** Corridor-aware routing preview summary (Phase 2 Day 11). */
 router.get("/routing/preview", (req, res) => {
   const level = Number(req.query.level) || 2;
-  res.json(buildRoutingPreviewSummary(level));
+  const data = buildRoutingPreviewSummary(level);
+  respondExport(req, res, data, {
+    formatText: formatRoutingPreviewText,
+    pageTitle: "Climate & Crisis Ops Command — Routing Preview",
+    subtitle: `L${level} · ${data.tripAdvisoryCount ?? 0} trip advisory(ies)`,
+  });
 });
 
 /** Cross-ref at-risk trips with alternate route advisories. */
@@ -305,7 +312,12 @@ router.post("/hazards/wind/ingest", (req, res) => {
 /** Combined flood + wind + routing fusion summary (Phase 2 Day 14). */
 router.get("/hazards/combined", (req, res) => {
   const level = Number(req.query.level) || 2;
-  res.json(buildMultiHazardSummary(level));
+  const data = buildMultiHazardSummary(level);
+  respondExport(req, res, data, {
+    formatText: formatMultiHazardText,
+    pageTitle: "Climate & Crisis Ops Command — Multi-Hazard Fusion",
+    subtitle: `L${level} · ${data.fusedTripCount ?? 0} fused trip(s)`,
+  });
 });
 
 /** Per-trip fused hazard + routing briefing cross-ref. */

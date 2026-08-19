@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Climate & Crisis Ops Command — System Architecture</title>
+  <style>
+    :root {
+      --aqua: #00abc9;
+      --gold: #ffc72c;
+      --bg: #070b0f;
+      --panel: #0e1419;
+      --border: #1e2a36;
+      --text: #eef3f7;
+      --muted: #7f8f9f;
+      --ok: #5fd4a4;
+      --warn: #ffb347;
+      --purple: #a78bfa;
+      --rose: #fb7185;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 1.5rem 2rem 2.5rem;
+      line-height: 1.45;
+    }
+    h1 { font-size: 1.35rem; margin-bottom: 0.2rem; }
+    .sub { color: var(--muted); font-size: 0.82rem; margin-bottom: 1.25rem; max-width: 920px; }
+    .wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1rem 1rem;
+      overflow-x: auto;
+    }
+    svg { display: block; margin: 0 auto; min-width: 1040px; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 1rem 1.5rem;
+      margin-top: 1rem; font-size: 0.72rem; color: var(--muted);
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .note {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      border-left: 3px solid var(--gold);
+      background: rgba(255,199,44,.06);
+      font-size: 0.8rem;
+      color: #c8d4de;
+      max-width: 920px;
+    }
+    .cols {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      max-width: 1040px;
+    }
+    .col {
+      background: #121a22;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .col strong { display: block; color: var(--text); font-size: 0.78rem; margin-bottom: 0.35rem; }
+    .col code { color: var(--aqua); font-size: 0.68rem; }
+  </style>
+</head>
+<body>
+  <h1>Climate &amp; Crisis Ops Command</h1>
+  <p class="sub">
+    System architecture · Future Caribbean 2026 · NEMT + hospital liaison coordination ·
+    KnightRoad Veritas command-center lineage · NOT 911/CAD replacement
+  </p>
+
+  <div class="wrap">
+    <svg viewBox="0 0 1040 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CCOC system architecture">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#5a6a7a"/>
+        </marker>
+        <marker id="arraqua" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#00abc9"/>
+        </marker>
+        <marker id="arrgold" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#ffc72c"/>
+        </marker>
+        <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="rgba(0,171,201,.15)"/>
+          <stop offset="100%" stop-color="rgba(255,199,44,.08)"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title band -->
+      <rect x="20" y="16" width="1000" height="28" rx="6" fill="url(#hdr)" stroke="#1e2a36"/>
+      <text x="520" y="35" text-anchor="middle" fill="#eef3f7" font-size="12" font-weight="700">EXPRESS API · src/server.js · :8787</text>
+
+      <!-- DATA LAYER -->
+      <text x="36" y="68" fill="#7f8f9f" font-size="10" font-weight="700" letter-spacing="0.08em">DATA &amp; FEEDS</text>
+
+      <rect x="28" y="78" width="118" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="87" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">NHC RSS</text>
+      <text x="87" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">Signals</text>
+
+      <rect x="156" y="78" width="118" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="215" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">OCHA / GFDRR</text>
+      <text x="215" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">Institutional</text>
+
+      <rect x="284" y="78" width="118" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="343" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">CSV manifest</text>
+      <text x="343" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">Dispatch</text>
+
+      <rect x="412" y="78" width="118" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="471" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">3-file corpus</text>
+      <text x="471" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">SOP RAG</text>
+
+      <rect x="540" y="78" width="118" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="599" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">CAD export</text>
+      <text x="599" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">CAD overlay</text>
+
+      <rect x="668" y="78" width="118" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="727" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">Desk + handoff</text>
+      <text x="727" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">Transport</text>
+
+      <rect x="796" y="78" width="118" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="855" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">Fire / police EOC</text>
+      <text x="855" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">Public safety</text>
+
+      <rect x="924" y="78" width="96" height="52" rx="7" fill="#121a22" stroke="#1e2a36"/>
+      <text x="972" y="100" text-anchor="middle" fill="#7f8f9f" font-size="9">GeoJSON</text>
+      <text x="972" y="116" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">GIS layers</text>
+
+      <!-- Hazard strip -->
+      <rect x="28" y="142" width="992" height="36" rx="6" fill="rgba(95,212,164,.06)" stroke="rgba(95,212,164,.25)"/>
+      <text x="524" y="164" text-anchor="middle" fill="#5fd4a4" font-size="10" font-weight="600">
+        Hazard fusion map · ESRI corridors · flood / wind / GloFAS · urban flood · routing preview · src/geo/
+      </text>
+
+      <!-- ORCHESTRATOR -->
+      <rect x="320" y="196" width="400" height="44" rx="8" fill="rgba(255,199,44,.1)" stroke="#ffc72c" stroke-width="1.5"/>
+      <text x="520" y="216" text-anchor="middle" fill="#ffc72c" font-size="11" font-weight="700">ORCHESTRATOR</text>
+      <text x="520" y="232" text-anchor="middle" fill="#c8d4de" font-size="9">POST /api/orchestrator/run · signals → Monitor → Triage → Action → HITL staged</text>
+
+      <!-- AGENTS -->
+      <text x="36" y="268" fill="#7f8f9f" font-size="10" font-weight="700" letter-spacing="0.08em">AGENT PIPELINE · OpenClaw-compatible tool loop</text>
+
+      <rect x="120" y="280" width="200" height="88" rx="10" fill="rgba(0,171,201,.12)" stroke="#00abc9" stroke-width="2"/>
+      <text x="220" y="308" text-anchor="middle" fill="#00abc9" font-size="13" font-weight="700">MONITOR</text>
+      <text x="220" y="326" text-anchor="middle" fill="#c8d4de" font-size="9">Level threshold → brief</text>
+      <text x="220" y="340" text-anchor="middle" fill="#c8d4de" font-size="9">SOP citations · institutional signals</text>
+      <text x="220" y="358" text-anchor="middle" fill="#7f8f9f" font-size="8">src/agents/monitor/</text>
+
+      <rect x="420" y="280" width="200" height="88" rx="10" fill="rgba(167,139,250,.1)" stroke="#a78bfa" stroke-width="2"/>
+      <text x="520" y="308" text-anchor="middle" fill="#a78bfa" font-size="13" font-weight="700">TRIAGE</text>
+      <text x="520" y="326" text-anchor="middle" fill="#c8d4de" font-size="9">Rank trips · facilities · corridors</text>
+      <text x="520" y="340" text-anchor="middle" fill="#c8d4de" font-size="9">Map sync · conflict detection</text>
+      <text x="520" y="358" text-anchor="middle" fill="#7f8f9f" font-size="8">src/agents/triage/</text>
+
+      <rect x="720" y="280" width="200" height="88" rx="10" fill="rgba(255,179,71,.1)" stroke="#ffb347" stroke-width="2"/>
+      <text x="820" y="308" text-anchor="middle" fill="#ffb347" font-size="13" font-weight="700">ACTION</text>
+      <text x="820" y="326" text-anchor="middle" fill="#c8d4de" font-size="9">Checklist · COMMS-03 · SMS drafts</text>
+      <text x="820" y="340" text-anchor="middle" fill="#c8d4de" font-size="9">Fusion-aware bulletins</text>
+      <text x="820" y="358" text-anchor="middle" fill="#7f8f9f" font-size="8">src/agents/action/</text>
+
+      <!-- Agent arrows -->
+      <line x1="320" y1="324" x2="418" y2="324" stroke="#00abc9" stroke-width="2" marker-end="url(#arraqua)"/>
+      <line x1="620" y1="324" x2="718" y2="324" stroke="#a78bfa" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- SHARED TOOLS -->
+      <rect x="120" y="392" width="800" height="54" rx="8" fill="#121a22" stroke="#1e2a36"/>
+      <text x="520" y="412" text-anchor="middle" fill="#eef3f7" font-size="10" font-weight="600">Shared tools · src/agents/runtime/tools.js</text>
+      <text x="520" y="430" text-anchor="middle" fill="#7f8f9f" font-size="9">get_signal_status · summarize_dispatch · query_sop (keyword RAG)</text>
+
+      <!-- LLM optional -->
+      <rect x="120" y="462" width="260" height="64" rx="8" fill="rgba(251,113,133,.08)" stroke="#fb7185"/>
+      <text x="250" y="484" text-anchor="middle" fill="#fb7185" font-size="11" font-weight="700">OPTIONAL LLM</text>
+      <text x="250" y="500" text-anchor="middle" fill="#c8d4de" font-size="9">Groq · MiniMax · Ollama</text>
+      <text x="250" y="516" text-anchor="middle" fill="#7f8f9f" font-size="8">DEMO_MODE=false · narrative enrichment only</text>
+
+      <!-- Efficiency -->
+      <rect x="400" y="462" width="240" height="64" rx="8" fill="rgba(95,212,164,.08)" stroke="#5fd4a4"/>
+      <text x="520" y="484" text-anchor="middle" fill="#5fd4a4" font-size="11" font-weight="700">EFFICIENCY</text>
+      <text x="520" y="500" text-anchor="middle" fill="#c8d4de" font-size="9">Tokens + latency per agent</text>
+      <text x="520" y="516" text-anchor="middle" fill="#7f8f9f" font-size="8">GET /api/efficiency/summary</text>
+
+      <!-- Eval -->
+      <rect x="660" y="462" width="260" height="64" rx="8" fill="rgba(95,212,164,.08)" stroke="#5fd4a4"/>
+      <text x="790" y="484" text-anchor="middle" fill="#5fd4a4" font-size="11" font-weight="700">EVAL HARNESS</text>
+      <text x="790" y="500" text-anchor="middle" fill="#c8d4de" font-size="9">8 scripted L1–L4 scenarios</text>
+      <text x="790" y="516" text-anchor="middle" fill="#7f8f9f" font-size="8">POST /api/eval/run · 0 tokens demo</text>
+
+      <!-- HITL -->
+      <rect x="120" y="544" width="280" height="72" rx="10" fill="rgba(255,199,44,.08)" stroke="#ffc72c" stroke-width="1.5"/>
+      <text x="260" y="570" text-anchor="middle" fill="#ffc72c" font-size="12" font-weight="700">TRIPLE HITL GATE</text>
+      <text x="260" y="588" text-anchor="middle" fill="#c8d4de" font-size="9">NEMT Supervisor · PMH Liaison · Doctor's Liaison</text>
+      <text x="260" y="604" text-anchor="middle" fill="#7f8f9f" font-size="8">Review / Approve COMMS-03 · demo send blocked</text>
+
+      <!-- UI -->
+      <rect x="420" y="544" width="240" height="72" rx="10" fill="#121a22" stroke="#ffc72c"/>
+      <text x="540" y="570" text-anchor="middle" fill="#ffc72c" font-size="12" font-weight="700">COMMAND UI</text>
+      <text x="540" y="588" text-anchor="middle" fill="#c8d4de" font-size="9">Alert · timeline · ops output · map</text>
+      <text x="540" y="604" text-anchor="middle" fill="#7f8f9f" font-size="8">src/ui/public/index.html</text>
+
+      <!-- Audit -->
+      <rect x="680" y="544" width="240" height="72" rx="10" fill="rgba(95,212,164,.1)" stroke="#5fd4a4"/>
+      <text x="800" y="570" text-anchor="middle" fill="#5fd4a4" font-size="12" font-weight="700">AUDIT TRAIL</text>
+      <text x="800" y="588" text-anchor="middle" fill="#c8d4de" font-size="9">Steps · SOP citations · approvers</text>
+      <text x="800" y="604" text-anchor="middle" fill="#7f8f9f" font-size="8">JSONL persist · EOC briefing export</text>
+
+      <!-- Vertical flow arrows -->
+      <line x1="520" y1="240" x2="220" y2="278" stroke="#5a6a7a" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="520" y1="240" x2="520" y2="278" stroke="#5a6a7a" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="520" y1="240" x2="820" y2="278" stroke="#5a6a7a" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="220" y1="368" x2="220" y2="390" stroke="#5a6a7a" stroke-width="1" marker-end="url(#arr)"/>
+      <line x1="520" y1="368" x2="520" y2="390" stroke="#5a6a7a" stroke-width="1" marker-end="url(#arr)"/>
+      <line x1="820" y1="368" x2="820" y2="390" stroke="#5a6a7a" stroke-width="1" marker-end="url(#arr)"/>
+      <line x1="820" y1="368" x2="260" y2="542" stroke="#ffc72c" stroke-width="1.5" marker-end="url(#arrgold)"/>
+      <line x1="520" y1="368" x2="540" y2="542" stroke="#ffc72c" stroke-width="1.5" marker-end="url(#arrgold)"/>
+      <line x1="820" y1="368" x2="800" y2="542" stroke="#5fd4a4" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Data to tools -->
+      <line x1="87" y1="130" x2="180" y2="418" stroke="#1e2a36" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="343" y1="130" x2="400" y2="418" stroke="#1e2a36" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="471" y1="130" x2="520" y2="418" stroke="#1e2a36" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="972" y1="130" x2="700" y2="418" stroke="#1e2a36" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="524" y1="178" x2="540" y2="542" stroke="#5fd4a4" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+    </svg>
+
+    <div class="legend">
+      <span><i class="swatch" style="background:rgba(0,171,201,.35);border:1px solid #00abc9"></i> Monitor agent</span>
+      <span><i class="swatch" style="background:rgba(167,139,250,.25);border:1px solid #a78bfa"></i> Triage agent</span>
+      <span><i class="swatch" style="background:rgba(255,179,71,.25);border:1px solid #ffb347"></i> Action agent</span>
+      <span><i class="swatch" style="background:rgba(255,199,44,.2);border:1px solid #ffc72c"></i> Human-in-the-loop</span>
+      <span><i class="swatch" style="background:rgba(95,212,164,.2);border:1px solid #5fd4a4"></i> Audit / eval / efficiency</span>
+      <span>Deterministic core · LLM optional enrichment · nothing auto-sends</span>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <strong>Ingest</strong>
+      <code>src/signals/</code> NHC + institutional<br/>
+      <code>src/dispatch/</code> NEMT manifest<br/>
+      <code>src/cad/</code> read-only CAD overlay
+    </div>
+    <div class="col">
+      <strong>Agents</strong>
+      <code>POST /api/agents/monitor/brief</code><br/>
+      <code>POST /api/agents/triage/rank</code><br/>
+      <code>POST /api/agents/action/pack</code>
+    </div>
+    <div class="col">
+      <strong>Map &amp; hazards</strong>
+      <code>GET /api/geo/layers/triage</code><br/>
+      GloFAS · urban flood · ESRI · fusion<br/>
+      OSM streets · corridor status
+    </div>
+    <div class="col">
+      <strong>Governance</strong>
+      <code>src/hitl/</code> triple approval<br/>
+      <code>src/audit/</code> full trail + JSONL<br/>
+      <code>src/scenario/</code> multi-agency copy
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Design principle:</strong> Tools and rules run first (dispatch scoring, corridor logic, SOP keyword RAG, map pins).
+    LLM calls enrich narrative only when enabled. Demo mode (<code>DEMO_MODE=true</code>) keeps eval and judge demos at zero tokens.
+    Broward County IT lineage: multi-agency GIS coordination after weather events — productized for Caribbean NEMT + hospital partners.
+  </div>
+</body>
+</html>

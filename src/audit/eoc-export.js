@@ -20,6 +20,14 @@ import { getSovereignDeployStatus } from "../deploy/sovereign.js";
 import { buildRoadNetworkCrossRef } from "../geo/road-network.js";
 import { getDemoRehearsalStatus } from "../demo/rehearsal.js";
 import { getDefensibilityStatus } from "../defensibility/index.js";
+import {
+  bullet,
+  corridorStatusLabel,
+  exportFooter,
+  fmtBriefingTime,
+  section,
+  wrapBriefingHtml,
+} from "../export/briefing-shell.js";
 
 const EOC_AUDIT_SCOPE_GUARD =
   "EOC audit briefing export — append-only persisted trail + read-only situational feeds. Not dispatch authority.";
@@ -316,4 +324,209 @@ export async function buildEocAuditBriefing({ level = 2, limit = 20 } = {}) {
     },
     disclaimer: cop.disclaimer,
   };
+}
+
+function formatAuditEntryLine(entry) {
+  if (!entry) return null;
+  const when = fmtBriefingTime(entry.ts);
+  if (entry.type === "pipeline_run") {
+    return `${when}  PIPELINE  ${entry.summary || entry.id}`;
+  }
+  if (entry.type === "hitl_released") {
+    const names = (entry.approvers || [])
+      .map((a) => a.name || a.role)
+      .filter(Boolean)
+      .join(", ");
+    return `${when}  HITL RELEASE  ${names || "approvals recorded"}`;
+  }
+  if (entry.type === "handoff_writeback") {
+    return `${when}  HANDOFF WRITEBACK  ${entry.summary || entry.id}`;
+  }
+  return `${when}  ${(entry.type || "event").toUpperCase()}  ${entry.summary || entry.id}`;
+}
+
+/** Human-readable EOC briefing — copy/paste into stand-up notes or email. */
+export function formatEocAuditBriefingText(briefing) {
+  const lines = [];
+  const sit = briefing.situation || {};
+  const sum = briefing.summary || {};
+  const op = briefing.operatingPicture || {};
+  const trail = briefing.auditTrail || {};
+
+  lines.push("CLIMATE & CRISIS OPS COMMAND");
+  lines.push("EOC AUDIT BRIEFING");
+  lines.push(`Generated: ${fmtBriefingTime(briefing.generatedAt)}`);
+  lines.push(`Level: L${briefing.level ?? "—"}  ·  Phase: ${briefing.phase ?? "—"}`);
+  lines.push(`Audit entries on file: ${sum.auditEntryCount ?? trail.count ?? "—"}`);
+
+  section(lines, "Scope");
+  lines.push(briefing.scopeGuard || EOC_AUDIT_SCOPE_GUARD);
+
+  section(lines, "Situation");
+  bullet(lines, `Event: ${sit.event || "—"}`);
+  bullet(lines, `Status: ${sit.label || "—"}`);
+  bullet(lines, `Service area: ${sit.serviceArea || "—"}`);
+
+  section(lines, "At a glance");
+  bullet(lines, `Latest pipeline: ${sum.latestPipelineSummary || sum.latestPipelineId || "—"}`);
+  bullet(lines, `Pipeline runs in trail: ${sum.pipelineRunCount ?? "—"}`);
+  bullet(lines, `HITL releases: ${sum.hitlReleaseCount ?? "—"}`);
+  bullet(lines, `Handoff write-backs: ${sum.handoffWriteBackCount ?? "—"}`);
+  bullet(lines, `Matched SOPs: ${sum.matchedSops ?? "—"}`);
+  bullet(lines, `Routing advisories: ${sum.routingTripAdvisories ?? "—"}`);
+  bullet(lines, `Flood trip exposures: ${sum.floodTripExposures ?? "—"} (${sum.floodActiveZones ?? "?"} zones)`);
+  bullet(lines, `Wind trip exposures: ${sum.windTripExposures ?? "—"} (${sum.windActiveZones ?? "?"} zones)`);
+  bullet(lines, `Fused trip briefings: ${sum.fusedTripBriefings ?? "—"} (${sum.criticalFusedTrips ?? "?"} critical)`);
+  bullet(lines, `Sovereign deploy checks: ${sum.sovereignChecks ?? "—"} ${sum.sovereignDeployOk ? "OK" : "review"}`);
+
+  const corridors = op.corridors || {};
+  const corridorIds = Object.keys(corridors);
+  if (corridorIds.length) {
+    section(lines, "Corridors");
+    for (const id of corridorIds) {
+      bullet(lines, `${id}: ${corridorStatusLabel(corridors[id])}`);
+    }
+  }
+
+  const ps = op.publicSafety || {};
+  if (ps.unitCount) {
+    section(lines, "Public safety (read-only EOC feed)");
+    bullet(lines, `${ps.fireCount ?? 0} fire · ${ps.policeCount ?? 0} police units on map`);
+    for (const u of (ps.units || []).slice(0, 6)) {
+      bullet(
+        lines,
+        `${u.unitId} (${u.agency}) — ${u.status || "—"}${u.corridor ? ` · ${u.corridor}` : ""}`,
+        1
+      );
+    }
+    if ((ps.units || []).length > 6) {
+      bullet(lines, `… +${ps.units.length - 6} more`, 1);
+    }
+  }
+
+  const desk = op.transportDesk || {};
+  if (desk.bedPressure || desk.pendingHandoffs != null) {
+    section(lines, "Transport desk");
+    if (desk.bedPressure) {
+      for (const h of desk.bedPressure.slice(0, 4)) {
+        bullet(
+          lines,
+          `${h.name || h.facilityId}: beds ${h.bedPressurePct ?? "?"}% (${h.bedPressureLevel || "—"})${
+            h.diversionStatus && h.diversionStatus !== "open" ? ` · diversion ${h.diversionStatus}` : ""
+          }`
+        );
+      }
+    }
+    bullet(lines, `Pending EMS→NEMT handoffs: ${desk.pendingHandoffs ?? "—"}`);
+    bullet(lines, `Assigned / accepted: ${desk.assignedHandoffs ?? "—"}`);
+  }
+
+  const flood = op.floodHazard || {};
+  const glofas = op.glofasFlood || {};
+  const urban = op.urbanFlood || {};
+  const floodStack = op.floodStackRunbook || {};
+  if (flood.activeZoneCount || glofas.enabled || urban.enabled) {
+    section(lines, "Flood stack");
+    if (floodStack.floodBadgeLabel || glofas.floodBadgeLabel) {
+      bullet(lines, floodStack.floodBadgeLabel || glofas.floodBadgeLabel);
+    }
+    bullet(
+      lines,
+      `Agency zones: ${flood.agencyZoneCount ?? flood.activeZoneCount ?? "—"} · GloFAS gap: ${
+        glofas.glofasGapZoneCount ?? "—"
+      } · Urban commercial gap: ${urban.commercialGapZoneCount ?? "—"}`
+    );
+    bullet(lines, `Trip exposures: ${flood.tripExposureCount ?? "—"} · Merge rule: ${flood.mergeRule || glofas.mergeRule || "—"}`);
+    if (glofas.staleWarning) {
+      bullet(lines, `GloFAS stale warning: ${glofas.staleHours ?? "?"}h since last fetch`);
+    }
+    if (urban.staleWarning) {
+      bullet(lines, `Urban vendor stale warning: ${urban.staleHours ?? "?"}h since last fetch`);
+    }
+    if (floodStack.primaryTrust) {
+      bullet(lines, `Runbook posture: ${String(floodStack.primaryTrust).replace(/_/g, " ")}`);
+    }
+  }
+
+  const wind = op.windHazard || {};
+  if (wind.activeZoneCount) {
+    section(lines, "Wind hazard");
+    bullet(lines, `${wind.activeZoneCount} active zone(s) · ${wind.tripExposureCount ?? 0} trip exposure(s)`);
+  }
+
+  const fusion = op.multiHazard || {};
+  if (fusion.fusedTripCount) {
+    section(lines, "Priority fused trips");
+    for (const t of (fusion.tripBriefings || []).slice(0, 5)) {
+      bullet(
+        lines,
+        `${t.tripId} · ${t.corridor || "—"} · ${t.compositeRisk || t.priority || "—"}${
+          t.floodExposure?.sourceLabel ? ` · flood: ${t.floodExposure.sourceLabel}` : ""
+        }`
+      );
+    }
+    if ((fusion.tripBriefings || []).length > 5) {
+      bullet(lines, `… +${fusion.tripBriefings.length - 5} more fused trips`);
+    }
+  }
+
+  const latestPipe = trail.latestPipeline;
+  if (latestPipe) {
+    section(lines, "Latest pipeline run");
+    bullet(lines, `ID: ${latestPipe.id}`);
+    bullet(lines, `When: ${fmtBriefingTime(latestPipe.ts)}`);
+    bullet(lines, `Summary: ${latestPipe.summary || "—"}`);
+    if (latestPipe.steps?.length) {
+      lines.push("");
+      lines.push("  Steps:");
+      for (const step of latestPipe.steps) {
+        bullet(lines, `${step.label || step.id}${step.ts ? ` · ${fmtBriefingTime(step.ts)}` : ""}`, 1);
+      }
+    }
+    if (latestPipe.citations?.length) {
+      lines.push("");
+      lines.push("  SOP citations:");
+      for (const c of latestPipe.citations.slice(0, 8)) {
+        bullet(lines, c.ref || c.sopId || "SOP", 1);
+      }
+    }
+  }
+
+  const latestRelease = trail.latestRelease;
+  if (latestRelease?.approvers?.length) {
+    section(lines, "Latest HITL approval");
+    bullet(lines, `Released: ${fmtBriefingTime(latestRelease.ts)}`);
+    for (const a of latestRelease.approvers) {
+      bullet(lines, `${a.role || "role"}: ${a.name || "—"}${a.approvedAt ? ` · ${fmtBriefingTime(a.approvedAt)}` : ""}`, 1);
+    }
+  } else if ((sum.hitlReleaseCount ?? 0) === 0) {
+    section(lines, "HITL status");
+    lines.push("  No HITL releases recorded in audit trail — action pack drafts pending approval.");
+  }
+
+  const recent = (trail.entries || []).slice(0, 10);
+  if (recent.length) {
+    section(lines, "Recent audit log");
+    for (const entry of recent) {
+      const line = formatAuditEntryLine(entry);
+      if (line) lines.push(`  ${line}`);
+    }
+  }
+
+  section(lines, "Disclaimer");
+  lines.push(briefing.disclaimer || "Synthetic demo — not authoritative for dispatch.");
+  exportFooter(lines);
+
+  return lines.join("\n");
+}
+
+/** Browser-friendly HTML briefing (same content as text export). */
+export function formatEocAuditBriefingHtml(briefing) {
+  const subtitle = `EOC Audit Briefing · L${briefing.level ?? "—"} · ${fmtBriefingTime(briefing.generatedAt)}`;
+  return wrapBriefingHtml({
+    pageTitle: "Climate & Crisis Ops Command — EOC Audit Briefing",
+    subtitle,
+    text: formatEocAuditBriefingText(briefing),
+    jsonHref: `?format=json&level=${briefing.level ?? 2}`,
+  });
 }

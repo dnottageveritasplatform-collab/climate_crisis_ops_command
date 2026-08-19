@@ -8,6 +8,7 @@ import {
   formatDemoDayRunbookText,
   formatQaPrepText,
 } from "../demo/day21.js";
+import { respondExport } from "../export/respond.js";
 
 const router = Router();
 
@@ -20,40 +21,40 @@ router.post("/week1", async (_req, res) => {
   }
 });
 
-router.get("/rehearsal", (_req, res) => {
+router.get("/rehearsal", (req, res) => {
   try {
     const script = buildRehearsalScript();
-    if (_req.query.format === "text") {
-      res.type("text/plain").send(formatRehearsalScriptText(script));
-      return;
-    }
-    res.json(script);
+    respondExport(req, res, script, {
+      formatText: formatRehearsalScriptText,
+      pageTitle: "Climate & Crisis Ops Command — Demo Rehearsal",
+      subtitle: `${script.totalDurationSec / 60} min beat sheet`,
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-router.get("/runbook", (_req, res) => {
+router.get("/runbook", (req, res) => {
   try {
     const runbook = buildDemoDayRunbook();
-    if (_req.query.format === "text") {
-      res.type("text/plain").send(formatDemoDayRunbookText(runbook));
-      return;
-    }
-    res.json(runbook);
+    respondExport(req, res, runbook, {
+      formatText: formatDemoDayRunbookText,
+      pageTitle: "Climate & Crisis Ops Command — Demo Day Runbook",
+      subtitle: runbook.headline || "Demo day runbook",
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-router.get("/qa", (_req, res) => {
+router.get("/qa", (req, res) => {
   try {
-    const qa = buildQaPrep({ category: _req.query.category });
-    if (_req.query.format === "text") {
-      res.type("text/plain").send(formatQaPrepText(qa));
-      return;
-    }
-    res.json(qa);
+    const qa = buildQaPrep({ category: req.query.category });
+    respondExport(req, res, qa, {
+      formatText: formatQaPrepText,
+      pageTitle: "Climate & Crisis Ops Command — Demo Q&A Prep",
+      subtitle: qa.headline || "Q&A prep",
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

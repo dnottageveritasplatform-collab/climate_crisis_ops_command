@@ -6,6 +6,8 @@ import {
   getMultiFeedSources,
   ingestInstitutionalWebhook,
 } from "../signals/multi-feed.js";
+import { formatMultiFeedSourcesText } from "../export/formatters.js";
+import { respondExport } from "../export/respond.js";
 
 const router = Router();
 
@@ -46,10 +48,14 @@ router.get("/cross-ref", async (req, res) => {
   }
 });
 
-router.get("/sources", async (_req, res) => {
+router.get("/sources", async (req, res) => {
   try {
     const data = await getMultiFeedSources();
-    res.json(data);
+    respondExport(req, res, data, {
+      formatText: formatMultiFeedSourcesText,
+      pageTitle: "Climate & Crisis Ops Command — Multi-Feed Sources",
+      subtitle: "Signal ingest configuration",
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

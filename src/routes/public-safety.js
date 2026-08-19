@@ -8,6 +8,8 @@ import {
   getPublicSafetyStatus,
   ingestPublicSafetyWebhook,
 } from "../public-safety/index.js";
+import { formatCopExportText } from "../export/formatters.js";
+import { respondExport } from "../export/respond.js";
 
 const router = Router();
 
@@ -36,8 +38,17 @@ router.get("/map-units", (req, res) => {
 });
 
 router.get("/cop-export", async (req, res) => {
-  const level = Number(req.query.level) || 2;
-  res.json(await buildCopExport(level));
+  try {
+    const level = Number(req.query.level) || 2;
+    const cop = await buildCopExport(level);
+    respondExport(req, res, cop, {
+      formatText: formatCopExportText,
+      pageTitle: "Climate & Crisis Ops Command — Common Operating Picture",
+      subtitle: `COP · L${level}`,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 router.post("/ingest", (req, res) => {

@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { listCorpusFiles, querySopCorpus } from "../sops/index.js";
 import { buildSopCorpusCrossRef, buildSopCorpusSummary } from "../sops/corpus.js";
+import { formatSopCorpusText } from "../export/formatters.js";
+import { respondExport } from "../export/respond.js";
 
 const router = Router();
 
@@ -8,8 +10,13 @@ router.get("/", (_req, res) => {
   res.json({ ok: true, corpus: listCorpusFiles() });
 });
 
-router.get("/corpus", (_req, res) => {
-  res.json(buildSopCorpusSummary());
+router.get("/corpus", (req, res) => {
+  const data = buildSopCorpusSummary();
+  respondExport(req, res, data, {
+    formatText: formatSopCorpusText,
+    pageTitle: "Climate & Crisis Ops Command — Operator SOP Corpus",
+    subtitle: data.headline || "SOP corpus index",
+  });
 });
 
 router.get("/cross-ref", (req, res) => {

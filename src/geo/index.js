@@ -193,9 +193,9 @@ export function isHospitalPartner(role) {
 }
 
 export function facilityDisplayColor(role) {
-  if (role === "hospital_partner") return "#ff6b6b";
+  if (role === "hospital_partner") return "#f97316";
   if (role === "hospital_partner_private") return "#c084fc";
-  return "#00abc9";
+  return "#38bdf8";
 }
 
 let lastTriageRanking = null;

@@ -6,7 +6,12 @@ import {
   getLatestAuditEntry,
   getLastAuditPersistResult,
 } from "../audit/index.js";
-import { buildEocAuditBriefing } from "../audit/eoc-export.js";
+import {
+  buildEocAuditBriefing,
+  formatEocAuditBriefingHtml,
+  formatEocAuditBriefingText,
+} from "../audit/eoc-export.js";
+import { parseExportFormat } from "../export/respond.js";
 
 const router = Router();
 
@@ -30,9 +35,23 @@ router.get("/persist", (_req, res) => {
 });
 
 router.get("/eoc-briefing", async (req, res) => {
-  const level = Number(req.query.level) || 2;
-  const limit = Number(req.query.limit) || 20;
-  res.json(await buildEocAuditBriefing({ level, limit }));
+  try {
+    const level = Number(req.query.level) || 2;
+    const limit = Number(req.query.limit) || 20;
+    const briefing = await buildEocAuditBriefing({ level, limit });
+    const format = parseExportFormat(req);
+    if (format === "html") {
+      res.type("text/html; charset=utf-8").send(formatEocAuditBriefingHtml(briefing));
+      return;
+    }
+    if (format === "text") {
+      res.type("text/plain; charset=utf-8").send(formatEocAuditBriefingText(briefing));
+      return;
+    }
+    res.json(briefing);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 export default router;

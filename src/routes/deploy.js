@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { buildDeployChecklist } from "../deploy/index.js";
 import { buildSovereignDeployProfile, getSovereignDeployStatus } from "../deploy/sovereign.js";
+import { formatSovereignDeployText } from "../export/formatters.js";
+import { respondExport } from "../export/respond.js";
 
 const router = Router();
 
@@ -16,7 +18,12 @@ router.get("/checklist", (req, res) => {
 
 /** Sovereign on-prem deploy profile (Phase 2 Day 15). */
 router.get("/sovereign", (req, res) => {
-  res.json(buildSovereignDeployProfile({ baseUrl: resolveBaseUrl(req) }));
+  const data = buildSovereignDeployProfile({ baseUrl: resolveBaseUrl(req) });
+  respondExport(req, res, data, {
+    formatText: formatSovereignDeployText,
+    pageTitle: "Climate & Crisis Ops Command — Sovereign Deploy Profile",
+    subtitle: data.headline || "On-prem readiness",
+  });
 });
 
 router.get("/sovereign/checklist", (req, res) => {
