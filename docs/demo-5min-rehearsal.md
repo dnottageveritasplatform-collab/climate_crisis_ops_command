@@ -34,7 +34,9 @@
 | **3:00–3:30** | Extended HITL | Review + Approve all five roles at L2+ | "Maria Clarke, James Rolle, Dr. Elaine Moss, Keisha Bain, Marcus Edgecombe — each agency signs off on COMMS-03." |
 | **3:30–4:00** | Audit | Scroll audit trail | "Pipeline steps through hazard fusion and road network, SOP citations, approver timestamps — persisted JSONL, audit-first." |
 | **4:00–4:30** | Proof | Demo rehearsal strip or terminal | **Use live numbers** — see below |
-| **4:30–5:00** | Close | Released banner or metrics | "Phase 2 complete: same command surface, new adapters. Tool-first agents, measured efficiency, operator SOP corpus. LLM is replaceable enrichment. Day 18: defensibility pitch." |
+| **4:30–5:00** | Close | Released banner or metrics | "Phase 2 complete: same command surface, new adapters. Tool-first agents, measured efficiency, **HighRise H200 verified during sprint** (demo mode today). Operator SOP corpus — LLM is replaceable enrichment." |
+
+**HighRise one-liner (optional, ~10 s):** "We integrated Future Caribbean partner HighRise inference during the sprint — full pipeline, tokens logged. Live demo is demo mode for reliability; see `docs/highrise-compute.md`."
 
 ---
 

@@ -4,7 +4,7 @@
   "source": "glofas_grid_demo",
   "serviceName": "cems-glofas-forecast-grid-demo",
   "provider": "Copernicus EMS GloFAS (grid demo)",
-  "updatedAt": "2026-08-19T20:29:32.600Z",
+  "updatedAt": "2026-08-22T18:17:27.579Z",
   "clipBbox": {
     "minLon": -77.36,
     "maxLon": -77.24,

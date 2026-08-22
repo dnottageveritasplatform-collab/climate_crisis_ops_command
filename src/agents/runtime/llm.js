@@ -6,6 +6,7 @@ import { recordLlmCall } from "../../efficiency/index.js";
 function resolveApiKey() {
   const raw =
     process.env.LLM_API_KEY ||
+    process.env.HIGHRISE_API_KEY ||
     process.env.MINIMAX_API_KEY ||
     process.env.OPENAI_API_KEY ||
     "";
@@ -41,6 +42,7 @@ export function getLlmConfig() {
     (baseUrl.includes("11434") || baseUrl.includes("ollama") ? "ollama" : null) ||
     (baseUrl.includes("minimax") ? "minimax" : null) ||
     (baseUrl.includes("groq.com") ? "groq" : null) ||
+    (baseUrl.includes("highrise") ? "highrise" : null) ||
     (apiKey ? "openai" : null) ||
     "llm";
   const hasRemoteEndpoint = Boolean(process.env.LLM_BASE_URL || !isLocalOllama(baseUrl, provider));

@@ -32,6 +32,13 @@ A: Three specialized agents orchestrated in sequence: Monitor (signals + SOP bri
 
 ## Efficiency
 
+**Q: Did you use HighRise / the buildathon H200 compute?**
+
+A: Yes — we wired OpenAI-compatible inference to **HighRise** (portal base URL + API key + catalog model). During the sprint we ran the full Monitor → Triage → Action pipeline with token and latency logged per agent. Demo day uses **`DEMO_MODE=true`** so judges get deterministic eval and HITL without expired-key risk; the HighRise block lives in local `.env` (commented) and `docs/highrise-compute.md`.
+
+- Proof: `docs/highrise-compute.md` · `GET /api/efficiency/summary` (from sprint rehearsal) · `.env.example` HighRise block
+- Rubric: Efficiency · Defensibility (partner compute narrative)
+
 **Q: What does it cost to run? How do you prove efficiency?**
 
 A: Demo mode: zero tokens, full pipeline under ~1 s per eval scenario, 8-scenario suite under 2 s. LLM mode logs exact prompt/completion/total per agent — exportable via `GET /api/efficiency/summary`. Small 3-file SOP keyword RAG, no vector DB in sprint scope.

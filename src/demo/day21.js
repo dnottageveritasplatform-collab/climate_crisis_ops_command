@@ -110,6 +110,15 @@ export const QA_PREP = [
     proof: "POST /api/eval/run · GET /api/audit/trail",
   },
   {
+    id: "highrise-compute",
+    category: "Efficiency",
+    question: "Did you use HighRise / the buildathon H200 compute?",
+    answer:
+      "Yes — OpenAI-compatible inference wired to HighRise (buildathon portal base URL + API key). We ran the full Monitor → Triage → Action pipeline during the sprint with token and latency logged per agent. Demo day uses DEMO_MODE=true for reliability; HighRise env is documented and commented in local config until credits renew.",
+    rubric: "Efficiency · Defensibility",
+    proof: "docs/highrise-compute.md · GET /api/efficiency/summary · .env.example",
+  },
+  {
     id: "efficiency",
     category: "Efficiency",
     question: "What does it cost to run? How do you prove efficiency?",
@@ -244,6 +253,7 @@ export function buildDemoDayRunbook() {
       runbook: "docs/demo-day-runbook.md",
       qa: "docs/demo-day-qa.md",
       backup: "docs/backup-demo-video.md",
+      highrise: "docs/highrise-compute.md",
     },
   };
 }

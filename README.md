@@ -39,6 +39,7 @@ Open http://127.0.0.1:8787 — health check at `/api/health`.
 - `docs/logbook-phase2-day1.md` — Phase 2 Day 1 CAD overlay (paste-ready)
 - `docs/logbook-phase2-day2.md` — Phase 2 Day 2 transport desk (paste-ready)
 - `docs/staging-deploy.md` — Staging deploy guide (Day 19)
+- `docs/highrise-compute.md` — HighRise H200 LLM inference + pitch narrative
 - `docs/backup-demo-video.md` — Offline MP4 capture (Day 19)
 - `docs/architecture-diagram.html` — Week 1 architecture diagram (Day 7)
 - `docs/architecture.docx` — system architecture, dual HITL, thin GIS layer, Phase 2 roadmap

@@ -88,7 +88,7 @@ const BEATS = [
     title: "Close — Phase 2 sprint + rubric",
     action: "Hold on released HITL banner, Hazard fusion strip, or efficiency metrics.",
     talkTrack:
-      "Phase 2 complete: same command surface, new adapters — read-only CAD, transport desk, EOC feeds, hazard fusion, sovereign deploy. Agentic AI: tool-first agents with optional LLM enrichment. Efficiency: measured tokens and latency, zero-token demo path. Defensibility: operator SOP corpus, extended HITL, persisted audit — LLM is replaceable. Day 18: defensibility pitch slide.",
+      "Phase 2 complete: same command surface, new adapters — read-only CAD, transport desk, EOC feeds, hazard fusion, sovereign deploy. Agentic AI: tool-first agents with optional LLM enrichment. Efficiency: measured tokens and latency, zero-token demo path, HighRise H200 verified during sprint. Defensibility: operator SOP corpus, extended HITL, persisted audit — LLM is replaceable via env.",
   },
 ];
 
@@ -115,7 +115,7 @@ function buildProofTalkTrack(stats) {
     : "Run Pipeline once with LLM mode — UI shows latency and token rollup on the timeline.";
 
   const modeLine = config.demoMode
-    ? "Today I'm in demo mode for speed; flip DEMO_MODE=false + Groq for live narrative during Q&A."
+    ? "Today I'm in demo mode for reliability — zero tokens. During the sprint we verified live inference on Future Caribbean partner HighRise H200 compute; same OpenAI-compatible env, commented until credits renew."
     : `LLM provider: ${providerLabel()} — narrative only; ranks, map, hazard fusion, and HITL gates stay rule-based.`;
 
   return `${evalLine} ${llmLine} ${modeLine}`;
@@ -192,7 +192,7 @@ export function getDemoRehearsalStatus(ctx = {}) {
     llmProvider: stats.llmProvider,
     scenarioStrip: stats.scenarioStrip,
     api: "/api/demo/rehearsal",
-    docs: ["docs/demo-5min-rehearsal.md", "docs/demo-2min-capture.md", "docs/demo-day-runbook.md"],
+    docs: ["docs/demo-5min-rehearsal.md", "docs/demo-2min-capture.md", "docs/demo-day-runbook.md", "docs/highrise-compute.md"],
     scopeGuard: DEMO_REHEARSAL_SCOPE_GUARD,
     summary: `${stats.evalPassed ?? "?"}/${stats.evalTotal} eval · ${script.beats.length} beats · ${script.totalDurationSec / 60} min pitch`,
   };

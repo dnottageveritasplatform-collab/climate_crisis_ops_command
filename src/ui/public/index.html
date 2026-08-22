@@ -67,6 +67,35 @@
     .pill.gold { color: var(--gold); border-color: rgba(255,199,44,.35); background: rgba(255,199,44,.08); }
     .pill.ok { color: var(--ok); border-color: rgba(95,212,164,.35); background: rgba(95,212,164,.08); }
     .pill.warn { color: var(--gold); border-color: rgba(255,199,44,.45); background: rgba(255,199,44,.12); }
+    button.pill-nav {
+      font-family: inherit;
+      cursor: pointer;
+      padding: 0.28rem 0.65rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      opacity: 0.72;
+    }
+    button.pill-nav:hover { opacity: 1; filter: brightness(1.06); }
+    button.pill-nav.active {
+      opacity: 1;
+      color: var(--ok);
+      border-color: rgba(95,212,164,.45);
+      background: rgba(95,212,164,.12);
+    }
+    .timeline-demo-tag {
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gold);
+      border: 1px solid rgba(255,199,44,.45);
+      background: rgba(255,199,44,.1);
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
 
     .toolbar {
       display: flex; gap: 0.5rem; flex-wrap: wrap;
@@ -689,9 +718,14 @@
       flex: 0 0 auto;
       height: auto;
     }
+    .workspace.timeline-visible {
+      grid-template-columns: 240px 280px 1fr 360px;
+    }
     .workspace.audit-hidden {
       grid-template-rows: var(--command-row-height);
     }
+    #agentTimelinePanel { display: none; }
+    .workspace.timeline-visible #agentTimelinePanel { display: flex; }
     .workspace > .panel {
       max-height: var(--command-row-height);
       min-height: 0;
@@ -731,6 +765,46 @@
       max-width: 100%;
     }
     .panel-body { padding: 0.85rem 1rem; overflow-y: auto; flex: 1; }
+
+    .timeline { list-style: none; }
+    .timeline li {
+      position: relative;
+      padding-left: 1.1rem;
+      padding-bottom: 0.85rem;
+      border-left: 2px solid var(--border);
+      margin-left: 0.35rem;
+    }
+    .timeline li:last-child { border-left-color: transparent; padding-bottom: 0; }
+    .timeline li::before {
+      content: "";
+      position: absolute; left: -5px; top: 4px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border);
+    }
+    .timeline li.start::before { background: var(--aqua); box-shadow: 0 0 8px rgba(0,171,201,.5); }
+    .timeline li.tool::before { background: var(--purple); }
+    .timeline li.done::before { background: var(--ok); }
+    .timeline li.empty::before { background: var(--muted); }
+    .tl-time { font-size: 0.62rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .tl-event { font-size: 0.78rem; font-weight: 600; margin: 0.15rem 0; }
+    .tl-detail {
+      font-size: 0.68rem; color: var(--muted);
+      font-family: "Cascadia Code", "Consolas", monospace;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.35rem 0.5rem;
+      margin-top: 0.3rem;
+    }
+    .tl-detail em { color: var(--aqua); font-style: normal; }
+    .panel-head.timeline-panel-head {
+      flex-wrap: wrap;
+      gap: 0.35rem 0.5rem;
+    }
+    .panel-head.timeline-panel-head #timelineMeta {
+      flex: 1 1 100%;
+      line-height: 1.35;
+    }
 
     .hitl-panel-body { padding: 0.65rem 0.75rem; }
 
@@ -1641,6 +1715,7 @@
     <div class="topbar-meta">
       <div class="toolbar">
         <span class="pill gold" id="phasePill">Phase 3b · Day 10</span>
+        <button type="button" class="pill pill-nav gold" id="toggleAgentTimeline" aria-pressed="false" title="Show agent tool-call timeline (demo only)">Agent timeline (off)</button>
         <button class="pipeline" id="runPipeline">Run Pipeline</button>
         <button type="button" class="toggle strip-toggle" id="toggleDemoRehearsalStrip" data-strip="demoRehearsalStrip" data-accent="rehearsal" aria-pressed="false" title="5-minute demo rehearsal beat sheet with live eval stats">Demo rehearsal</button>
         <button type="button" class="toggle strip-toggle" id="toggleDefensibilityStrip" data-strip="defensibilityStrip" data-accent="defensibility" aria-pressed="false" title="Defensibility pitch — Broward credibility + five pillars">Defensibility</button>
@@ -1771,6 +1846,22 @@
   </div>
 
   <div class="workspace audit-hidden" id="workspace">
+
+    <aside class="panel" id="agentTimelinePanel">
+      <div class="panel-head timeline-panel-head">
+        <h2>Agent Timeline</h2>
+        <span class="timeline-demo-tag">For Demo Only</span>
+        <span id="timelineMeta">Monitor · Triage · Action</span>
+      </div>
+      <div class="panel-body">
+        <ul class="timeline" id="timeline">
+          <li class="empty">
+            <div class="tl-event">No agent runs yet</div>
+            <div class="tl-detail">Click <em>Run Pipeline</em> to start</div>
+          </li>
+        </ul>
+      </div>
+    </aside>
 
     <aside class="panel">
       <div class="panel-head hitl-panel-head">
@@ -1994,6 +2085,7 @@
     }
 
     let auditTrailVisible = false;
+    let agentTimelineVisible = false;
     const stripVisibility = {};
     const STRIP_TOGGLES = [
       { btnId: "toggleWeatherStrip", stripId: "alertStrip", label: "Weather", defaultOn: true },
@@ -2280,6 +2372,19 @@
       });
       document.addEventListener("fullscreenchange", syncMapFullscreenUi);
       document.addEventListener("webkitfullscreenchange", syncMapFullscreenUi);
+    }
+
+    function setAgentTimelineVisible(visible) {
+      agentTimelineVisible = visible;
+      document.getElementById("workspace").classList.toggle("timeline-visible", visible);
+      const btn = document.getElementById("toggleAgentTimeline");
+      btn.classList.toggle("active", visible);
+      btn.setAttribute("aria-pressed", String(visible));
+      btn.textContent = visible ? "Agent timeline" : "Agent timeline (off)";
+      if (visible) loadLogs();
+      requestAnimationFrame(() => {
+        if (window.CommandMap) CommandMap.invalidateSize();
+      });
     }
 
     function setAuditTrailVisible(visible) {
@@ -2751,8 +2856,117 @@
     }
 
     function setRunStatus(message) {
-      const el = document.getElementById("hitlMeta");
-      if (el) el.textContent = message || "5 roles · COMMS-03";
+      const el = document.getElementById("timelineMeta");
+      if (el) el.textContent = message || "Monitor · Triage · Action";
+    }
+
+    function toolDetail(entry) {
+      if (entry.tool === "get_signal_status" && entry.result) {
+        const r = entry.result;
+        return `level: <em>${r.level}</em> · label: ${r.label} · signals: ${r.institutionalCount || 0} · feeds: ${r.feedSourceCount || 0}`;
+      }
+      if (entry.tool === "get_multi_feed_status" && entry.result) {
+        const r = entry.result;
+        return `institutional: ${r.institutionalCount} · sources: ${r.feedSourceCount} · corridor-linked: ${r.corridorLinkedSignalCount}`;
+      }
+      if (entry.tool === "get_sop_corpus_status" && entry.result) {
+        const r = entry.result;
+        return `files: ${r.fileCount} · mode: ${r.searchMode} · scenario-matched: ${r.scenarioMatchedSops}`;
+      }
+      if (entry.tool === "get_routing_preview_status" && entry.result) {
+        const r = entry.result;
+        return `rules: ${r.alternateRuleCount} · trip advisories: ${r.tripAdvisoryCount} · restricted corridors: ${r.restrictedCorridorCount}`;
+      }
+      if (entry.tool === "get_flood_hazard_status" && entry.result) {
+        const r = entry.result;
+        return `zones: ${r.activeZoneCount} · corridor-linked: ${r.corridorLinkedZoneCount} · trip exposures: ${r.tripExposureCount}`;
+      }
+      if (entry.tool === "query_sop" && entry.result) {
+        const r = entry.result;
+        const n = r.citations?.length ?? r.matches?.length ?? 0;
+        return `query: <em>"${r.query}"</em> · ${n} citation${n === 1 ? "" : "s"}`;
+      }
+      if (entry.tool === "summarize_dispatch" && entry.result) {
+        const r = entry.result;
+        const atRisk = r.atRiskTrips ?? r.p1Trips;
+        const cadHint = r.enriched && r.cadLinkedAtRisk != null
+          ? ` · <em>${r.cadLinkedAtRisk}/${atRisk} CAD live</em>`
+          : "";
+        return `L${r.level} · ${r.totalTrips} trips · <em>${atRisk} at risk</em>${cadHint} · ${(r.corridors || []).join(", ")}`;
+      }
+      if (entry.tool === "get_cad_cross_ref" && entry.result) {
+        const r = entry.result;
+        return `L${r.level} · <em>${r.matchedCount}/${r.atRiskCount}</em> CAD cross-ref · ${r.matches?.slice(0, 2).map((m) => m.runId).join(", ") || "none"}`;
+      }
+      if (entry.tool === "get_transport_desk_status" && entry.result) {
+        const r = entry.result;
+        const pressure = r.highPressureHospitals?.map((h) => `${h.name.split(" ")[0]} ${h.bedPressurePct}%`).join(", ") || "—";
+        return `${r.pendingHandoffs} awaiting dispatch accept (read-only) · bed pressure: <em>${pressure}</em>`;
+      }
+      if (entry.tool === "get_public_safety_status" && entry.result) {
+        const r = entry.result;
+        const corridors = r.corridorAssignments?.map((u) => `${u.unitId}→${u.corridor}`).slice(0, 2).join(", ") || "none";
+        return `${r.fireCount} fire + ${r.policeCount} police · corridor units: <em>${corridors}</em> (read-only EOC)`;
+      }
+      if (entry.message) return entry.message;
+      if (entry.tool) return entry.tool;
+      if (entry.agent) return entry.agent;
+      return "";
+    }
+
+    function toolKey(entry) {
+      const q = entry.args?.query;
+      return q ? `${entry.tool}:${q}` : entry.tool;
+    }
+
+    function renderTimeline(logs) {
+      const ul = document.getElementById("timeline");
+      if (!ul) return;
+      const resultsByKey = {};
+      for (const entry of logs) {
+        if (entry.event === "tool_result" && entry.tool) {
+          const key = toolKey(entry);
+          if (!resultsByKey[key]) resultsByKey[key] = [];
+          resultsByKey[key].push(entry.result);
+        }
+      }
+      const consumed = {};
+
+      const visible = logs.filter((e) => e.event !== "tool_result");
+      if (!visible.length) {
+        ul.innerHTML = `<li class="empty"><div class="tl-event">No agent runs yet</div><div class="tl-detail">Click <em>Run Pipeline</em> to start</div></li>`;
+        return;
+      }
+
+      ul.innerHTML = visible.slice().reverse().map((entry) => {
+        const cls = entry.event === "agent_start" ? "start"
+          : entry.event === "agent_complete" ? "done"
+          : entry.event === "tool_call" ? "tool" : "";
+        const label = entry.event === "tool_call"
+          ? `tool_call → ${entry.tool}${entry.args?.query ? ` (${entry.args.query})` : ""}`
+          : entry.event === "agent_start" || entry.event === "agent_complete"
+            ? `${entry.event}${entry.agent ? ` · ${entry.agent}` : ""}`
+            : entry.event;
+        let enriched = entry;
+        if (entry.event === "tool_call") {
+          const key = toolKey(entry);
+          consumed[key] = consumed[key] || 0;
+          const result = resultsByKey[key]?.[consumed[key]++];
+          enriched = { ...entry, result };
+        }
+        const detail = toolDetail(enriched);
+        return `<li class="${cls}">
+          <div class="tl-time">${fmtTime(entry.ts)}</div>
+          <div class="tl-event">${label}</div>
+          ${detail ? `<div class="tl-detail">${detail}</div>` : ""}
+        </li>`;
+      }).join("");
+    }
+
+    async function loadLogs() {
+      const res = await fetch("/api/agents/logs?limit=40");
+      const data = await res.json();
+      renderTimeline(data.logs || []);
     }
 
     function formatCitation(c) {
@@ -3010,6 +3224,7 @@
         } else {
           setRunStatus("Pipeline complete");
         }
+        await loadLogs();
       } catch (err) {
         setRunStatus("Pipeline failed");
         alert(`Pipeline failed: ${err.message}`);
@@ -3880,6 +4095,9 @@
     document.getElementById("runPipeline").addEventListener("click", runPipeline);
     document.getElementById("toggleAuditTrail").addEventListener("click", () => {
       setAuditTrailVisible(!auditTrailVisible);
+    });
+    document.getElementById("toggleAgentTimeline").addEventListener("click", () => {
+      setAgentTimelineVisible(!agentTimelineVisible);
     });
     document.getElementById("toggleHandoffQueue").addEventListener("click", () => {
       setHandoffQueueExpanded(!handoffQueueExpanded);
