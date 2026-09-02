@@ -1696,6 +1696,19 @@
     }
     .hitl-modal-actions button:hover { filter: brightness(1.08); }
 
+    .page-footer {
+      margin-top: auto;
+      padding: 0.7rem 1.5rem;
+      border-top: 1px solid var(--border);
+      background: #0a0e12;
+      text-align: center;
+    }
+    .page-footer p {
+      font-size: 0.72rem;
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+
     @media (max-width: 1100px) {
       .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto; height: auto; }
       .panel { border-right: none; border-bottom: 1px solid var(--border); }
@@ -2013,6 +2026,10 @@
       <div class="audit-trail-list" id="auditTrailList"></div>
     </div>
   </div>
+
+  <footer class="page-footer">
+    <p>&copy; 2026 KnightRoad Veritas. Climate &amp; Crisis Ops Command. All rights reserved.</p>
+  </footer>
 
   <div class="hitl-modal-backdrop" id="hitlModal" aria-hidden="true">
     <div class="hitl-modal" role="dialog" aria-labelledby="hitlModalTitle">
